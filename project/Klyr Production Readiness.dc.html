@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>html,body{margin:0;background:#F2F2F7;-webkit-font-smoothing:antialiased}*{box-sizing:border-box}a{color:#2F5E53}a:hover{color:#1F2B27}</style>
+</helmet>
+<div style="font-family:Sora,system-ui,sans-serif;color:#1C1C1E;font-size:15px;line-height:1.55;max-width:960px;margin:0 auto;padding:48px 24px 80px;display:flex;flex-direction:column;gap:36px">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+  <div style="display:flex;align-items:center;gap:10px"><img src="photos/klyr-mark.png" alt="Klyr" style="width:28px;height:28px;border-radius:7px;display:block"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#2F5E53">KLYR · PRODUCTION READINESS REVIEW · OCT 27, 2026</span></div>
+  <div style="font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1.1;text-wrap:balance">What the app design still needs before launch</div>
+  <div style="font-size:16px;color:#5E5E63;text-wrap:pretty">Reviewed against the current Klyr App Core (56 screens, web and mobile). Items are ranked by whether they block launch. P0 items are legal, regulatory or data-licensing requirements. P1 items are product flows a real transaction needs. P2 items are design-system and quality work.</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
+  <div style="background:#1F2B27;color:#fff;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:4px"><div style="font-size:12px;font-weight:700;color:#8CC2B1;letter-spacing:.05em">P0 · BLOCKS LAUNCH</div><div style="font-size:32px;font-weight:800">8</div><div style="font-size:13px;color:#C9DDD6">Data licensing, advertising, pricing, AML, accessibility, privacy</div></div>
+  <div style="background:#fff;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:4px"><div style="font-size:12px;font-weight:700;color:#A54B00;letter-spacing:.05em">P1 · MISSING FLOWS</div><div style="font-size:32px;font-weight:800">12</div><div style="font-size:13px;color:#5E5E63">Co-buyers, condos, new builds, payments, agent handoff</div></div>
+  <div style="background:#fff;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:4px"><div style="font-size:12px;font-weight:700;color:#5E5E63;letter-spacing:.05em">P2 · QUALITY</div><div style="font-size:32px;font-weight:800">9</div><div style="font-size:13px;color:#5E5E63">Components, states, content, photography, instrumentation</div></div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+  <div style="font-size:22px;font-weight:800;letter-spacing:-.02em">Scorecard</div>
+  <div style="background:#fff;border-radius:16px;padding:4px 16px;display:flex;flex-direction:column">
+    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 110px minmax(0,2fr);gap:12px;padding:10px 0;border-bottom:.5px solid rgba(60,60,67,.16);font-size:12px;font-weight:700;color:#5E5E63;letter-spacing:.04em"><span>AREA</span><span>STATUS</span><span>MAIN GAP</span></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 110px minmax(0,2fr);gap:12px;padding:10px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Journeys and screens</strong><span style="color:#2B7A4B;font-weight:700">Ready</span><span style="color:#3A3A3C">Buy, sell, sell + buy, rent and lease out are covered end to end</span></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 110px minmax(0,2fr);gap:12px;padding:10px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Representation and forms</strong><span style="color:#2B7A4B;font-weight:700">Ready</span><span style="color:#3A3A3C">Form gates exist; needs co-signers and an audit trail</span></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 110px minmax(0,2fr);gap:12px;padding:10px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>MLS® data display</strong><span style="color:#A54B00;font-weight:700">Missing</span><span style="color:#3A3A3C">No listing brokerage on cards, no VOW terms, no result cap</span></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 110px minmax(0,2fr);gap:12px;padding:10px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Price and fee disclosure</strong><span style="color:#A54B00;font-weight:700">Partial</span><span style="color:#3A3A3C">All-in omits HST on legal fees and has no date stamp or range</span></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 110px minmax(0,2fr);gap:12px;padding:10px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>FINTRAC</strong><span style="color:#A54B00;font-weight:700">Partial</span><span style="color:#3A3A3C">Client ID only; no unrepresented-party, third-party or funds records</span></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 110px minmax(0,2fr);gap:12px;padding:10px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Accessibility</strong><span style="color:#A54B00;font-weight:700">Partial</span><span style="color:#3A3A3C">Grey text contrast, 11 px labels, no focus states, map-only info</span></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 110px minmax(0,2fr);gap:12px;padding:10px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Money movement</strong><span style="color:#A54B00;font-weight:700">Missing</span><span style="color:#3A3A3C">Deposit, payout and wire-fraud protection are placeholders</span></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 110px minmax(0,2fr);gap:12px;padding:10px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Klyr AI</strong><span style="color:#A54B00;font-weight:700">Partial</span><span style="color:#3A3A3C">Labelled and scoped; needs logging, review and data-use notice</span></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 110px minmax(0,2fr);gap:12px;padding:10px 0"><strong>Design system</strong><span style="color:#A54B00;font-weight:700">Partial</span><span style="color:#3A3A3C">Consistent look, but no documented components or interaction states</span></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+  <div style="font-size:22px;font-weight:800;letter-spacing:-.02em">P0 · Blocks launch</div>
+
+  <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong style="font-size:17px">1. MLS® data licensing and display rules</strong><span style="font-size:12px;font-weight:700;color:#2F5E53">Search · Map · Listing · Compare</span></div>
+    <div style="color:#3A3A3C;text-wrap:pretty">GTA listings come through PropTx data feeds. The brokerage has to sign a VOW Datafeed Agreement and follow the VOW rules. Sold history (used on Listing, Compare and Klyr AI) is VOW data and can only be shown behind a registered login. The rules also limit a search to 100 listings and require the listing brokerage on every listing, thumbnails included, in the same font and size.</div>
+    <div style="background:#FBEBDD;border-radius:12px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px"><strong>Change in the design</strong><span>Add "Listing brokerage: …" to search cards, map previews, compare columns and the listing header. Add VOW terms acceptance and email verification to account creation. Cap results at 100 with "Refine your search". Respect "no internet display" flags. Add board and MLS® attribution to the listing footer.</span></div>
+  </div>
+
+  <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong style="font-size:17px">2. RECO advertising rules inside the app</strong><span style="font-size:12px;font-weight:700;color:#2F5E53">Welcome · Team · Login · every listing</span></div>
+    <div style="color:#3A3A3C;text-wrap:pretty">RECO treats websites and social media as advertising. The brokerage must be identified clearly and prominently using its registered name, and agents must use their registered names and titles. Claims must be accurate and supportable.</div>
+    <div style="background:#FBEBDD;border-radius:12px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px"><strong>Change in the design</strong><span>Show "Klyr Realty Inc., Brokerage" in the app header or footer on every screen, not just onboarding. Add the RECO title to agents ("Maya Chen, Salesperson"). Drop or substantiate the positioning claim "lowest all-in cost to buy in Ontario" anywhere it appears to the public. Get written consent before showing any sold price or testimonial.</span></div>
+  </div>
+
+  <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong style="font-size:17px">3. Drip pricing and the all-in number</strong><span style="font-size:12px;font-weight:700;color:#2F5E53">All-in hero · Seller net · Pricing</span></div>
+    <div style="color:#3A3A3C;text-wrap:pretty">The Competition Act treats leaving mandatory fees out of an advertised price as misleading. The only fees that can be left out are taxes imposed by federal or provincial law, such as HST. Klyr's whole position rests on the all-in number, so it has to hold up to that test.</div>
+    <div style="background:#FBEBDD;border-radius:12px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px"><strong>Change in the design</strong><span>Add HST and disbursements to the lawyer line, and show utility and fuel adjustments. Add an "Estimate as of [date] · assumptions" link under every all-in and net figure. Show a range where inputs are unknown. Keep "$999 + HST" as written, since HST is the permitted exclusion. List any Klyr admin or transaction fees in the price itself.</span></div>
+  </div>
+
+  <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong style="font-size:17px">4. FINTRAC identity and records</strong><span style="font-size:12px;font-weight:700;color:#2F5E53">Visit · Offer · Seller prep · Deposit</span></div>
+    <div style="color:#3A3A3C;text-wrap:pretty">Since October 1, 2025, agents must also verify the identity of unrepresented parties and record a third-party determination for them. Records are kept for five years. Since March 26, 2026, the maximum penalty is $20 million for an entity.</div>
+    <div style="background:#FBEBDD;border-radius:12px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px"><strong>Change in the design</strong><span>Extend the ID flow with occupation, source of funds, a third-party question ("Are you acting for someone else?") and politically exposed person questions. Add an ID request flow for a self-represented buyer or seller on a Klyr deal. Add a receipt-of-funds record for each deposit. Add corporate buyer and beneficial ownership capture.</span></div>
+  </div>
+
+  <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong style="font-size:17px">5. Deposits and wire-fraud protection</strong><span style="font-size:12px;font-weight:700;color:#2F5E53">Deal · Errors</span></div>
+    <div style="color:#3A3A3C;text-wrap:pretty">Under Form 100, "upon acceptance" means the deposit reaches the deposit holder within 24 hours. A brokerage then has five business days to put trust money in its real estate trust account. Real estate wires are a common fraud target, and the current design sends wire details in-app with no verification.</div>
+    <div style="background:#FBEBDD;border-radius:12px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px"><strong>Change in the design</strong><span>Add a deposit screen: deposit holder, trust account verified by phone call-back, a countdown to the 24-hour deadline, an upload for the receipt, and "Klyr will never change wire details by email". Add states for deposit received and deposit in trust.</span></div>
+  </div>
+
+  <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong style="font-size:17px">6. Accessibility (AODA)</strong><span style="font-size:12px;font-weight:700;color:#2F5E53">All screens</span></div>
+    <div style="color:#3A3A3C;text-wrap:pretty">Ontario organizations with 50 or more employees must make public websites and web content meet WCAG 2.0 Level AA. Organizations with 20 or more employees file compliance reports, with the next private-sector deadline on December 31, 2026. Klyr should design to WCAG 2.2 AA regardless of size.</div>
+    <div style="background:#FBEBDD;border-radius:12px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px"><strong>Change in the design</strong><span>Replace #8E8E93 body text on white with #5E5E63 or darker. Set a 12 px minimum (11 px rule tags fail). Add visible focus rings and keyboard order. Give every map a list equivalent. Add captions and a transcript for video tours. Write alt text for photos. Label every icon button. Check 44 px touch targets on chips and steppers. Support larger text without clipping the money heroes.</span></div>
+  </div>
+
+  <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong style="font-size:17px">7. Privacy, consent and credit checks</strong><span style="font-size:12px;font-weight:700;color:#2F5E53">Account · Rental profile · Profile</span></div>
+    <div style="color:#3A3A3C;text-wrap:pretty">MLS® data agreements also bind the brokerage to PIPEDA, Canada's anti-spam law and the Do Not Call list. The app collects ID, income, credit reports and landlord references.</div>
+    <div style="background:#FBEBDD;border-radius:12px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px"><strong>Change in the design</strong><span>Add a privacy notice at account creation. Get explicit consent before each credit pull, saying who receives the report. Add a "Who can see this" control on the rental profile. Make data download and deletion real flows with retention explained. Keep marketing consent separate from service messages, as it already is.</span></div>
+  </div>
+
+  <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong style="font-size:17px">8. Klyr AI governance</strong><span style="font-size:12px;font-weight:700;color:#2F5E53">AI sheet · AI picks</span></div>
+    <div style="color:#3A3A3C;text-wrap:pretty">Klyr AI recommends lawyers, lenders and offers, and RECO holds the brokerage responsible for what clients are told. It needs the same controls as an agent's advice.</div>
+    <div style="background:#FBEBDD;border-radius:12px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px"><strong>Change in the design</strong><span>Save every AI conversation to the client file. Add "Send to Maya to confirm" on any recommendation. Block price and negotiation advice to a party in multiple representation. Show sources for every figure it cites. Show a one-time notice on what data the AI sees. Never let the AI rank providers by what Klyr earns.</span></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+  <div style="font-size:22px;font-weight:800;letter-spacing:-.02em">P1 · Flows a real transaction needs</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:10px">
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>Co-buyers and co-sellers</strong><span style="font-size:14px;color:#3A3A3C">Invite a spouse or partner. Each signs forms and verifies ID. The deal shows who still has to act.</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>Condo resale</strong><span style="font-size:14px;color:#3A3A3C">Form 101, a status-certificate condition and lawyer review, reserve fund and special assessments in the all-in, and monthly fee changes.</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>New builds and assignments</strong><span style="font-size:14px;color:#3A3A3C">Builder agreements, the cooling-off period for new condos, Tarion, HST relief eligibility, closing adjustments and occupancy fees.</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>Offer edge cases</strong><span style="font-size:14px;color:#3A3A3C">Pre-emptive offers, bully offers, a condition on the sale of the buyer's home, Schedule B, amendments (Form 120), and a buyer's offer that is not accepted.</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>Deal falls apart</strong><span style="font-size:14px;color:#3A3A3C">Conditions not met, a mutual release, deposit return, and a seller relist or buyer restart.</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>Showing system</strong><span style="font-size:14px;color:#3A3A3C">Real availability, lockbox and tenant-occupied notice, a reschedule and cancel flow, and calendar sync.</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>Listing changes</strong><span style="font-size:14px;color:#3A3A3C">Price change, extension, suspension and cancellation of the listing agreement, and terminated or relisted history.</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>Cash back payout</strong><span style="font-size:14px;color:#3A3A3C">Bank account verification, the lender disclosure letter, a receipt, and a clear path when commission is reduced or delayed.</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>Tenancy after move-in</strong><span style="font-size:14px;color:#3A3A3C">Rent receipts, N-form notices, entry requests, maintenance, renewal and the end of the tenancy.</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>Agent handoff</strong><span style="font-size:14px;color:#3A3A3C">How a consumer action shows up in Klyr Agent, agent availability, and a backup agent when Maya is away.</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>Account security</strong><span style="font-size:14px;color:#3A3A3C">Two-factor for signing and payouts, device list, session timeout, and account recovery without a passkey.</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><strong>Notifications</strong><span style="font-size:14px;color:#3A3A3C">Push permission prompt, quiet hours, SMS for deadlines inside 24 hours, and a notification for every irrevocable deadline.</span></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+  <div style="font-size:22px;font-weight:800;letter-spacing:-.02em">P2 · Design quality</div>
+  <div style="background:#fff;border-radius:16px;padding:4px 16px;display:flex;flex-direction:column">
+    <div style="padding:11px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Component library.</strong> <span style="color:#3A3A3C">Money hero, breakdown list, task row, provider quote row, rule tag, chip, toggle and stepper are repeated by hand. Document each with variants and states.</span></div>
+    <div style="padding:11px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Interaction states.</strong> <span style="color:#3A3A3C">Add hover, pressed, focus, disabled and loading for every button, plus skeletons for each data screen, not only search.</span></div>
+    <div style="padding:11px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Iconography.</strong> <span style="color:#3A3A3C">Tab bar and bell have icons; rows, documents and providers don't. Pick one icon set from the design system.</span></div>
+    <div style="padding:11px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Photography.</strong> <span style="color:#3A3A3C">Condos use house exteriors, and interiors are empty slots. Real listing photos come from the MLS® feed (up to 40 per listing on TRREB), so the gallery should be tested with 1 photo and with 40.</span></div>
+    <div style="padding:11px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Dark mode and text size.</strong> <span style="color:#3A3A3C">v1 had dark mode; v2 dropped it. Test the money heroes at the largest text size.</span></div>
+    <div style="padding:11px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Content review.</strong> <span style="color:#3A3A3C">A lawyer should review every "● Rule" note, form summary and AI disclaimer. Use one glossary (all-in, net, cash back, buyer's brokerage) everywhere.</span></div>
+    <div style="padding:11px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Languages.</strong> <span style="color:#3A3A3C">Decide whether to add French and the GTA's largest languages. Forms stay in English; plain-language summaries could be translated.</span></div>
+    <div style="padding:11px 0;border-bottom:.5px solid rgba(60,60,67,.16)"><strong>Assumptions editor.</strong> <span style="color:#3A3A3C">Let users change the rate, down payment, lawyer and first-time status in one place, with every all-in updating.</span></div>
+    <div style="padding:11px 0"><strong>Instrumentation.</strong> <span style="color:#3A3A3C">Define events for each journey step (search → visit → offer → firm → keys) so drop-off can be measured in testing.</span></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+  <div style="font-size:22px;font-weight:800;letter-spacing:-.02em">Suggested order</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px">
+    <div style="background:#1F2B27;color:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;font-weight:700;color:#8CC2B1">STEP 1 · DESIGN</span><strong>Fix P0 items 1, 2, 3 and 6 on existing screens</strong><span style="font-size:13px;color:#C9DDD6">Brokerage labels, all-in assumptions and date stamps, contrast and focus</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;font-weight:700;color:#2F5E53">STEP 2 · NEW SCREENS</span><strong>Deposit, FINTRAC, co-buyer and condo flows</strong><span style="font-size:13px;color:#5E5E63">About 10 new screens</span></div>
+    <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;font-weight:700;color:#2F5E53">STEP 3 · REVIEW</span><strong>Legal review and a component spec</strong><span style="font-size:13px;color:#5E5E63">Copy, rule notes, AI scope; handoff documentation</span></div>
+  </div>
+</div>
+
+<div style="font-size:12px;color:#8E8E93;text-wrap:pretty">Research summary for design planning, not legal advice. Sources: RECO advertising bulletins 5.1–5.3; PropTx and TRREB VOW agreement and rules; Competition Act drip-pricing amendments (2022, 2024); FINTRAC October 2025 regulations and 2026 penalty changes; AODA Integrated Accessibility Standards; OREA Form 100 and O. Reg. 567/05 trust rules.</div>
+</div>
+</x-dc>
+</body>
+</html>

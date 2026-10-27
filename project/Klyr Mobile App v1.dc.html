@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="ext-resource-dependency" content="photos/home-1.png">
+<meta name="ext-resource-dependency" content="photos/home-2.png">
+<meta name="ext-resource-dependency" content="photos/home-3.png">
+<meta name="ext-resource-dependency" content="photos/home-4.png">
+<meta name="ext-resource-dependency" content="photos/klyr-mark.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="klyr-journeys.js"></script>
+<script src="klyr-extras.js"></script>
+<script src="klyr-guided.js"></script>
+<script src="klyr-details.js"></script>
+<script src="klyr-photos-data.js"></script>
+<style>
+html,body{margin:0;-webkit-font-smoothing:antialiased;background:#1F2B27}
+*{box-sizing:border-box}
+a{color:#2F5E53}a:hover{color:#1F2B27}
+button,input{font-family:inherit;color:inherit}
+button{cursor:pointer}
+[data-theme="light"]{--bg:#F2F2F7;--card:#FFFFFF;--card2:#F5F5F8;--label:#1C1C1E;--label2:#5E5E63;--label3:#8E8E93;--sep:rgba(60,60,67,.16);--fill:rgba(118,118,128,.12);--tint:#2F5E53;--tintSoft:#E4EEEA;--onTint:#FFFFFF;--ok:#2B7A4B;--okSoft:#E3F2E8;--warn:#A54B00;--bar:rgba(249,249,249,.86)}
+[data-theme="dark"]{--bg:#000000;--card:#1C1C1E;--card2:#2C2C2E;--label:#F5F5F7;--label2:#AEAEB2;--label3:#8E8E93;--sep:rgba(84,84,88,.55);--fill:rgba(118,118,128,.24);--tint:#8CC2B1;--tintSoft:rgba(140,194,177,.16);--onTint:#0C1A16;--ok:#32D583;--okSoft:rgba(50,213,131,.14);--warn:#FF9F0A;--bar:rgba(22,22,24,.86)}
+.kr{-webkit-appearance:none;appearance:none;background:transparent;margin:0}
+.kr::-webkit-slider-runnable-track{height:28px;background:transparent}
+.kr::-moz-range-track{height:28px;background:transparent}
+.kr::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:2px;border-radius:50%;background:#fff;box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.25)}
+.kr::-moz-range-thumb{width:24px;height:24px;border:0;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.ks::-webkit-scrollbar{display:none}
+@keyframes keypop{0%{transform:scale(.4) rotate(-40deg);opacity:0}60%{transform:scale(1.08) rotate(8deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+@keyframes ringout{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.9);opacity:0}}
+@keyframes kenburns{from{transform:scale(1.02)}to{transform:scale(1.14) translate(-2%,-1%)}}
+@keyframes fadein{from{opacity:.4}to{opacity:1}}
+@keyframes grow{from{width:0}to{width:100%}}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+.kr2{-webkit-appearance:none;appearance:none;background:transparent;margin:0;width:100%}
+.kr2::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:var(--fill)}
+.kr2::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-10px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.kr2::-moz-range-thumb{width:26px;height:26px;border:0;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+@keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#2F5E53"></rect><text x="50" y="64" text-anchor="middle" font-family="Sora,sans-serif" font-size="44" font-weight="800" fill="#fff">k</text></svg></template>
+<div style="min-height:100vh;display:grid;place-items:center;padding:32px 16px;background:#1F2B27;font-family:Sora,-apple-system,system-ui,sans-serif">
+<div data-theme="{{ theme }}" style="position:relative;width:390px;height:844px;border-radius:54px;overflow:hidden;background:var(--bg);color:var(--label);font-size:17px;line-height:1.35;box-shadow:0 0 0 10px #0B0F0E,0 0 0 11px #3A4A44,0 40px 80px rgba(0,0,0,.5)">
+
+  <div style="position:absolute;top:0;left:0;right:0;height:54px;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:0 30px 0 38px;font-size:16px;font-weight:600;pointer-events:none">
+    <span>9:41</span>
+    <div style="position:absolute;left:50%;top:11px;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#000"></div>
+    <div style="display:flex;gap:6px;align-items:center"><svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"></rect><rect x="5" y="5.5" width="3" height="6.5" rx="1"></rect><rect x="10" y="3" width="3" height="9" rx="1"></rect><rect x="15" y="0" width="3" height="12" rx="1"></rect></svg><svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x=".5" y=".5" width="22" height="11" rx="3.5" stroke="currentColor" opacity=".4"></rect><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"></rect><rect x="24" y="4" width="1.5" height="4" rx=".75" fill="currentColor" opacity=".4"></rect></svg></div>
+  </div>
+
+  <sc-if value="{{ showStart }}" hint-placeholder-val="{{ true }}">
+    <div class="ks" style="position:absolute;inset:0;overflow:auto;padding:64px 16px 40px;display:grid;align-content:start;grid-template-columns:minmax(0,1fr);grid-auto-rows:max-content;gap:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px">
+        <div style="display:flex;align-items:center;gap:8px"><img src="photos/klyr-mark.png" alt="" style="width:28px;height:28px;border-radius:7px;display:block"><span style="font-size:21px;font-weight:800;letter-spacing:-.02em">Klyr</span></div>
+        <button onClick="{{ flipTheme }}" aria-label="Switch light or dark" style="width:36px;height:36px;border-radius:50%;border:0;background:var(--fill);display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"></path></svg></button>
+      </div>
+      <div style="padding:0 4px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1.06">Buy smarter with AI. Get paid at closing.</div>
+        <div style="font-size:16px;color:var(--label2)">Every Ontario step, form and professional in one app.</div>
+      </div>
+      <div class="ks" style="display:flex;gap:10px;overflow-x:auto;margin:0 -16px;padding:0 16px;scroll-snap-type:x mandatory">
+        <div style="flex:none;width:280px;scroll-snap-align:start;background:var(--tint);color:var(--onTint);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12px;font-weight:700;letter-spacing:.06em;opacity:.85">BUYING</div><div style="font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.1">Cash back at closing.</div><div style="font-size:15px;opacity:.92">60–80% of the buyer-side commission back. Up to $20,240 on a $1,150,000 home.</div></div>
+        <div style="flex:none;width:280px;scroll-snap-align:start;background:var(--card);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--tint)">SELLING</div><div style="font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.1">Sell for $999 or 1%.</div><div style="font-size:15px;color:var(--label2)">Flat or assisted listing, plus HST. Keep the difference.</div></div>
+        <div style="flex:none;width:280px;scroll-snap-align:start;background:var(--card);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--tint)">EVERY STEP</div><div style="font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.1">Offer to keys, one app.</div><div style="font-size:15px;color:var(--label2)">Forms, conditions and professionals on one timeline. Sign in one tap.</div></div>
+      </div>
+      <div style="font-size:13px;color:var(--label2);padding:0 20px;margin-bottom:-14px">START A JOURNEY</div>
+      <div style="background:var(--card);border-radius:12px;overflow:hidden">
+        <sc-for list="{{ journeys }}" as="jj" hint-placeholder-count="6">
+          <button onClick="{{ jj.pick }}" style="width:100%;border:0;background:none;display:flex;align-items:center;gap:12px;padding:10px 16px;text-align:left">
+            <div role="img" aria-label="Home photo" style="width:52px;height:52px;border-radius:10px;display:block;flex:none;background:var(--fill) center / cover no-repeat;background-image:{{ jj.photoBg }}"></div>
+            <div style="flex:1;min-width:0;padding:4px 0;border-bottom:{{ jj.bb }}"><div style="font-size:17px;font-weight:600">{{ jj.label }}</div><div style="font-size:14px;color:var(--tint);font-weight:600">{{ jj.teaser }}</div></div>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="var(--label3)" stroke-width="2" stroke-linecap="round"><path d="M1 1l6 6-6 6"></path></svg>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showApp }}" hint-placeholder-val="{{ false }}">
+    <div class="ks" style="position:absolute;inset:0;overflow:auto;padding:58px 16px 170px;display:grid;align-content:start;grid-template-columns:minmax(0,1fr);grid-auto-rows:max-content;gap:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px">
+        <button onClick="{{ home }}" style="border:0;background:none;padding:0;color:var(--tint);font-size:17px;display:flex;align-items:center;gap:4px"><svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5l-7 7 7 7"></path></svg>Journeys</button>
+        <button onClick="{{ flipTheme }}" aria-label="Switch light or dark" style="width:34px;height:34px;border-radius:50%;border:0;background:var(--fill);display:grid;place-items:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"></path></svg></button>
+      </div>
+      <div style="padding:0 4px"><div style="font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1.08">{{ title }}</div><div style="font-size:15px;color:var(--label2)">{{ m.j.addr }} · {{ m.j.priceFmt }}</div></div>
+
+      <sc-if value="{{ isDeal }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ guided }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--card);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><div style="font-size:15px;font-weight:700">{{ curShort }}</div><div style="font-size:12px;color:var(--label2);font-variant-numeric:tabular-nums;white-space:nowrap">Step {{ stepNow }} of {{ stepCount }}</div></div>
+            <div style="display:flex;gap:8px"><sc-for list="{{ phases }}" as="ph" hint-placeholder-count="3"><div style="flex:{{ ph.n }} 1 0;min-width:0;display:flex;flex-direction:column;gap:5px"><div style="font-size:11px;font-weight:700;color:{{ ph.fg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ph.l }}</div><div style="display:flex;gap:2px"><sc-for list="{{ ph.segs }}" as="g" hint-placeholder-count="4"><div style="flex:1;height:5px;border-radius:3px;background:{{ g.bg }}"></div></sc-for></div></div></sc-for></div>
+          </div>
+          <sc-if value="{{ hasNext }}" hint-placeholder-val="{{ true }}">
+              <div style="background:var(--card);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+                  <div style="font-size:13px;font-weight:700;color:var(--tint);letter-spacing:.04em;white-space:nowrap">YOUR NEXT STEP</div>
+                  <sc-if value="{{ next.hasClock }}" hint-placeholder-val="{{ false }}"><div style="white-space:nowrap;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:{{ next.clockFg }};background:{{ next.clockBg }};border-radius:999px;padding:4px 10px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{ next.clock }}</div></sc-if>
+                </div>
+                <div style="font-size:25px;font-weight:800;letter-spacing:-.025em;line-height:1.12;text-wrap:balance">{{ next.t }}</div>
+                <div style="font-size:15px;color:var(--label2);text-wrap:pretty">{{ next.why }}</div>
+
+                <sc-if value="{{ next.isHome }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:12px;background:var(--fill);border-radius:14px;padding:0 14px;height:52px">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tint)" stroke-width="1.8" stroke-linejoin="round" style="flex:none"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"></path></svg>
+                    <input value="{{ q }}" onChange="{{ setQ }}" placeholder="Describe your home" aria-label="Describe the home you want" style="flex:1;min-width:0;border:0;background:transparent;font-size:16px;outline:none;color:var(--label)">
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ sugg }}" as="sg" hint-placeholder-count="3"><button onClick="{{ sg.go }}" style="border:0;border-radius:999px;padding:6px 14px;background:var(--tintSoft);color:var(--tint);font-size:14px;font-weight:600">{{ sg.t }}</button></sc-for></div>
+                  <sc-if value="{{ ui.hasFeat }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:grid;grid-template-columns:minmax(0,1fr);background:var(--card2);border-radius:20px;overflow:hidden">
+                      <button onClick="{{ ui.feat.open }}" aria-label="Take the tour" style="position:relative;border:0;padding:0;background:#000;display:block;min-height:200px">
+                        <div role="img" aria-label="Home photo" style="position:absolute;inset:0;width:100%;height:100%;display:block;background:var(--fill) center / cover no-repeat;background-image:{{ ui.feat.photoBg }}"></div>
+                        <div style="position:absolute;top:14px;left:14px;background:var(--tint);color:var(--onTint);font-size:12px;font-weight:800;letter-spacing:.03em;border-radius:999px;padding:5px 11px">KLYR AI TOP PICK</div>
+                        <div style="position:absolute;left:14px;bottom:14px;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;font-size:13px;font-weight:600;border-radius:999px;padding:7px 13px"><svg width="10" height="10" viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v11a.8.8 0 0 0 1.2.7l9-5.5a.8.8 0 0 0 0-1.4l-9-5.5A.8.8 0 0 0 3 1.5z"></path></svg>Take the tour</div>
+                      </button>
+                      <div style="padding:22px;display:flex;flex-direction:column;gap:12px">
+                        <div><div style="font-size:26px;font-weight:900;letter-spacing:-.03em;line-height:1.05">{{ ui.feat.priceFmt }}</div><div style="font-size:17px;font-weight:700;margin-top:4px">{{ ui.feat.addr }}</div><div style="font-size:14px;color:var(--label2)">{{ ui.feat.area }} · {{ ui.feat.meta }}</div></div>
+                        <div style="display:flex;flex-direction:column;gap:6px">
+                          <sc-for list="{{ ui.feat.reasons }}" as="r" hint-placeholder-count="2"><div style="display:flex;gap:8px;align-items:flex-start;font-size:14px"><svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="var(--tint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:3px"><path d="M2.5 6.5l2.3 2.3L9.5 3.5"></path></svg><span style="text-wrap:pretty">{{ r.t }}</span></div></sc-for>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div style="font-size:13px;font-weight:700;color:var(--tint);background:var(--tintSoft);border-radius:999px;padding:4px 10px">{{ ui.feat.cb }}</div><div style="font-size:12px;color:var(--label2)">{{ ui.feat.domLabel }}</div></div>
+                        <sc-if value="{{ ui.feat.booked }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;font-weight:600;color:var(--ok);background:var(--okSoft);border-radius:10px;padding:8px 12px">Visit booked · {{ ui.feat.bookedLabel }}</div></sc-if>
+                        <div style="margin-top:auto;display:flex;gap:8px;flex-wrap:wrap">
+                          <sc-if value="{{ ui.feat.notBooked }}" hint-placeholder-val="{{ true }}"><button onClick="{{ ui.feat.openPicker }}" style="flex:1;border:0;border-radius:12px;height:46px;padding:0 16px;background:var(--fill);font-weight:600;font-size:15px;white-space:nowrap">Book a visit</button></sc-if>
+                          <button onClick="{{ ui.feat.choose }}" style="flex:1;border:0;border-radius:12px;height:46px;padding:0 16px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:15px;white-space:nowrap">I want this one</button>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:10px">
+                    <sc-for list="{{ ui.more }}" as="L" hint-placeholder-count="2">
+                      <div style="background:var(--card2);border-radius:16px;overflow:hidden;display:flex;gap:12px;align-items:stretch">
+                        <button onClick="{{ L.open }}" aria-label="View home details" style="border:0;padding:0;background:none;flex:none;width:110px"><div role="img" aria-label="Home photo" style="width:110px;height:100%;min-height:110px;display:block;background:var(--fill) center / cover no-repeat;background-image:{{ L.photoBg }}"></div></button>
+                        <div style="padding:12px 12px 12px 0;display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
+                          <div style="font-size:17px;font-weight:800">{{ L.priceFmt }}</div>
+                          <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ L.addr }}</div>
+                          <div style="font-size:12px;color:var(--label2)">{{ L.meta }}</div>
+                          <div style="margin-top:auto;padding-top:8px;display:flex;gap:6px">
+                            <sc-if value="{{ L.notBooked }}" hint-placeholder-val="{{ true }}"><button onClick="{{ L.openPicker }}" style="border:0;border-radius:9px;height:34px;padding:0 12px;background:var(--fill);font-weight:600;font-size:13px;white-space:nowrap">Book a visit</button></sc-if>
+                            <sc-if value="{{ L.booked }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;font-weight:700;color:var(--ok);align-self:center">✓ {{ L.bookedLabel }}</div></sc-if>
+                            <button onClick="{{ L.choose }}" style="margin-left:auto;border:0;border-radius:9px;height:34px;padding:0 12px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:13px;white-space:nowrap">I want it</button>
+                          </div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ ui.hasVisits }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">YOUR VISITS</div>
+                    <div style="background:var(--card2);border-radius:14px;overflow:hidden">
+                      <sc-for list="{{ ui.visits }}" as="v" hint-placeholder-count="2">
+                        <button onClick="{{ v.open }}" style="width:100%;border:0;background:none;text-align:left;display:flex;gap:12px;align-items:center;padding:10px 14px;border-top:{{ v.bt }}"><div role="img" aria-label="Home photo" style="width:40px;height:40px;border-radius:9px;flex:none;background:var(--fill) center / cover no-repeat;background-image:{{ v.photoBg }}"></div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">{{ v.addr }}</div><div style="font-size:13px;color:var(--label2)">{{ v.slot }} · with Maya Chen</div></div><div style="font-size:12px;font-weight:700;color:var(--ok)">Reminder on</div></button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <button onClick="{{ goSearch }}" style="align-self:flex-start;border:0;background:none;color:var(--tint);font-size:15px;font-weight:600;padding:0">See all {{ ui.nAll }} homes ›</button>
+                </sc-if>
+                <sc-if value="{{ next.isOffer }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px;background:var(--card2);border-radius:14px;padding:14px">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">YOUR OFFER</div><div style="font-size:13px;font-weight:700;color:{{ ui.chanceFg }};background:{{ ui.chanceBg }};border-radius:999px;padding:4px 10px">Klyr AI: {{ ui.chance }}</div></div>
+                    <div style="font-size:36px;font-weight:900;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums">{{ ui.offerFmt }}</div>
+                    <input class="kr2" type="range" min="{{ ui.min }}" max="{{ ui.max }}" step="5000" value="{{ ui.offer }}" onChange="{{ ui.setOffer }}" aria-label="Offer price">
+                    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--label2)"><span>{{ ui.minFmt }}</span><span>Asking {{ ui.askFmt }}</span><span>{{ ui.maxFmt }}</span></div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+                      <div style="background:var(--card);border-radius:12px;padding:12px"><div style="font-size:12px;color:var(--label2)">Deposit (5%)</div><div style="font-size:18px;font-weight:800">{{ ui.depFmt }}</div></div>
+                      <div style="background:var(--tintSoft);border-radius:12px;padding:12px"><div style="font-size:12px;color:var(--tint)">Your cash back</div><div style="font-size:18px;font-weight:800;color:var(--tint)">{{ ui.cbFmt }}</div></div>
+                      <div style="background:var(--card);border-radius:12px;padding:12px"><div style="font-size:12px;color:var(--label2)">Move-in</div><div style="font-size:18px;font-weight:800">{{ ui.closeFmt }}</div></div>
+                    </div>
+                    <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">WHEN DO YOU WANT TO MOVE IN?</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ ui.closes }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.pick }}" style="border:0;border-radius:999px;padding:8px 16px;font-size:14px;font-weight:600;background:{{ c.bg }};color:{{ c.fg }}">{{ c.t }}</button></sc-for></div>
+                    <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">SAFETY CHECKS</div>
+                    <div style="background:var(--card);border-radius:12px;overflow:hidden">
+                      <sc-for list="{{ ui.safe }}" as="d" hint-placeholder-count="2">
+                        <div style="display:flex;gap:12px;align-items:center;padding:12px 14px;border-top:{{ d.bt }}"><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">{{ d.t }}</div><div style="font-size:13px;color:var(--label2)">{{ d.sub }}</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><sc-for list="{{ d.days }}" as="dd" hint-placeholder-count="2"><button onClick="{{ dd.pick }}" style="border:{{ dd.bd }};border-radius:999px;padding:4px 12px;background:{{ dd.bg }};color:{{ dd.fg }};font-size:13px;font-weight:600">{{ dd.t }}</button></sc-for></div></div><button onClick="{{ d.toggle }}" role="switch" aria-checked="{{ d.on }}" aria-label="{{ d.t }}" style="position:relative;width:51px;height:31px;border-radius:16px;border:0;background:{{ d.bg }};flex:none;transition:background .2s"><span style="position:absolute;top:2px;left:{{ d.x }}px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:left .2s"></span></button></div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ next.isDeposit }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px;background:var(--card2);border-radius:14px;padding:14px">
+                    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">AMOUNT</div><div style="font-size:32px;font-weight:900;letter-spacing:-.04em">{{ ui.depFmt }}</div></div><div style="text-align:right"><div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">PAID TO</div><div style="font-size:15px;font-weight:600">Seller’s brokerage trust account</div><div style="font-size:13px;color:var(--label2)">Credited to you at closing</div></div></div>
+                    <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">HOW DO YOU WANT TO PAY?</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+                      <sc-for list="{{ ui.methods }}" as="d" hint-placeholder-count="3">
+                        <button onClick="{{ d.pick }}" style="border:{{ d.bd }};background:{{ d.bg }};border-radius:14px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:700">{{ d.t }}</span><span style="font-size:12px;color:var(--label2)">{{ d.sub }}</span></button>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ next.isDocs }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px;background:var(--card2);border-radius:14px;padding:14px">
+                    <div style="display:flex;gap:6px">
+                      <sc-for list="{{ ui.track }}" as="d" hint-placeholder-count="4">
+                        <div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:6px;border-radius:3px;background:{{ d.bg }}"></div><div style="font-size:12px;font-weight:{{ d.fw }};color:{{ d.fg }}">{{ d.t }}</div></div>
+                      </sc-for>
+                    </div>
+                    <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">PAPERS {{ ui.lender }} NEEDS · {{ ui.docsDone }} OF {{ ui.docsAll }}</div>
+                    <div style="background:var(--card);border-radius:12px;overflow:hidden">
+                      <sc-for list="{{ ui.docs }}" as="d" hint-placeholder-count="4">
+                        <div style="display:flex;gap:12px;align-items:center;padding:12px 14px;border-top:{{ d.bt }}"><div style="width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;background:{{ d.dotBg }};border:{{ d.dotBd }};color:var(--onTint)"><sc-if value="{{ d.on }}" hint-placeholder-val="{{ false }}"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.5"></path></svg></sc-if></div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">{{ d.t }}</div><div style="font-size:12px;color:var(--label2)">{{ d.sub }}</div></div>
+                          <sc-if value="{{ d.off }}" hint-placeholder-val="{{ true }}"><button onClick="{{ d.toggle }}" style="border:0;border-radius:999px;padding:6px 14px;background:var(--tintSoft);color:var(--tint);font-size:13px;font-weight:700">Upload</button></sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <sc-if value="{{ ui.docsMissing }}" hint-placeholder-val="{{ true }}"><div style="font-size:14px;color:var(--label2)">Upload everything and your lender can approve you.</div></sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ next.isSign }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px;background:var(--card2);border-radius:14px;padding:14px">
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap"><div style="font-size:16px;font-weight:700">{{ ui.formName }}</div><div style="font-size:12px;color:var(--label2)">Goes to {{ ui.formTo }}</div></div>
+                    <div style="background:var(--card);border-radius:12px;padding:14px;font-size:15px;line-height:1.5;text-wrap:pretty"><span style="font-size:11px;font-weight:800;color:var(--tint);letter-spacing:.05em">IN PLAIN WORDS · </span>{{ ui.formPlain }}</div>
+                    <input value="{{ sigName }}" onChange="{{ setSig }}" aria-label="Type your full name to sign" style="height:50px;border-radius:12px;border:.5px solid var(--sep);background:var(--card);padding:0 14px;font-size:22px;font-style:italic;font-family:'Snell Roundhand','Segoe Script',cursive;outline:none">
+                    <div style="font-size:12px;color:var(--label3)">Typing your name signs the form. We record the date, time and device.</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ next.isSlots }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px;background:var(--card2);border-radius:14px;padding:14px">
+                    <sc-if value="{{ ui.hasMode }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;background:var(--fill);border-radius:10px;padding:2px;gap:2px;align-self:flex-start"><sc-for list="{{ ui.modes }}" as="d" hint-placeholder-count="2"><button onClick="{{ d.pick }}" style="border:0;border-radius:8px;padding:7px 16px;font-size:14px;font-weight:600;background:{{ d.bg }};box-shadow:{{ d.sh }}">{{ d.t }}</button></sc-for></div>
+                    </sc-if>
+                    <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">{{ ui.slotTitle }}</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px"><sc-for list="{{ ui.slots }}" as="d" hint-placeholder-count="4"><button onClick="{{ d.pick }}" style="border:{{ d.bd }};background:{{ d.bg }};border-radius:12px;padding:12px;font-size:14px;font-weight:600">{{ d.t }}</button></sc-for></div>
+                    <sc-if value="{{ ui.hasBring }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">BRING WITH YOU</div>
+                      <div style="background:var(--card);border-radius:12px;overflow:hidden"><sc-for list="{{ ui.bring }}" as="d" hint-placeholder-count="3"><div style="display:flex;justify-content:space-between;gap:10px;padding:11px 14px;border-top:{{ d.bt }};font-size:14px"><span>{{ d.t }}</span><span style="font-weight:700;font-variant-numeric:tabular-nums">{{ d.v }}</span></div></sc-for></div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ next.isReport }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px;background:var(--card2);border-radius:14px;padding:14px">
+                    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">{{ ui.repTitle }}</div><div style="font-size:12px;color:var(--label2)">{{ ui.repBy }}</div></div>
+                    <div style="background:var(--card);border-radius:12px;overflow:hidden">
+                      <sc-for list="{{ ui.findings }}" as="d" hint-placeholder-count="4">
+                        <div style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-top:{{ d.bt }}"><div style="width:10px;height:10px;border-radius:50%;background:{{ d.dot }};margin-top:6px;flex:none"></div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">{{ d.t }}</div><div style="font-size:13px;color:var(--label2)">{{ d.sub }}</div></div><div style="font-size:12px;font-weight:700;color:{{ d.dot }};white-space:nowrap">{{ d.tag }}</div></div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ next.isLock }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px;background:var(--card2);border-radius:14px;padding:14px">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+                      <sc-for list="{{ ui.lockOpts }}" as="d" hint-placeholder-count="3">
+                        <button onClick="{{ d.pick }}" style="border:{{ d.bd }};background:{{ d.bg }};border-radius:14px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:700">{{ d.t }}</span><span style="font-size:13px;color:var(--label2)">{{ d.sub }}</span></button>
+                      </sc-for>
+                    </div>
+                    <sc-if value="{{ ui.lockSign }}" hint-placeholder-val="{{ true }}">
+                      <div style="background:var(--card);border-radius:12px;padding:14px;font-size:15px;line-height:1.5"><span style="font-size:11px;font-weight:800;color:var(--tint);letter-spacing:.05em">IN PLAIN WORDS · </span>You remove your last safety check. The purchase becomes final at {{ ui.offerFmt }}.</div>
+                      <input value="{{ sigName }}" onChange="{{ setSig }}" aria-label="Type your full name to sign" style="height:50px;border-radius:12px;border:.5px solid var(--sep);background:var(--card);padding:0 14px;font-size:22px;font-style:italic;font-family:'Snell Roundhand','Segoe Script',cursive;outline:none">
+                    </sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ next.isList }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px;background:var(--card2);border-radius:14px;padding:14px">
+                    <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">{{ ui.listTitle }}</div>
+                    <div style="background:var(--card);border-radius:12px;overflow:hidden"><sc-for list="{{ ui.list }}" as="d" hint-placeholder-count="4"><div style="display:flex;gap:12px;align-items:center;padding:12px 14px;border-top:{{ d.bt }}"><div style="width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;background:{{ d.dotBg }};border:{{ d.dotBd }};color:var(--onTint)"><sc-if value="{{ d.on }}" hint-placeholder-val="{{ false }}"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.5"></path></svg></sc-if></div><div style="flex:1;font-size:15px">{{ d.t }}</div><div style="font-size:14px;font-weight:700;font-variant-numeric:tabular-nums">{{ d.v }}</div></div></sc-for></div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ next.isQuotes }}" hint-placeholder-val="{{ false }}">
+                  <sc-if value="{{ ui.notAsked }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-direction:column;gap:14px;background:var(--card2);border-radius:14px;padding:14px">
+                      <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">WHO SHOULD SEND YOU A QUOTE? · {{ ui.nSel }} PICKED</div>
+                      <div style="background:var(--card);border-radius:12px;overflow:hidden">
+                        <sc-for list="{{ ui.pickList }}" as="d" hint-placeholder-count="4">
+                          <button onClick="{{ d.toggle }}" style="width:100%;border:0;background:none;text-align:left;display:flex;gap:12px;align-items:center;padding:12px 14px;border-top:{{ d.bt }}">
+                            <div style="width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;background:{{ d.dotBg }};border:{{ d.dotBd }};color:var(--onTint)"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.5"></path></svg></div>
+                            <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">{{ d.name }}</div><div style="font-size:13px;color:var(--label2)">{{ d.kind }}</div></div>
+                            <div style="font-size:13px;color:var(--label2);white-space:nowrap;flex:none">★ {{ d.rating }}</div>
+                          </button>
+                        </sc-for>
+                      </div>
+                      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+                        <button onClick="{{ ui.ask }}" style="border:0;border-radius:14px;flex:1;height:50px;padding:0 18px;white-space:nowrap;background:var(--tint);color:var(--onTint);font-weight:700;font-size:17px">Ask for {{ ui.nSel }} quotes</button>
+                        <div style="font-size:13px;color:var(--label2)">For a {{ ui.loanFmt }} mortgage · 5-year fixed · 25 years</div>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ ui.asked }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:12px">
+                      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">YOUR QUOTES · {{ ui.loanFmt }}</div><button onClick="{{ ui.edit }}" style="flex:none;white-space:nowrap;border:0;background:none;color:var(--tint);font-size:14px;font-weight:600;padding:0">Change advisors</button></div>
+                      <sc-for list="{{ ui.quotes }}" as="q" hint-placeholder-count="3">
+                        <div style="border:{{ q.bd }};background:var(--card);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+                          <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+                            <div style="flex:1 1 180px;min-width:0">
+                              <sc-if value="{{ q.best }}" hint-placeholder-val="{{ false }}"><div style="display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--onTint);background:var(--tint);border-radius:999px;padding:3px 9px;margin-bottom:6px">KLYR AI BEST FIT</div></sc-if>
+                              <div style="font-size:17px;font-weight:700">{{ q.name }}</div>
+                              <div style="font-size:13px;color:var(--label2)">{{ q.kind }} · {{ q.who }}</div>
+                            </div>
+                            <div style="text-align:right">
+                              <div style="display:flex;align-items:baseline;gap:8px;justify-content:flex-end"><sc-if value="{{ q.isMatched }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;color:var(--ok);background:var(--okSoft);border-radius:999px;padding:2px 8px">Matched</span></sc-if><span style="font-size:30px;font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums">{{ q.rateFmt }}</span></div>
+                              <div style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums">{{ q.monthly }}/mo</div>
+                            </div>
+                          </div>
+                          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+                            <div style="background:var(--card2);border-radius:10px;padding:8px 10px"><div style="font-size:11px;color:var(--label2)">Cost vs lowest</div><div style="font-size:14px;font-weight:700;color:{{ q.saveFg }}">{{ q.save }}</div></div>
+                            <div style="background:var(--card2);border-radius:10px;padding:8px 10px"><div style="font-size:11px;color:var(--label2)">Extra payments</div><div style="font-size:14px;font-weight:700">{{ q.prepayFmt }}</div></div>
+                            <div style="background:var(--card2);border-radius:10px;padding:8px 10px"><div style="font-size:11px;color:var(--label2)">Approval in</div><div style="font-size:14px;font-weight:700">{{ q.daysFmt }}</div></div>
+                          </div>
+                          <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <button onClick="{{ q.call }}" style="border:0;border-radius:10px;height:40px;padding:0 14px;background:var(--fill);font-size:14px;font-weight:600;white-space:nowrap">{{ q.callLabel }}</button>
+                            <sc-if value="{{ q.canMatch }}" hint-placeholder-val="{{ false }}"><button onClick="{{ q.askMatch }}" style="border:0;border-radius:10px;height:40px;padding:0 14px;background:var(--tintSoft);color:var(--tint);font-size:14px;font-weight:700;white-space:nowrap">Ask to beat the lowest rate</button></sc-if>
+                            <button onClick="{{ q.choose }}" style="margin-left:auto;border:0;border-radius:10px;height:40px;padding:0 18px;background:var(--tint);color:var(--onTint);font-size:14px;font-weight:700;white-space:nowrap">Choose</button>
+                          </div>
+                        </div>
+                      </sc-for>
+                      <div style="display:flex;gap:10px;align-items:flex-start;background:var(--tintSoft);border-radius:14px;padding:12px 14px"><div style="font-size:12px;font-weight:800;color:var(--tint);letter-spacing:.04em;white-space:nowrap;padding-top:2px">KLYR AI</div><div style="font-size:14px;text-wrap:pretty">{{ ui.aiQ }}</div></div>
+                    </div>
+                  </sc-if>
+                </sc-if>
+                <sc-if value="{{ next.hasOpts }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:4px">
+                    <sc-for list="{{ next.opts }}" as="o" hint-placeholder-count="3">
+                      <div style="border:{{ o.bd }};border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:4px;position:relative">
+                        <sc-if value="{{ o.rec }}" hint-placeholder-val="{{ false }}"><div style="align-self:flex-start;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--onTint);background:var(--tint);border-radius:999px;padding:2px 8px;margin-bottom:4px">KLYR AI PICK</div></sc-if>
+                        <div style="display:flex;justify-content:space-between;gap:6px"><span style="font-size:16px;font-weight:700">{{ o.name }}</span><span style="font-size:13px;color:var(--label2);white-space:nowrap">★ {{ o.rating }}</span></div>
+                        <div style="font-size:13px;color:var(--label2)">{{ o.meta }}</div>
+                        <div style="font-size:17px;font-weight:700;margin-top:4px">{{ o.price }}</div>
+                        <div style="font-size:13px;color:var(--label2);margin-bottom:10px">{{ o.stat }}</div>
+                        <button onClick="{{ o.pick }}" style="margin-top:auto;border:0;border-radius:12px;height:44px;background:{{ o.btnBg }};color:{{ o.btnFg }};font-weight:700;font-size:15px">Connect</button>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+                  <sc-if value="{{ next.hasBtn }}" hint-placeholder-val="{{ true }}"><button onClick="{{ next.run }}" style="border:0;border-radius:14px;flex:1;height:50px;padding:0 18px;white-space:nowrap;background:var(--tint);color:var(--onTint);font-weight:700;font-size:17px">{{ next.btn }}</button></sc-if>
+                  <sc-if value="{{ next.hasAlt }}" hint-placeholder-val="{{ false }}"><button onClick="{{ next.altRun }}" style="border:0;border-radius:14px;flex:1;height:50px;padding:0 18px;white-space:nowrap;background:var(--fill);font-weight:600;font-size:17px">{{ next.alt }}</button></sc-if>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start;border-top:.5px solid var(--sep);padding-top:14px;margin-top:4px">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--tint)" stroke-width="1.8" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"></path></svg>
+                  <div style="font-size:15px;text-wrap:pretty"><span style="font-weight:700;color:var(--tint)">Klyr AI tip. </span><span style="color:var(--label2)">{{ next.tip }}</span></div>
+                </div>
+              </div>
+            </sc-if>
+          <sc-if value="{{ allDone }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openKeys }}" style="border:0;text-align:left;background:var(--tint);color:var(--onTint);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><div style="font-size:24px;font-weight:800">{{ m.keys.title }}</div><div style="font-size:14px;opacity:.9">{{ m.keys.sub }}</div></button></sc-if>
+          <sc-if value="{{ hasPlan }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--card);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <div><div style="font-size:12px;font-weight:700;color:var(--tint);letter-spacing:.05em">DAY BY DAY</div><div style="font-size:20px;font-weight:800;letter-spacing:-.02em">Your plan to closing</div><div style="font-size:13px;color:var(--label2);text-wrap:pretty">{{ dplan.sub }}</div></div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <sc-for list="{{ dplan.items }}" as="r" hint-placeholder-count="8">
+                  <div style="display:grid;grid-template-columns:74px 12px minmax(0,1fr);gap:10px;padding:8px 10px;border-radius:12px;background:{{ r.rowBg }}">
+                    <div><div style="font-size:13px;font-weight:700;color:{{ r.fg }};white-space:nowrap">{{ r.date }}</div><div style="font-size:11px;color:var(--label2)">{{ r.day }}</div></div>
+                    <div style="width:12px;height:12px;border-radius:50%;margin-top:3px;background:{{ r.dotBg }};border:{{ r.dotBd }};box-sizing:border-box"></div>
+                    <div style="min-width:0"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span style="font-size:14px;font-weight:{{ r.fw }};color:{{ r.fg }}">{{ r.t }}</span><sc-if value="{{ r.isDl }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;letter-spacing:.04em;color:var(--warn);background:var(--warnSoft);border-radius:999px;padding:2px 7px">DEADLINE</span></sc-if></div><div style="font-size:12px;color:var(--label2);text-wrap:pretty">{{ r.sub }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </sc-if>
+        <sc-if value="{{ notGuided }}" hint-placeholder-val="{{ true }}">
+        <div style="background:var(--card);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <button onClick="{{ togglePlay }}" aria-label="Play timeline" style="width:40px;height:40px;border-radius:50%;border:0;background:var(--tint);color:var(--onTint);display:grid;place-items:center;flex:none">
+              <sc-if value="{{ playing }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="2" y="1" width="3.5" height="12" rx="1"></rect><rect x="8.5" y="1" width="3.5" height="12" rx="1"></rect></svg></sc-if>
+              <sc-if value="{{ paused }}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v11a.8.8 0 0 0 1.2.7l9-5.5a.8.8 0 0 0 0-1.4l-9-5.5A.8.8 0 0 0 3 1.5z"></path></svg></sc-if>
+            </button>
+            <div style="flex:1"><div style="font-size:19px;font-weight:700;font-variant-numeric:tabular-nums">{{ m.date }}</div><div style="font-size:13px;color:var(--label2)">{{ m.dayLabel }}</div></div>
+            <div style="font-size:13px;font-weight:600;color:var(--tint)">{{ m.stage.n }} / {{ m.stage.of }}</div>
+          </div>
+          <div style="position:relative;height:28px">
+            <div style="position:absolute;left:0;right:0;top:11px;display:flex;gap:3px"><sc-for list="{{ stages }}" as="s" hint-placeholder-count="8"><div style="flex:1;height:6px;border-radius:3px;background:var(--fill);overflow:hidden"><div style="height:100%;width:{{ s.fill }}%;background:var(--tint)"></div></div></sc-for></div>
+            <input class="kr" type="range" min="0" max="{{ vMax }}" step="1" value="{{ v }}" onChange="{{ scrub }}" aria-label="Deal timeline" style="position:absolute;inset:0;width:100%;height:28px">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:22px;font-weight:800;letter-spacing:-.02em">{{ m.stage.l }}</div><div style="font-size:15px;color:var(--label2)">{{ m.stage.sub }}</div></div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ m.hasUsp }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ goCosts }}" style="border:0;text-align:left;background:var(--tint);color:var(--onTint);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:2px">
+            <div style="font-size:12px;font-weight:700;letter-spacing:.05em;opacity:.9">{{ m.usp.kicker }}</div>
+            <div style="font-size:36px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums">{{ m.usp.amt }}</div>
+            <div style="font-size:14px;opacity:.92">{{ m.usp.sub }}</div>
+          </button>
+        </sc-if>
+        <sc-if value="{{ m.done }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ openKeys }}" style="border:0;text-align:left;background:var(--tint);color:var(--onTint);border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="15" r="4"></circle><path d="M11 12l9-9M17 6l3 3M15 8l2 2"></path></svg><div style="flex:1"><div style="font-size:17px;font-weight:700">{{ m.keys.title }}</div><div style="font-size:14px;opacity:.9">Tap to replay the handover</div></div></button>
+        </sc-if>
+
+        <sc-if value="{{ hasAi }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:13px;color:var(--label2);padding:0 16px;display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tint)" stroke-width="1.8" stroke-linejoin="round" style="flex:none"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"></path></svg>KLYR AI INSIGHTS</div>
+            <div class="ks" style="display:flex;gap:10px;overflow-x:auto;margin:0 -16px;padding:0 16px;scroll-snap-type:x mandatory">
+              <sc-for list="{{ ai }}" as="x" hint-placeholder-count="3"><div style="flex:none;width:280px;scroll-snap-align:start;background:var(--card);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><div style="font-size:16px;font-weight:700">{{ x.t }}</div><div style="font-size:14px;color:var(--label2)">{{ x.b }}</div></div></sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasSave }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ goCosts }}" style="border:0;text-align:left;background:var(--okSoft);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px"><div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--ok);letter-spacing:.04em">SAVINGS KLYR FOUND</div><div style="font-size:28px;font-weight:800;letter-spacing:-.02em;color:var(--ok)">{{ saveTotal }}</div></div><div style="font-size:13px;font-weight:600;color:var(--ok)">{{ saveDone }} of {{ saveAll }} in place ›</div></button>
+        </sc-if>
+        <sc-if value="{{ hasAppts }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:13px;color:var(--label2);padding:0 16px">UPCOMING · REMINDERS ON</div><div style="background:var(--card);border-radius:12px;overflow:hidden"><sc-for list="{{ appts }}" as="r" hint-placeholder-count="2"><div style="display:flex;gap:12px;align-items:center;padding:10px 16px;border-top:{{ r.bt }}"><div style="width:42px;flex:none;text-align:center;background:var(--tintSoft);color:var(--tint);border-radius:9px;padding:5px 0;font-size:11px;font-weight:800">{{ r.day }}</div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">{{ r.t }}</div><div style="font-size:12px;color:var(--label2)">{{ r.sub }}</div></div><button onClick="{{ r.toggle }}" role="switch" aria-checked="{{ r.on }}" aria-label="Toggle" style="position:relative;width:51px;height:31px;border-radius:16px;border:0;background:{{ r.bg }};flex:none;transition:background .2s"><span style="position:absolute;top:2px;left:{{ r.x }}px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:left .2s"></span></button></div></sc-for></div></div>
+        </sc-if>
+        <sc-if value="{{ hasAfter }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:13px;color:var(--label2);padding:0 16px">{{ afterTitle }}</div><div style="background:var(--card);border-radius:12px;overflow:hidden"><sc-for list="{{ after }}" as="r" hint-placeholder-count="4"><div style="display:flex;gap:12px;align-items:center;padding:10px 16px;border-top:{{ r.bt }}"><div style="width:42px;flex:none;text-align:center;background:var(--tintSoft);color:var(--tint);border-radius:9px;padding:5px 0;font-size:11px;font-weight:800">{{ r.day }}</div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">{{ r.t }}</div><div style="font-size:12px;color:var(--label2)">{{ r.sub }}</div></div><button onClick="{{ r.toggle }}" role="switch" aria-checked="{{ r.on }}" aria-label="Toggle" style="position:relative;width:51px;height:31px;border-radius:16px;border:0;background:{{ r.bg }};flex:none;transition:background .2s"><span style="position:absolute;top:2px;left:{{ r.x }}px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:left .2s"></span></button></div></sc-for></div></div>
+        </sc-if>
+        <sc-if value="{{ isPlanner }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--card);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:12px;font-weight:700;color:var(--tint);letter-spacing:.05em">FROM RENTING TO OWNING</div>
+            <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.15">You could buy by {{ plan.date }}</div>
+            <div style="font-size:14px;color:var(--label2)">{{ plan.sub }}</div>
+            <div style="height:8px;border-radius:4px;background:var(--fill);overflow:hidden"><div style="height:100%;width:{{ plan.pct }}%;background:var(--tint)"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--label2)"><span>Saved {{ plan.haveFmt }}</span><span>Needed {{ plan.needFmt }}</span></div>
+            <sc-for list="{{ plan.sliders }}" as="x" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:8px;padding-top:4px"><div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--label2)">{{ x.t }}</span><span style="font-weight:700">{{ x.fmt }}</span></div><input class="kr2" type="range" min="{{ x.min }}" max="{{ x.max }}" step="{{ x.step }}" value="{{ x.v }}" onChange="{{ x.set }}" aria-label="{{ x.t }}"></div></sc-for>
+            <div style="display:flex;gap:12px;align-items:center;border-top:.5px solid var(--sep);padding-top:10px"><div style="flex:1;font-size:15px">Use an FHSA</div><button onClick="{{ plan.fhsa.toggle }}" role="switch" aria-checked="{{ plan.fhsa.on }}" aria-label="Toggle" style="position:relative;width:51px;height:31px;border-radius:16px;border:0;background:{{ plan.fhsa.bg }};flex:none;transition:background .2s"><span style="position:absolute;top:2px;left:{{ plan.fhsa.x }}px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:left .2s"></span></button></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><sc-for list="{{ plan.lines }}" as="x" hint-placeholder-count="4"><div style="background:var(--card2);border-radius:12px;padding:10px 12px"><div style="font-size:11px;color:var(--label2)">{{ x.k }}</div><div style="font-size:17px;font-weight:800">{{ x.v }}</div></div></sc-for></div>
+            <div style="font-size:13px;background:var(--tintSoft);border-radius:12px;padding:10px 12px"><span style="font-weight:800;color:var(--tint);font-size:11px;letter-spacing:.04em">KLYR AI · </span>{{ plan.tip }}</div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:13px;color:var(--label2);padding:0 16px">WHO’S ON IT NOW</div>
+          <div style="background:var(--card);border-radius:12px;overflow:hidden">
+            <sc-for list="{{ activeParties }}" as="p" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:{{ p.bt }}"><div style="width:32px;height:32px;border-radius:50%;background:var(--tintSoft);color:var(--tint);font-size:12px;font-weight:700;display:grid;place-items:center;flex:none">{{ p.initials }}</div><div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:600">{{ p.name }}</div><div style="font-size:14px;color:var(--label2)">{{ p.task }}</div></div></div>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{ notGuided }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:13px;color:var(--label2);padding:0 16px">CONDITIONS</div>
+          <sc-for list="{{ conds }}" as="c" hint-placeholder-count="2">
+            <div style="background:var(--card);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;margin-bottom:8px">
+              <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:17px;font-weight:600">{{ c.name }}</div><div style="font-size:14px;font-weight:600;color:{{ c.color }};white-space:nowrap">{{ c.label }}</div></div>
+              <div style="height:6px;border-radius:3px;background:var(--fill);overflow:hidden"><div style="height:100%;width:{{ c.pct }}%;background:{{ c.color }};transition:width .3s"></div></div>
+              <div style="font-size:13px;color:var(--label2)">Deadline {{ c.deadline }}</div>
+              <sc-if value="{{ c.canAct }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button onClick="{{ c.fulfil }}" style="border:0;border-radius:12px;height:44px;background:var(--tint);color:var(--onTint);font-weight:600;font-size:16px">Fulfilled</button><button onClick="{{ c.waive }}" style="border:0;border-radius:12px;height:44px;background:var(--fill);font-weight:600;font-size:16px">Waive</button></div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:13px;color:var(--label2);padding:0 16px">{{ readyTitle }}</div>
+          <div style="background:var(--card);border-radius:12px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px">
+              <div style="position:relative;width:60px;height:60px;flex:none"><svg width="60" height="60" viewBox="0 0 84 84" style="transform:rotate(-90deg)"><circle cx="42" cy="42" r="34" fill="none" stroke="var(--fill)" stroke-width="9"></circle><circle cx="42" cy="42" r="34" fill="none" stroke="var(--tint)" stroke-width="9" stroke-linecap="round" stroke-dasharray="{{ ringDash }}" style="transition:stroke-dasharray .5s"></circle></svg><div style="position:absolute;inset:0;display:grid;place-items:center;font-size:17px;font-weight:800">{{ m.score }}</div></div>
+              <div style="font-size:15px;color:var(--label2)">{{ readySub }}</div>
+            </div>
+            <sc-for list="{{ ready }}" as="r" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0 16px;border-top:.5px solid var(--sep)">
+                <div style="width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;background:{{ r.dotBg }};border:{{ r.dotBd }};color:var(--onTint)"><sc-if value="{{ r.done }}" hint-placeholder-val="{{ false }}"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.5"></path></svg></sc-if></div>
+                <div style="flex:1;font-size:16px;color:{{ r.fg }}">{{ r.label }}</div>
+                <sc-if value="{{ r.todo }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.act }}" style="border:0;border-radius:999px;padding:5px 12px;background:var(--tintSoft);color:var(--tint);font-size:14px;font-weight:600">{{ r.actLabel }}</button></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ isSearch }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ hasListings }}" hint-placeholder-val="{{ true }}">
+          <div style="background:var(--card);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--fill);border-radius:12px;padding:0 12px;height:46px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tint)" stroke-width="1.8" stroke-linejoin="round" style="flex:none"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"></path></svg><input value="{{ q }}" onChange="{{ setQ }}" placeholder="Describe your home" aria-label="Describe the home you want" style="flex:1;min-width:0;border:0;background:transparent;font-size:16px;outline:none"></div>
+            <div class="ks" style="display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:0 16px"><sc-for list="{{ sugg }}" as="sg" hint-placeholder-count="3"><button onClick="{{ sg.go }}" style="flex:none;border:0;border-radius:999px;padding:6px 12px;background:var(--tintSoft);color:var(--tint);font-size:14px;font-weight:600">{{ sg.t }}</button></sc-for></div>
+            <div style="font-size:14px;color:var(--label2);text-wrap:pretty"><span style="font-weight:800;color:var(--tint);font-size:11px;letter-spacing:.04em">KLYR AI · </span>{{ aiSearch }}</div>
+          </div>
+          <sc-for list="{{ results }}" as="L" hint-placeholder-count="3">
+            <div style="background:var(--card);border-radius:16px;overflow:hidden;display:flex;flex-direction:column">
+              <button onClick="{{ L.open }}" aria-label="View home details" style="position:relative;border:0;padding:0;background:none;display:block"><div role="img" aria-label="Home photo" style="width:100%;aspect-ratio:16/10;display:block;background:var(--fill) center / cover no-repeat;background-image:{{ L.photoBg }}"></div>
+                <div style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:600;border-radius:999px;padding:5px 10px"><svg width="9" height="9" viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v11a.8.8 0 0 0 1.2.7l9-5.5a.8.8 0 0 0 0-1.4l-9-5.5A.8.8 0 0 0 3 1.5z"></path></svg>Tour · Schools · AI</div>
+                <sc-if value="{{ L.best }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:10px;left:10px;background:var(--tint);color:var(--onTint);font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px">Best match</div></sc-if>
+              </button>
+              <div style="padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px">
+                <div><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:20px;font-weight:800;letter-spacing:-.02em">{{ L.priceFmt }}</span><span style="font-size:12px;color:var(--label2)">{{ L.domLabel }}</span></div><div style="font-size:15px;font-weight:600">{{ L.addr }}</div><div style="font-size:13px;color:var(--label2)">{{ L.area }} · {{ L.meta }}</div></div>
+                <sc-if value="{{ L.hasCb }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="font-size:13px;font-weight:700;color:var(--tint);background:var(--tintSoft);border-radius:999px;padding:3px 10px">{{ L.cb }}</span><span style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--ok)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.5"></path></svg>{{ L.commLabel }}</span></div></sc-if>
+                <div style="font-size:13px;color:var(--label2);background:var(--card2);border-radius:10px;padding:8px 10px"><span style="font-weight:800;color:var(--tint);font-size:11px;letter-spacing:.04em">KLYR AI · </span>{{ L.ai }}</div>
+                <sc-if value="{{ L.booked }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;font-weight:600;color:var(--ok);background:var(--okSoft);border-radius:10px;padding:8px 12px">Visit booked · {{ L.bookedLabel }}</div></sc-if><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><sc-if value="{{ L.notBooked }}" hint-placeholder-val="{{ true }}"><button onClick="{{ L.openPicker }}" style="border:0;border-radius:12px;height:44px;background:var(--fill);font-weight:600;font-size:15px">Book a visit</button></sc-if><sc-if value="{{ L.booked }}" hint-placeholder-val="{{ false }}"><button onClick="{{ L.open }}" style="border:0;border-radius:12px;height:44px;background:var(--fill);font-weight:600;font-size:15px">Take the tour</button></sc-if><button onClick="{{ L.choose }}" style="border:0;border-radius:12px;height:44px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:15px">I want this one</button></div>
+              </div>
+            </div>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ hasReqs }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:13px;color:var(--label2);padding:0 16px">SHOWING REQUESTS</div>
+          <div style="background:var(--card);border-radius:12px;overflow:hidden">
+            <sc-for list="{{ reqs }}" as="rq" hint-placeholder-count="3">
+              <div style="padding:12px 16px;border-top:{{ rq.bt }};display:flex;flex-direction:column;gap:8px">
+                <div><div style="font-size:16px;font-weight:600">{{ rq.who }}</div><div style="font-size:13px;color:var(--label2)">{{ rq.meta }} · {{ rq.slot }}</div></div>
+                <sc-if value="{{ rq.pending }}" hint-placeholder-val="{{ true }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button onClick="{{ rq.decline }}" style="border:0;border-radius:10px;height:40px;background:var(--fill);font-weight:600;font-size:15px">Decline</button><button onClick="{{ rq.accept }}" style="border:0;border-radius:10px;height:40px;background:var(--tint);color:var(--onTint);font-weight:600;font-size:15px">Confirm</button></div></sc-if>
+                <sc-if value="{{ rq.decided }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;font-weight:600;color:var(--label2)">{{ rq.label }}</div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ isRoom }}" hint-placeholder-val="{{ false }}">
+        <div class="ks" style="display:flex;gap:14px;overflow-x:auto;margin:0 -16px;padding:0 20px">
+          <sc-for list="{{ parties }}" as="p" hint-placeholder-count="6">
+            <div style="flex:none;width:76px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center">
+              <div style="width:56px;height:56px;border-radius:50%;background:{{ p.avBg }};color:{{ p.avFg }};font-size:16px;font-weight:700;display:grid;place-items:center;box-shadow:{{ p.ring }}">{{ p.initials }}</div>
+              <div style="font-size:12px;font-weight:600;line-height:1.2">{{ p.first }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8px;background:var(--card);border-radius:12px;padding:6px">
+          <input value="{{ msg }}" onChange="{{ setMsg }}" onKeyDown="{{ msgKey }}" placeholder="Message the deal room" style="flex:1;min-width:0;border:0;background:transparent;font-size:16px;padding:8px 10px;outline:none">
+          <button onClick="{{ send }}" aria-label="Send" style="width:36px;height:36px;border-radius:50%;border:0;background:var(--tint);color:var(--onTint);display:grid;place-items:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
+        </div>
+        <div style="background:var(--card);border-radius:12px;overflow:hidden">
+          <sc-for list="{{ events }}" as="e" hint-placeholder-count="6">
+            <div style="padding:12px 16px;border-top:{{ e.bt }};display:flex;flex-direction:column;gap:2px">
+              <div style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:15px;font-weight:600">{{ e.who }}</span><span style="font-size:13px;color:var(--label3)">{{ e.when }}</span></div>
+              <div style="font-size:15px;color:var(--label2)">{{ e.text }}</div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noEvents }}" hint-placeholder-val="{{ false }}"><div style="padding:20px 16px;color:var(--label2);font-size:15px">Nothing yet. Press play on the Deal tab.</div></sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCosts }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ hasSave }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:13px;color:var(--label2);padding:0 16px;display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tint)" stroke-width="1.8" stroke-linejoin="round" style="flex:none"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"></path></svg>WAYS TO SAVE · {{ saveTotal }}</div>
+            <div style="background:var(--card);border-radius:12px;overflow:hidden">
+              <sc-for list="{{ saves }}" as="x" hint-placeholder-count="4">
+                <div style="display:flex;gap:10px;align-items:center;padding:12px 16px;border-top:{{ x.bt }}">
+                  <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">{{ x.t }}</div><div style="font-size:12px;color:var(--label2)">{{ x.sub }}</div></div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span style="font-size:15px;font-weight:800;color:var(--ok)">{{ x.amt }}</span>
+                    <sc-if value="{{ x.todo }}" hint-placeholder-val="{{ false }}"><button onClick="{{ x.act }}" style="border:0;border-radius:999px;padding:4px 12px;background:var(--tint);color:var(--onTint);font-size:13px;font-weight:700">{{ x.actLabel }}</button></sc-if>
+                    <sc-if value="{{ x.done }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;color:var(--ok)">Done</span></sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <div style="background:var(--card);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:14px;color:var(--label2)">Confirmed so far</div>
+          <div style="font-size:40px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums">{{ m.sumFinal }}</div>
+          <div style="font-size:14px;color:var(--label2)">{{ m.finalCount }} of {{ m.lineCount }} lines confirmed · projected {{ m.sumAll }}</div>
+          <sc-if value="{{ m.hasUsp }}" hint-placeholder-val="{{ false }}"><div style="margin-top:8px;font-size:14px;font-weight:700;color:var(--tint);background:var(--tintSoft);border-radius:10px;padding:8px 12px">{{ m.usp.kicker }} · {{ m.usp.amt }}</div></sc-if>
+          <div style="height:6px;border-radius:3px;background:var(--fill);overflow:hidden;margin-top:8px"><div style="height:100%;width:{{ costPct }}%;background:var(--tint);transition:width .3s"></div></div>
+        </div>
+        <sc-if value="{{ hasDecisions }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:13px;color:var(--label2);padding:0 16px">DECISIONS</div>
+            <div style="background:var(--card);border-radius:12px;overflow:hidden">
+              <sc-for list="{{ decisions }}" as="d" hint-placeholder-count="3">
+                <div style="display:flex;gap:12px;align-items:center;padding:10px 16px;border-top:{{ d.bt }}">
+                  <div style="flex:1;min-width:0"><div style="font-size:16px">{{ d.label }}</div><div style="font-size:13px;color:var(--label2)">{{ d.sub }}</div></div>
+                  <button onClick="{{ d.toggle }}" role="switch" aria-checked="{{ d.on }}" aria-label="{{ d.label }}" style="position:relative;width:51px;height:31px;border-radius:16px;border:0;background:{{ d.bg }};flex:none;transition:background .2s"><span style="position:absolute;top:2px;left:{{ d.x }}px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:left .2s"></span></button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:13px;color:var(--label2);padding:0 16px">RECEIPT</div>
+          <div style="background:var(--card);border-radius:12px;overflow:hidden">
+            <sc-for list="{{ lines }}" as="l" hint-placeholder-count="10">
+              <div style="display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 16px;border-top:{{ l.bt }};opacity:{{ l.op }};transition:opacity .3s">
+                <div style="width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:{{ l.dotBg }};border:{{ l.dotBd }};color:var(--onTint)"><sc-if value="{{ l.final }}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.5"></path></svg></sc-if></div>
+                <div style="min-width:0"><div style="font-size:15px">{{ l.label }}</div><div style="font-size:12px;color:var(--label2)">{{ l.note2 }}</div></div>
+                <div style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ l.amtFg }};font-style:{{ l.fs }}">{{ l.amtFmt }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:13px;color:var(--label2);padding:4px 16px;line-height:1.45">{{ costNote }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isForms }}" hint-placeholder-val="{{ false }}">
+        <sc-for list="{{ formGroups }}" as="g" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:13px;color:var(--label2);padding:0 16px">{{ g.title }}</div>
+            <div style="background:var(--card);border-radius:12px;overflow:hidden">
+              <sc-for list="{{ g.items }}" as="f" hint-placeholder-count="3">
+                <button onClick="{{ f.open }}" style="width:100%;border:0;border-top:{{ f.bt }};background:none;padding:11px 16px;display:flex;align-items:center;gap:10px;text-align:left">
+                  <div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:500;color:{{ f.nameFg }}">{{ f.name }}</div><div style="font-size:13px;color:var(--label2)">{{ f.who }}</div></div>
+                  <svg width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="var(--label3)" stroke-width="2" stroke-linecap="round"><path d="M1 1l6 6-6 6"></path></svg>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </sc-if>
+
+      <sc-if value="{{ isServices }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:15px;color:var(--label2);padding:0 4px">Pick who helps you at each step. Klyr AI marks the best fit.</div>
+        <sc-for list="{{ services }}" as="sv" hint-placeholder-count="5">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;padding:0 16px;font-size:13px;color:var(--label2)"><span>{{ sv.nameU }}</span><span style="color:var(--tint);font-weight:600">{{ sv.stage }}</span></div>
+            <div class="ks" style="display:flex;gap:10px;overflow-x:auto;margin:0 -16px;padding:0 16px">
+              <sc-for list="{{ sv.opts }}" as="o" hint-placeholder-count="3">
+                <button onClick="{{ o.pick }}" style="flex:none;width:210px;text-align:left;border:{{ o.bd }};background:{{ o.bg }};border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:3px">
+                  <sc-if value="{{ o.rec }}" hint-placeholder-val="{{ false }}"><span style="align-self:flex-start;font-size:10px;font-weight:800;letter-spacing:.04em;color:var(--onTint);background:var(--tint);border-radius:999px;padding:2px 7px">KLYR AI PICK</span></sc-if>
+                  <span style="display:flex;justify-content:space-between;gap:6px"><span style="font-size:15px;font-weight:700">{{ o.name }}</span><span style="font-size:12px;color:var(--label2)">★ {{ o.rating }}</span></span>
+                  <span style="font-size:16px;font-weight:800">{{ o.price }}</span>
+                  <span style="font-size:12px;color:var(--label2)">{{ o.stat }}</span>
+                  <span style="margin-top:6px;font-size:13px;font-weight:700;color:{{ o.fg }}">{{ o.label }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ showMini }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;left:8px;right:8px;bottom:92px;z-index:20;background:var(--bar);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.18);padding:8px 10px 10px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <button onClick="{{ togglePlay }}" aria-label="Play timeline" style="width:32px;height:32px;border-radius:50%;border:0;background:var(--tint);color:var(--onTint);display:grid;place-items:center;flex:none">
+            <sc-if value="{{ playing }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 14 14" fill="currentColor"><rect x="2" y="1" width="3.5" height="12" rx="1"></rect><rect x="8.5" y="1" width="3.5" height="12" rx="1"></rect></svg></sc-if>
+            <sc-if value="{{ paused }}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v11a.8.8 0 0 0 1.2.7l9-5.5a.8.8 0 0 0 0-1.4l-9-5.5A.8.8 0 0 0 3 1.5z"></path></svg></sc-if>
+          </button>
+          <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:700">{{ m.stage.l }}</div><div style="font-size:12px;color:var(--label2)">{{ m.date }} · {{ m.dayLabel }}</div></div>
+        </div>
+        <div style="height:3px;border-radius:2px;background:var(--fill);overflow:hidden"><div style="height:100%;width:{{ vPct }}%;background:var(--tint)"></div></div>
+      </div>
+    </sc-if>
+
+    <div style="position:absolute;left:0;right:0;bottom:0;height:84px;z-index:20;background:var(--bar);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--sep);display:grid;grid-template-columns:repeat(5,1fr);padding-top:7px">
+      <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="5">
+        <button onClick="{{ tb.go }}" style="border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;color:{{ tb.fg }};font-size:10px;font-weight:600;padding:0">
+          <svg width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ tb.d }}"></path></svg>{{ tb.label }}
+        </button>
+      </sc-for>
+      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--label)"></div>
+    </div>
+
+    <sc-if value="{{ hasBook }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeBook }}" style="position:absolute;inset:0;z-index:48;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;flex-direction:column;justify-content:flex-end">
+    <div style="width:100%;max-height:92%;overflow:auto;background:var(--bg);border-radius:24px 24px 0 0;box-shadow:0 30px 80px rgba(0,0,0,.35);display:flex;flex-direction:column;animation:rise .3s">
+      <div style="display:flex;gap:12px;align-items:center;padding:16px 18px;background:var(--card);border-bottom:.5px solid var(--sep)">
+        <div role="img" aria-label="Home photo" style="width:52px;height:52px;border-radius:12px;flex:none;background:var(--fill) center / cover no-repeat;background-image:{{ bk.photoBg }}"></div>
+        <div style="flex:1;min-width:0"><div style="font-size:18px;font-weight:800;letter-spacing:-.01em">Book a visit</div><div style="font-size:14px;color:var(--label2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ bk.addr }} · {{ bk.priceFmt }}</div></div>
+        <button onClick="{{ closeBookBtn }}" aria-label="Close" style="width:32px;height:32px;border-radius:50%;border:0;background:var(--fill);font-size:18px;line-height:32px;padding:0;flex:none">×</button>
+      </div>
+      <div style="padding:18px;display:flex;flex-direction:column;gap:16px">
+        <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">PICK A DAY</div>
+        <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:-8px">
+          <sc-for list="{{ bk.days }}" as="d" hint-placeholder-count="7"><button onClick="{{ d.pick }}" style="border:0;border-radius:14px;padding:10px 0;background:{{ d.bg }};box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:12px;font-weight:600;color:{{ d.fg2 }}">{{ d.wd }}</span><span style="font-size:20px;font-weight:800;color:{{ d.fg }}">{{ d.dn }}</span></button></sc-for>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">PICK A TIME · {{ bk.dayFull }}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:-8px">
+          <sc-for list="{{ bk.times }}" as="t" hint-placeholder-count="7"><button onClick="{{ t.pick }}" disabled="{{ t.taken }}" style="border:{{ t.bd }};border-radius:12px;height:44px;background:{{ t.bg }};color:{{ t.fg }};font-size:15px;font-weight:600;text-decoration:{{ t.deco }}">{{ t.t }}</button></sc-for>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">WHO’S COMING</div>
+          <div style="display:flex;background:var(--fill);border-radius:9px;padding:2px;gap:2px"><sc-for list="{{ bk.whoOpts }}" as="w" hint-placeholder-count="3"><button onClick="{{ w.pick }}" style="border:0;border-radius:7px;padding:6px 14px;font-size:13px;font-weight:600;background:{{ w.bg }};box-shadow:{{ w.sh }};white-space:nowrap">{{ w.l }}</button></sc-for></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;background:var(--card);border-radius:14px;padding:12px 14px">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--tintSoft);color:var(--tint);display:grid;place-items:center;font-size:14px;font-weight:800;flex:none">MC</div>
+          <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">Maya Chen meets you there</div><div style="font-size:13px;color:var(--label2)">Your Klyr agent · about 30 minutes</div></div>
+        </div>
+        <sc-if value="{{ bk.needBra }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--card);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;border:2px solid var(--tint)">
+            <div><div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">BEFORE YOUR FIRST VISIT</div><div style="font-size:16px;font-weight:700;margin-top:2px">Sign your buyer agreement with Klyr</div><div style="font-size:13px;color:var(--label2);margin-top:2px;text-wrap:pretty">Ontario rules (RECO) require it in writing before an agent shows you homes. Sign once and it covers every visit.</div></div>
+            <div style="display:flex;flex-direction:column;gap:6px;font-size:14px">
+              <div style="display:flex;gap:8px"><span style="color:var(--tint);font-weight:800">✓</span><span>Klyr works only for you, not the seller</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--tint);font-weight:800">✓</span><span>90 days, cancel with 30 days’ notice</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--tint);font-weight:800">✓</span><span>Seller pays the commission. You pay $0 and get cash back.</span></div>
+            </div>
+            <button onClick="{{ bk.signBra }}" style="border:0;border-radius:12px;height:44px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:15px">Review and sign · Form 300</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ bk.braOk }}" hint-placeholder-val="{{ true }}"><div style="font-size:13px;font-weight:600;color:var(--ok);background:var(--okSoft);border-radius:10px;padding:8px 12px">✓ Buyer agreement signed · Form 300</div></sc-if>
+        <div style="display:flex;gap:10px;align-items:flex-start;background:var(--tintSoft);border-radius:14px;padding:12px 14px"><div style="font-size:12px;font-weight:800;color:var(--tint);letter-spacing:.04em;white-space:nowrap;padding-top:2px">KLYR AI</div><div style="font-size:14px;text-wrap:pretty">{{ bk.aiB }}</div></div>
+      </div>
+      <div style="position:sticky;bottom:0;padding:14px 18px;background:var(--bar);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--sep);display:flex;flex-direction:column;gap:6px">
+        <sc-if value="{{ bk.ready }}" hint-placeholder-val="{{ false }}"><button onClick="{{ bk.confirm }}" style="border:0;border-radius:14px;height:52px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:17px">Book {{ bk.slot }}</button></sc-if>
+        <sc-if value="{{ bk.notReady }}" hint-placeholder-val="{{ true }}"><button disabled="{{ true }}" style="border:0;border-radius:14px;height:52px;background:var(--fill);color:var(--label3);font-weight:700;font-size:17px">{{ bk.waitLabel }}</button></sc-if>
+        <div style="font-size:12px;color:var(--label2);text-align:center">We’ll text you the day before and an hour before.</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+    <sc-if value="{{ hasDetail }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;z-index:42;background:var(--bg);display:flex;flex-direction:column;animation:sheetup .32s cubic-bezier(.2,.8,.2,1)">
+        <div class="ks" style="flex:1;overflow:auto;padding-bottom:110px">
+          <div style="position:relative;aspect-ratio:4/5;background:#000;overflow:hidden">
+            {{ detail.tourArt }}
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,0) 28%,rgba(0,0,0,0) 60%,rgba(0,0,0,.7));pointer-events:none"></div>
+            <div style="position:absolute;left:14px;right:14px;top:58px;display:flex;gap:4px"><sc-for list="{{ detail.segs }}" as="g" hint-placeholder-count="4"><div style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.35);overflow:hidden"><div style="height:100%;width:{{ g.w }}%;background:#fff;animation:{{ g.anim }}"></div></div></sc-for></div>
+            <button onClick="{{ closeDetail }}" aria-label="Close" style="position:absolute;top:70px;left:14px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;font-size:18px;line-height:34px;padding:0">×</button>
+            <sc-if value="{{ detail.paused }}" hint-placeholder-val="{{ true }}"><button onClick="{{ detail.play }}" aria-label="Play tour" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68px;height:68px;border-radius:50%;border:0;background:rgba(255,255,255,.9);color:#1F2B27;display:grid;place-items:center"><svg width="22" height="22" viewBox="0 0 14 14" fill="currentColor"><path d="M4 1.5v11a.8.8 0 0 0 1.2.7l8-5.5a.8.8 0 0 0 0-1.4l-8-5.5A.8.8 0 0 0 4 1.5z"></path></svg></button></sc-if>
+            <sc-if value="{{ detail.playing }}" hint-placeholder-val="{{ false }}"><button onClick="{{ detail.pause }}" aria-label="Pause tour" style="position:absolute;right:14px;top:70px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;display:grid;place-items:center"><svg width="12" height="12" viewBox="0 0 14 14" fill="currentColor"><rect x="2" y="1" width="3.5" height="12" rx="1"></rect><rect x="8.5" y="1" width="3.5" height="12" rx="1"></rect></svg></button></sc-if>
+            <div style="position:absolute;left:16px;right:16px;bottom:14px;color:#fff;display:flex;flex-direction:column;gap:2px"><div style="font-size:13px;font-weight:600;opacity:.9">{{ detail.roomName }} · {{ detail.roomN }} of {{ detail.roomAll }}</div><div style="font-size:26px;font-weight:800;letter-spacing:-.02em">{{ detail.priceFmt }}</div><div style="font-size:15px">{{ detail.addr }}</div></div>
+          </div>
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px"><sc-for list="{{ detail.rooms }}" as="r" hint-placeholder-count="4"><button onClick="{{ r.pick }}" style="border:0;padding:0;background:none;display:flex;flex-direction:column;gap:4px;text-align:left"><div role="img" aria-label="Home photo" style="width:100%;aspect-ratio:1;border-radius:9px;display:block;box-shadow:{{ r.ring }};opacity:{{ r.op }};background:var(--fill) center / cover no-repeat;background-image:{{ r.photoBg }}"></div><span style="font-size:11px;font-weight:600;color:{{ r.fg2 }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span></button></sc-for></div>
+            <sc-if value="{{ detail.hasCb }}" hint-placeholder-val="{{ false }}">
+              <div style="background:var(--tint);color:var(--onTint);border-radius:16px;padding:14px 16px"><div style="font-size:11px;font-weight:700;letter-spacing:.05em;opacity:.9">YOUR CASH BACK ON THIS HOME</div><div style="font-size:30px;font-weight:900;letter-spacing:-.03em">{{ detail.cbAmt }}</div><div style="display:flex;align-items:center;gap:5px;font-size:13px;opacity:.95"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.5"></path></svg>{{ detail.commLabel }}</div></div>
+            </sc-if>
+            <div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:6px;font-size:19px;font-weight:800"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tint)" stroke-width="1.8" stroke-linejoin="round" style="flex:none"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"></path></svg>What makes it special</div>
+              <div style="background:var(--card);border-radius:12px;overflow:hidden"><sc-for list="{{ detail.highlights }}" as="h" hint-placeholder-count="3"><div style="display:flex;gap:10px;padding:12px 14px;border-top:{{ h.bt }}"><div style="width:8px;height:8px;border-radius:50%;background:{{ h.ic }};margin-top:7px;flex:none"></div><div><div style="font-size:15px;font-weight:600">{{ h.t }}</div><div style="font-size:13px;color:var(--label2)">{{ h.b }}</div></div></div></sc-for></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px"><div style="font-size:19px;font-weight:800">Schools</div><div style="font-size:13px;color:var(--label2);margin-top:-6px">{{ detail.district }}</div>
+              <div style="background:var(--card);border-radius:12px;overflow:hidden"><sc-for list="{{ detail.schools }}" as="sc" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:{{ sc.bt }}"><div style="width:40px;height:40px;border-radius:10px;background:{{ sc.scBg }};color:{{ sc.scFg }};display:grid;place-items:center;font-size:14px;font-weight:800;flex:none">{{ sc.score }}</div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">{{ sc.n }}</div><div style="font-size:12px;color:var(--label2)">{{ sc.b }} · {{ sc.d }}</div></div><sc-if value="{{ sc.hasTag }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;color:var(--tint);background:var(--tintSoft);border-radius:999px;padding:3px 8px;white-space:nowrap">{{ sc.tag }}</span></sc-if></div></sc-for></div>
+              <div style="font-size:11px;color:var(--label3)">Scores are illustrative. Confirm boundaries with the school board.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px"><div style="font-size:19px;font-weight:800">Neighbourhood</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><sc-for list="{{ detail.stats }}" as="x" hint-placeholder-count="4"><div style="background:var(--card);border-radius:12px;padding:10px 12px"><div style="font-size:11px;color:var(--label2)">{{ x.k }}</div><div style="font-size:15px;font-weight:700">{{ x.v }}</div></div></sc-for></div></div>
+          </div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px 30px;background:var(--bar);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--sep);display:grid;grid-template-columns:1fr 1.3fr;gap:8px">
+          <button onClick="{{ detail.book }}" style="border:0;border-radius:12px;height:48px;background:var(--fill);font-weight:600;font-size:15px">Book a visit</button>
+          <button onClick="{{ detail.choose }}" style="border:0;border-radius:12px;height:48px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:16px">I want this one</button>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:50%;top:60px;transform:translateX(-50%);z-index:60;background:var(--label);color:var(--bg);border-radius:999px;padding:10px 16px;font-size:14px;font-weight:600;white-space:nowrap;animation:toastin .3s both">{{ toast }}</div></sc-if>
+
+    <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.35)">
+        <div class="ks" style="position:absolute;left:0;right:0;bottom:0;top:60px;background:var(--bg);border-radius:14px 14px 0 0;overflow:auto;padding:8px 16px 40px;display:grid;align-content:start;grid-template-columns:minmax(0,1fr);gap:14px;animation:sheetup .32s cubic-bezier(.2,.8,.2,1)">
+          <div style="width:36px;height:5px;border-radius:3px;background:var(--label3);opacity:.5;justify-self:center"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:700;color:{{ form.color }}">{{ form.label }}</div><button onClick="{{ closeSheetBtn }}" style="border:0;background:none;color:var(--tint);font-size:17px;font-weight:600;padding:0">Done</button></div>
+          <div><div style="font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15">{{ form.name }}</div><div style="font-size:14px;color:var(--label2)">{{ form.who }} · {{ form.stage }}</div></div>
+          <sc-for list="{{ form.clauses }}" as="cl" hint-placeholder-count="3">
+            <div style="background:var(--card);border-radius:12px;overflow:hidden">
+              <div style="padding:12px 14px;display:flex;flex-direction:column;gap:4px"><div style="font-size:14px;font-weight:700">{{ cl.t }}</div><div style="font-size:14px;color:var(--label2);font-family:'New York',Georgia,serif;line-height:1.45">{{ cl.legal }}</div></div>
+              <div style="padding:12px 14px;background:var(--tintSoft);display:flex;flex-direction:column;gap:2px"><div style="font-size:11px;font-weight:700;color:var(--tint);letter-spacing:.05em">IN PLAIN WORDS</div><div style="font-size:16px;line-height:1.4">{{ cl.plain }}</div></div>
+            </div>
+          </sc-for>
+          <div style="font-size:12px;color:var(--label3)">Summaries are paraphrased for illustration. The official OREA or Ontario form text governs.</div>
+          <sc-if value="{{ form.canSign }}" hint-placeholder-val="{{ false }}">
+            <input value="{{ sigName }}" onChange="{{ setSig }}" aria-label="Type your full name to sign" style="height:50px;border-radius:12px;border:.5px solid var(--sep);background:var(--card);padding:0 14px;font-size:22px;font-style:italic;font-family:'Snell Roundhand','Segoe Script',cursive;outline:none">
+            <button onClick="{{ form.sign }}" style="border:0;border-radius:14px;height:50px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:17px">Sign</button>
+          </sc-if>
+          <sc-if value="{{ form.isSigned }}" hint-placeholder-val="{{ false }}"><div style="background:var(--okSoft);color:var(--ok);border-radius:12px;padding:12px 14px;font-size:15px;font-weight:600">Signed · audit trail recorded.</div></sc-if>
+          <sc-if value="{{ form.isLocked }}" hint-placeholder-val="{{ false }}"><div style="background:var(--fill);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--label2)">Unlocks at the {{ form.stage }} stage.</div></sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showKeys }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeKeys }}" style="position:absolute;inset:0;z-index:45;background:rgba(0,0,0,.45);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);display:grid;place-items:center;padding:20px">
+        <div style="width:100%;background:var(--card);border-radius:24px;padding:32px 22px 20px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+          {{ keyArt }}
+          <div style="font-size:12px;font-weight:700;color:var(--tint);letter-spacing:.06em;margin-top:8px">REGISTERED · {{ m.date }}</div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1.1">{{ m.keys.title }}</div>
+          <div style="font-size:15px;color:var(--label2)">{{ m.keys.sub }}</div>
+          <sc-if value="{{ m.hasUsp }}" hint-placeholder-val="{{ false }}"><div style="margin-top:6px;background:var(--tintSoft);color:var(--tint);border-radius:12px;padding:10px 14px;font-size:15px;font-weight:700;width:100%">{{ m.usp.kicker }}: {{ m.usp.amt }}</div></sc-if>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-top:10px">
+            <button onClick="{{ goCosts }}" style="border:0;border-radius:12px;height:46px;background:var(--fill);font-weight:600;font-size:16px">Receipt</button>
+            <button onClick="{{ closeKeys }}" style="border:0;border-radius:12px;height:46px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:16px">Done</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+function __bg(o, d) { if (!o || typeof o !== 'object' || d > 6 || o['$$' + 'typeof']) return o; if (Array.isArray(o)) { o.forEach(x => __bg(x, d + 1)); return o; } if (typeof o.photo === 'string' && !o.photoBg) { const M = window.KLYR_PHOTOS || {}; o.photoBg = 'url("' + (M[o.photo] || o.photo) + '")'; } for (const k in o) { const v = o[k]; if (v && typeof v === 'object' && k !== 'photoBg') __bg(v, d + 1); } return o; }
+
+const TABS = [
+  ['deal', 'Journey', 'M4 11l8-7 8 7v9h-5v-6H9v6H4z'],
+  ['search', 'Search', 'M11 4a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM16.5 16.5L21 21'],
+  ['costs', 'Money', 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3'],
+  ['services', 'Team', 'M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3 3-5 6-5s6 2 6 5M14.5 15.3c.5-.2 1-.3 1.5-.3 3 0 6 2 6 5'],
+  ['forms', 'Forms', 'M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6']
+];
+const TITLES = { deal: null, search: 'Search', room: 'Team', costs: 'Money', forms: 'Forms', services: 'Your team' };
+const REC = { mortgage: 'northgate', lawyer: 'chen', inspector: 'clearview', insurance: 'coastline', screening: 'keystone' };
+const DEC = { self: ['Self-directed plan', '80% cash back instead of 60%'], assisted: ['Assisted listing', '1% + HST. Off: $999 flat'], fthb: ['First-time buyer', 'Claim land transfer tax refunds'], titleIns: ['Title insurance', 'Off: order a new survey'], inspect: ['Inspection', 'Inspect before going firm'] };
+const fresh = () => ({ t: 0, cond: {}, signed: {}, booked: {}, flags: {}, log: [], dec: { self: false, assisted: true, fthb: true, titleIns: true, inspect: true } });
+const statusColor = s => (s === 'signed' || s === 'fulfilled' || s === 'waived') ? 'var(--ok)' : s === 'open' ? 'var(--tint)' : 'var(--label3)';
+
+class Component extends DCLogic {
+  state = { ok: typeof window !== 'undefined' && !!window.KLYR && !!window.KLYR_X && !!window.KLYR_DETAIL, started: false, j: 'house', per: {}, tab: 'deal', formNo: null, sigName: 'Alex Rivera', theme: 'light', playing: false, keysOpen: false, msg: '' };
+  componentDidMount() {
+    try { const th = localStorage.getItem('klyr11m-theme'); if (th) this.setState({ theme: th }); } catch (e) {}
+    if (!(window.KLYR && window.KLYR_X && window.KLYR_DETAIL)) this._w = setInterval(() => { if (window.KLYR && window.KLYR_X && window.KLYR_DETAIL) { clearInterval(this._w); this.setState({ ok: true }); } }, 50);
+  }
+  componentWillUnmount() { clearInterval(this._w); clearInterval(this._p); clearInterval(this._tour); clearTimeout(this._tt); }
+  flash(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
+  openDetail(id) { clearInterval(this._tour); this.setState({ detail: id, tourI: 0, tourPlay: false }); }
+  openBook(id) { this.setState({ book: id, bDay: 0, bTime: null, bWho: 'me' }); }
+  closeDet() { clearInterval(this._tour); this.setState({ detail: null, tourPlay: false }); }
+  playTour(n) { clearInterval(this._tour); this.setState({ tourPlay: true }); this._tour = setInterval(() => this.setState(s => { const i = s.tourI + 1; if (i >= n) { clearInterval(this._tour); return { tourPlay: false, tourI: 0 }; } return { tourI: i }; }), 3200); }
+  pauseTour() { clearInterval(this._tour); this.setState({ tourPlay: false }); }
+  P(s = this.state) { return s.per[s.j] || fresh(); }
+  stagesOf(j) { return window.KLYR.J[j].stages; }
+  tOf(v, j) { const S = this.stagesOf(j), i = Math.min(S.length - 1, Math.floor(v / 100)), f = v / 100 - i; return v >= S.length * 100 ? S[S.length - 1].b : S[i].a + f * (S[i].b - S[i].a); }
+  vOf(t, j) { const S = this.stagesOf(j), tot = S[S.length - 1].b; if (t >= tot) return S.length * 100; const i = Math.max(0, S.findIndex(x => t >= x.a && t < x.b)); return i * 100 + (t - S[i].a) / (S[i].b - S[i].a) * 100; }
+  upd(fn) {
+    this.setState(s => {
+      const cur = s.per[s.j] || fresh(), nx = { ...cur, ...fn(cur) }, S = this.stagesOf(s.j), tot = S[S.length - 1].b;
+      return { per: { ...s.per, [s.j]: nx }, ...(nx.t >= tot && cur.t < tot ? { keysOpen: true } : {}) };
+    });
+  }
+  setV(v) { const j = this.state.j; this.upd(() => ({ t: this.tOf(v, j) })); }
+  logIt(text) { const p = this.P(); return [...p.log, { day: p.t, when: window.KLYR.dateOf(p.t), who: 'Alex Rivera', role: 'you', text }]; }
+  stop() { clearInterval(this._p); this._p = null; this.setState({ playing: false }); }
+  play() {
+    const j = this.state.j, max = this.stagesOf(j).length * 100;
+    let v = this.vOf(this.P().t, j); if (v >= max) v = 0;
+    this.setState({ playing: true });
+    this._p = setInterval(() => { v = Math.min(max, v + 2.5); this.setV(v); if (v >= max) this.stop(); }, 40);
+  }
+  renderVals() { return __bg(this._rv(), 0); }
+  _rv() {
+    const st = this.state;
+    const flipTheme = () => { const k = st.theme === 'light' ? 'dark' : 'light'; try { localStorage.setItem('klyr11m-theme', k); } catch (e) {} this.setState({ theme: k }); };
+    if (!st.ok) return { theme: st.theme, flipTheme, showStart: true, showApp: false, journeys: [] };
+    const K = window.KLYR, p = this.P(), m = K.model({ j: st.j, ...p });
+    const journeys = K.journeys.map((x, i) => ({ ...x, bb: i < K.journeys.length - 1 ? '.5px solid var(--sep)' : '0', teaser: x.kind === 'buy' ? 'Up to ' + K.fmt$(K.J[x.id].price * .022 * .8) + ' cash back' : x.kind === 'sell' ? 'List from $999 + HST' : 'Every form in one app', pick: () => { this.stop(); this.setState({ j: x.id, started: true, tab: 'deal', formNo: null, keysOpen: false }); } }));
+    const go = t => () => { this.closeDet(); this.setState({ tab: t, keysOpen: false, formNo: null }); };
+    const tabs = TABS.map(([id, label, d]) => ({ label, d, go: go(id), fg: st.tab === id ? 'var(--tint)' : 'var(--label3)' }));
+    const v = this.vOf(p.t, st.j), S = m.stages.length;
+    const stages = m.stages.map((s, i) => ({ fill: Math.max(0, Math.min(100, v - i * 100)) }));
+    const openForm = no => () => this.setState({ formNo: no });
+    const forms = m.forms.map(f => ({ ...f, open: openForm(f.no), nameFg: f.status === 'locked' ? 'var(--label2)' : 'var(--label)' }));
+    const grp = (title, list) => ({ title, items: list.map((f, i) => ({ ...f, bt: i ? '.5px solid var(--sep)' : '0' })) });
+    const formGroups = [grp('READY TO SIGN', forms.filter(f => f.status === 'open')), grp('SIGNED', forms.filter(f => f.status === 'signed')), grp('COMING LATER', forms.filter(f => f.status === 'locked'))].filter(g => g.items.length);
+    const fm = st.formNo ? m.forms.find(f => f.no === st.formNo) : null, FD = fm ? K.FORMS[fm.no] : null;
+    const form = fm ? { ...fm, clauses: FD.c.map(([t, legal, plain]) => ({ t, legal, plain })), color: statusColor(fm.status), canSign: fm.status === 'open', isSigned: fm.status === 'signed', isLocked: fm.status === 'locked',
+      sign: () => { const name = (st.sigName || '').trim() || 'Alex Rivera'; this.upd(c => ({ signed: { ...c.signed, [fm.no]: true }, log: this.logIt('Signed ' + FD.name + ' as “' + name + '”') })); } } : { clauses: [] };
+    const Jc = K.J[st.j].conds;
+    const conds = m.conds.map(c => { const b = Jc.find(x => x.id === c.id).b; return { ...c, color: c.status === 'upcoming' ? 'var(--label3)' : c.status === 'open' ? (b - p.t < 2 ? 'var(--warn)' : 'var(--tint)') : 'var(--ok)',
+      fulfil: () => this.upd(cur => ({ cond: { ...cur.cond, [c.id]: 'fulfilled' }, signed: { ...cur.signed, '124': true }, log: this.logIt('Fulfilled ' + c.name.toLowerCase() + ' condition (Form 124)') })),
+      waive: () => this.upd(cur => ({ cond: { ...cur.cond, [c.id]: 'waived' }, signed: { ...cur.signed, '123': true }, log: this.logIt('Waived ' + c.name.toLowerCase() + ' condition (Form 123)') })) }; });
+    const book = id => () => this.upd(cur => ({ booked: { ...cur.booked, [id]: true }, log: this.logIt('Booked ' + K.SERVICES[id].name.toLowerCase() + ' · ' + K.SERVICES[id].provider) }));
+    const X = window.KLYR_X, pick = K.J[st.j], kindS = pick.kind, U = p.ui || {}, pk = p.picked || {}, fl = p.flags || {}, SG = pick.stages;
+    const setU = (k, v) => this.upd(cur => ({ ui: { ...(cur.ui || {}), [k]: v } }));
+    const flash = t => this.flash(t), pv = sv => pk[sv] ? X.prov(sv, pk[sv]).name : '';
+    const price = (p.home && p.home.price) || pick.price, isRentK = kindS === 'rent';
+    const q = (st.q || '').toLowerCase(), pool = X.LISTINGS[st.j] || [];
+    let maxP = null, beds = null; const mp = q.match(/(?:under|below|max)\s*\$?([\d.]+)\s*(k|m)?/); if (mp) maxP = parseFloat(mp[1]) * (mp[2] === 'm' ? 1e6 : mp[2] === 'k' ? 1e3 : (parseFloat(mp[1]) < 20 ? 1e6 : 1));
+    const bm = q.match(/(\d)\s*(?:bed|br)/); if (bm) beds = +bm[1];
+    const words = q.replace(/(under|below|max)\s*\$?[\d.]+\s*[km]?/g, '').split(/[^a-z]+/).filter(w => w.length > 3 && !['with', 'near', 'home', 'house', 'condo', 'beds'].includes(w));
+    let res = pool.map(L => { const hay = (L.addr + ' ' + L.area + ' ' + L.meta + ' ' + L.ai).toLowerCase(), b = parseInt(L.meta, 10) || 0; let sc = 0; words.forEach(w => { if (hay.includes(w)) sc += 2; }); if (maxP && L.price <= maxP) sc += 3; if (beds && b >= beds) sc += 2; return { L, sc, ok: (!maxP || L.price <= maxP) && (!beds || b >= beds) }; });
+    if (q) res = res.filter(r => r.ok).sort((a, b) => b.sc - a.sc);
+    const chooseL = L => { const oi = Math.max(1, SG.findIndex(x => /Offer|Apply|Builder/.test(x.l))); this.stop(); this.closeDet(); this.upd(cur => ({ home: { addr: L.addr, price: L.price, ask: L.price, comm: L.comm, photo: L.photo, meta: L.meta }, t: Math.max(cur.t, SG[oi].a), log: this.logIt('Chose ' + L.addr) })); this.setState({ tab: 'deal' }); flash('Great choice · next: make an offer'); };
+    const results = res.map(({ L }, i) => ({ ...L, priceFmt: K.fmt$(L.price) + (isRentK ? '/mo' : ''), best: !!q && i === 0, domLabel: L.dom ? L.dom + ' days on market' : 'Pre-construction', hasCb: kindS === 'buy', cb: 'Up to ' + K.fmt$(L.price * (L.comm || .022) * .8) + ' back', commLabel: 'Seller pays ' + ((L.comm || .022) * 100).toFixed(1) + '% · you owe $0', open: () => this.openDetail(L.id), choose: () => chooseL(L) }));
+    const shows = p.shows || {};
+    results.forEach(r => { const sh = shows[r.id]; Object.assign(r, { booked: !!sh, bookedLabel: sh ? sh.slot : '', notBooked: !sh, canBook: !sh, openPicker: () => this.openBook(r.id) }); });
+    const G = window.KLYR_GUIDED(this, { st, p, m, K, X, pick, results, shows, go });
+    const { guided, next, ui, dplan, phases, doneCount, STEPS, curShort } = G;
+    let bk = null;
+    const bL = st.book ? results.find(r => r.id === st.book) : null;
+    if (bL) {
+      const today = new Date(), dayN = 7, bD = st.bDay || 0, TIMES = ['10:00 am', '11:30 am', '1:00 pm', '2:30 pm', '4:00 pm', '5:30 pm', '7:00 pm'];
+      const days = Array.from({ length: dayN }, (_, i) => { const d = new Date(today); d.setDate(d.getDate() + i + 1); const on = i === bD; return { wd: d.toLocaleDateString('en-CA', { weekday: 'short' }), dn: d.getDate(), full: d.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' }), bg: on ? 'var(--tint)' : 'var(--card)', fg: on ? 'var(--onTint)' : 'var(--label)', fg2: on ? 'var(--onTint)' : 'var(--label2)', pick: () => this.setState({ bDay: i, bTime: null }) }; });
+      const seed = bL.id.charCodeAt(1) || 1;
+      const times = TIMES.map((t, i) => { const taken = (bD * 3 + i + seed) % 4 === 0, on = st.bTime === t; return { t, taken, open: !taken, bg: on ? 'var(--tint)' : taken ? 'transparent' : 'var(--card)', fg: on ? 'var(--onTint)' : taken ? 'var(--label3)' : 'var(--label)', bd: on ? '0' : taken ? '.5px dashed var(--sep)' : '.5px solid var(--sep)', deco: taken ? 'line-through' : 'none', pick: () => { if (!taken) this.setState({ bTime: t }); } }; });
+      const who = st.bWho || 'me', whoOpts = [['me', 'Just me'], ['two', 'Me + 1'], ['fam', 'Family']].map(([k, l]) => ({ l, bg: who === k ? 'var(--card)' : 'transparent', sh: who === k ? '0 1px 3px rgba(0,0,0,.15)' : 'none', pick: () => this.setState({ bWho: k }) }));
+      const others = Object.keys(shows).filter(k => k !== bL.id && shows[k].slot.startsWith(days[bD].full));
+      const braOk = !!(p.signed || {})['300'], ready = !!st.bTime && braOk, slot = days[bD].full + ' · ' + (st.bTime || '');
+      bk = { ...bL, days, times, whoOpts, ready, notReady: !ready, needBra: !braOk, braOk, waitLabel: st.bTime ? 'Sign the agreement to book' : 'Pick a time',
+        signBra: () => this.upd(cur => ({ signed: { ...(cur.signed || {}), '300': true, RECO: true }, log: this.logIt('Signed the buyer representation agreement with Klyr') })), slot, dayFull: days[bD].full,
+        aiB: others.length ? 'You already have a visit this day. Klyr will line them up so you can see both in one trip.' : (bL.dom && bL.dom < 10 ? 'This home is new and popular. Weekday evenings are usually quieter than weekends.' : 'Visits take about 30 minutes. Bring your list of must-haves.'),
+        confirm: () => { if (!ready) return; this.upd(cur => ({ shows: { ...(cur.shows || {}), [bL.id]: { slot, mode: 'person', who } }, log: this.logIt('Booked a visit at ' + bL.addr + ' · ' + slot) })); this.setState({ book: null }); flash('Visit booked · ' + slot + ' · reminder on'); } };
+    }
+    const top = results[0], aiSearch = !q ? 'Describe what you want in your own words. I’ll filter the listings and explain each match.' : results.length ? results.length + ' match' + (results.length > 1 ? 'es' : '') + '. ' + top.addr + ' fits best: ' + top.ai : 'No matches yet. Try a higher budget. I’ll alert you when something lists.';
+    const sugg = (isRentK ? ['2 bed under $3,000', 'Parking included'] : st.j === 'condo' ? ['2 bed under $700k', 'Low fees'] : st.j === 'build' ? ['Corner lot', 'Under $1.1M'] : ['3 bed under $1.2M', 'Detached', 'Near a park']).map(t => ({ t, go: () => this.setState({ q: t }) }));
+    const reqs = X.SHOWREQ[st.j] ? X.SHOWREQ[st.j].map(([who, meta, slot], i) => { const k = 'rq' + i, v = (p.req || {})[k]; return { who, meta, slot, bt: i ? '.5px solid var(--sep)' : '0', pending: !v, decided: !!v, label: v === 'ok' ? 'Confirmed · reminder set' : 'Declined', accept: () => { this.upd(cur => ({ req: { ...(cur.req || {}), [k]: 'ok' }, log: this.logIt('Confirmed showing for ' + who) })); flash('Showing confirmed'); }, decline: () => this.upd(cur => ({ req: { ...(cur.req || {}), [k]: 'no' } })) }; }) : [];
+    const dL = st.detail ? results.find(r => r.id === st.detail) : null;
+    let detail = null;
+    if (dL) {
+      const D = window.KLYR_DETAIL(dL), ti = Math.min(st.tourI || 0, D.tour.length - 1), room = D.tour[ti];
+      detail = { ...dL, ...D, cbAmt: K.fmt$(dL.price * (dL.comm || .022) * .8), roomName: room.name, roomN: ti + 1, roomAll: D.tour.length, playing: !!st.tourPlay, paused: !st.tourPlay, play: () => this.playTour(D.tour.length), pause: () => this.pauseTour(),
+        rooms: D.tour.map((r, i) => ({ name: r.name, photo: r.photo, ring: i === ti ? '0 0 0 2px var(--tint)' : 'none', op: i === ti ? 1 : .65, fg2: i === ti ? 'var(--tint)' : 'var(--label2)', pick: () => { this.pauseTour(); this.setState({ tourI: i }); } })),
+        segs: D.tour.map((r, i) => ({ w: i < ti ? 100 : 0, anim: i === ti && st.tourPlay ? 'grow 3.2s linear both' : 'none' })),
+        highlights: D.highlights.map(([t, b, w], i) => ({ t, b, bt: i ? '.5px solid var(--sep)' : '0', ic: w ? 'var(--warn)' : 'var(--tint)' })),
+        schools: D.schools.map(([n, b, d, sc, tag], i) => ({ n, b, d, score: sc ? sc.toFixed(1) : 'New', tag, hasTag: !!tag, bt: i ? '.5px solid var(--sep)' : '0', scBg: !sc ? 'var(--fill)' : sc >= 7.5 ? 'var(--okSoft)' : 'var(--tintSoft)', scFg: !sc ? 'var(--label2)' : sc >= 7.5 ? 'var(--ok)' : 'var(--tint)' })),
+        stats: D.nstats.map(([k, v]) => ({ k, v })),
+        tourArt: React.createElement('img', { key: 'tour' + ti + (st.tourPlay ? 'p' : ''), src: room.photo, alt: room.name, style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transformOrigin: room.o || '50% 50%', animation: st.tourPlay ? 'kenburns 3.4s ease-out both' : 'fadein .35s ease-out both' } }),
+        choose: () => chooseL(dL), book: () => { this.closeDet(); this.openBook(dL.id); } };
+    }
+    const ai = X.insights(m, p, K.J);
+    const remOf = key => { const on = (U.rem || {})[key] !== false; return { on, bg: on ? 'var(--ok)' : 'var(--fill)', x: on ? 22 : 2, toggle: () => this.upd(cur => ({ ui: { ...(cur.ui || {}), rem: { ...((cur.ui || {}).rem || {}), [key]: !on } } })) }; };
+    const dayOf = x => (x || '').split(' ')[0].slice(0, 3).toUpperCase();
+    const appts = Object.keys(p.shows || {}).map((id, i) => { const sh = p.shows[id], L = pool.find(x => x.id === id); return { key: 'sh' + id, day: dayOf(sh.slot), t: 'Showing · ' + (L ? L.addr : ''), sub: sh.slot + ' · with Maya Chen', bt: i ? '.5px solid var(--sep)' : '0', ...remOf('sh' + id) }; });
+    const TOT = SG[SG.length - 1].b, isBuild = st.j === 'build';
+    const afterRaw = !(m.done && kindS === 'buy') ? [] : isBuild ? [['t30', 30, '30-day Tarion form', 'List defects from the first month'], ['t1', 335, 'Year-end Tarion form', 'Last chance for 1-year items'], ['t2', 730, '2-year warranty ends', 'Leaks, electrical, plumbing'], ['t7', 2555, '7-year structural ends', 'Major structural defects']] : [['fix', 14, 'Fix the sink leak', 'From your inspection · ~$200'], ['appl', 7, 'Register appliance warranties', 'Move them into your name'], ['renew', 1765, 'Mortgage renewal', 'Klyr compares rates early']];
+    const after = afterRaw.map(([k, d, t, sub], i) => ({ day: K.dateOf(TOT + d).split(', ')[1].split(' ')[0].toUpperCase(), t, sub: K.dateOf(TOT + d) + ' · ' + sub, bt: i ? '.5px solid var(--sep)' : '0', ...remOf('a' + k) }));
+    let plan = null;
+    if (st.j === 'rent') {
+      const sv = U.rpSave ?? 25000, mo = U.rpMonth ?? 1500, hp = U.rpPrice ?? 700000, fh = U.rpFhsa !== false;
+      const minDown = hp <= 500000 ? hp * .05 : hp <= 1500000 ? 25000 + (hp - 500000) * .1 : hp * .2, lt = K.ltt(hp), close = lt * 2 - Math.min(lt, 4000) - Math.min(lt, 4475) + 2500;
+      const need = minDown + close, extra = fh ? Math.min(mo * 12, 8000) * .25 / 12 : 0, months = Math.max(0, Math.ceil((need - sv) / Math.max(1, mo + extra)));
+      const dt = new Date(); dt.setMonth(dt.getMonth() + months);
+      const P = hp - minDown, r = .042 / 12, own = P * r / (1 - Math.pow(1 + r, -300)) + hp * .0072 / 12;
+      const sl = (k, t, v, min, max, step) => ({ t, v, min, max, step, fmt: K.fmt$(v), set: e => setU(k, +e.target.value) });
+      plan = { date: months === 0 ? 'now' : dt.toLocaleDateString('en-CA', { month: 'short', year: 'numeric' }), sub: months === 0 ? 'You have enough for the down payment and closing costs.' : 'About ' + months + ' months at your current pace.', pct: Math.min(100, sv / need * 100), haveFmt: K.fmt$(sv), needFmt: K.fmt$(need),
+        sliders: [sl('rpPrice', 'Home price', hp, 400000, 1500000, 10000), sl('rpSave', 'Saved so far', sv, 0, 150000, 1000), sl('rpMonth', 'Saving each month', mo, 200, 5000, 100)],
+        fhsa: { on: fh, bg: fh ? 'var(--ok)' : 'var(--fill)', x: fh ? 22 : 2, toggle: () => setU('rpFhsa', !fh) },
+        lines: [{ k: 'Down payment', v: K.fmt$(minDown) }, { k: 'Closing costs', v: K.fmt$(close) }, { k: 'Owning / month', v: K.fmt$(own) }, { k: 'Rent now', v: K.fmt$(pick.price) }],
+        tip: (fh ? 'Your FHSA refund adds about ' + K.fmt$(extra) + ' a month. ' : 'An FHSA gives a tax refund on up to $8,000 a year. ') + 'You’d also get about ' + K.fmt$(hp * .022 * .6) + ' cash back after closing.' };
+    }
+    const saves = [];
+    if (kindS === 'buy') {
+      const dec = p.dec || {}, comm = (p.home && p.home.comm) || .022, lt = K.ltt(price);
+      const insP = X.PROVIDERS.insurance.map(o => [o[0], o[1], parseFloat(o[3].replace(/[^0-9.]/g, ''))]).sort((a, b) => a[2] - b[2]), ci = insP[0], di = insP[insP.length - 1];
+      const addS = (t, sub, n, done, actLabel, act) => saves.push({ t, sub, n, amt: K.fmt$(n), done, todo: !done, actLabel, act, bt: saves.length ? '.5px solid var(--sep)' : '0' });
+      addS('Klyr cash back', 'To your bank after closing', price * comm * (dec.self ? .8 : .6), true);
+      addS('Go Self-directed', '80% back instead of 60%', price * comm * .2, !!dec.self, 'Switch', () => { this.upd(cur => ({ dec: { ...cur.dec, self: true } })); flash('Self-directed plan on'); });
+      addS('First-time buyer refunds', pick.toronto ? 'Ontario + Toronto land transfer tax' : 'Ontario land transfer tax', Math.min(lt, 4000) + (pick.toronto ? Math.min(lt, 4475) : 0), dec.fthb !== false, 'Claim', () => this.upd(cur => ({ dec: { ...cur.dec, fthb: true } })));
+      addS('Cheaper home insurance', ci[1] + ' vs ' + di[1] + ' · per year', (di[2] - ci[2]) * 12, pk.insurance === ci[0], 'Choose', () => { this.upd(cur => ({ picked: { ...(cur.picked || {}), insurance: ci[0] } })); flash('Connected with ' + ci[1]); });
+      addS('Lower mortgage rate', 'Pine 3.99% vs 4.19% · 5 years', price * .8 * .002 * 5, pk.mortgage === 'pine', 'Choose', () => { this.upd(cur => ({ picked: { ...(cur.picked || {}), mortgage: 'pine' } })); flash('Connected with Pine Mortgages'); });
+    }
+    const saveN = saves.reduce((a, x) => a + x.n, 0);
+    const services = m.services.map((s, i) => ({ ...s, nameU: s.name.toUpperCase(), opts: (X.PROVIDERS[s.id] || []).map(o => { const on = pk[s.id] === o[0], rec = REC[s.id] === o[0]; return { name: o[1], price: o[3], stat: o[4], rating: o[5].toFixed(1), rec, bd: on ? '2px solid var(--tint)' : '.5px solid var(--sep)', bg: on ? 'var(--tintSoft)' : 'var(--card)', fg: on ? 'var(--ok)' : 'var(--tint)', label: on ? '✓ Connected' : 'Connect', pick: () => { this.upd(cur => ({ picked: { ...(cur.picked || {}), [s.id]: o[0] }, log: this.logIt('Connected with ' + o[1]) })); flash('Connected with ' + o[1]); } }; }), bt: i ? '.5px solid var(--sep)' : '0', btn: s.booked ? 'Booked' : 'Book', bg: s.booked ? 'var(--okSoft)' : 'var(--tint)', fg: s.booked ? 'var(--ok)' : 'var(--onTint)', book: s.booked ? () => {} : book(s.id) }));
+    const ready = m.ready.map(r => ({ ...r, todo: !r.done, fg: r.done ? 'var(--label2)' : 'var(--label)', dotBg: r.done ? 'var(--tint)' : 'transparent', dotBd: r.done ? '0' : '1.5px solid var(--label3)', actLabel: r.kind === 'form' ? 'Sign' : r.kind === 'svc' ? 'Book' : 'Done',
+      act: r.kind === 'form' ? openForm(r.ref) : r.kind === 'svc' ? book(r.ref) : () => this.upd(cur => ({ flags: { ...cur.flags, [r.ref]: true } })) }));
+    const lines = m.lines.map((l, i) => ({ ...l, bt: i ? '.5px solid var(--sep)' : '0', op: l.final ? 1 : .62, note2: l.final ? l.note : 'Estimate · ' + K.dateOf(l.day), dotBg: l.final ? 'var(--tint)' : 'transparent', dotBd: l.final ? '0' : '1.5px dashed var(--label3)', amtFg: l.kind === 'credit' ? 'var(--ok)' : l.kind === 'info' ? 'var(--label2)' : 'var(--label)', fs: l.final ? 'normal' : 'italic' }));
+    const decisions = m.decisions.map((k, i) => { const on = p.dec[k] !== false; return { label: DEC[k][0], sub: DEC[k][1], on, bt: i ? '.5px solid var(--sep)' : '0', bg: on ? 'var(--ok)' : 'var(--fill)', x: on ? 22 : 2, toggle: () => this.upd(cur => ({ dec: { ...cur.dec, [k]: !on } })) }; });
+    const kind = m.j.kind;
+    const costNote = kind === 'buy' ? 'Ontario land transfer tax runs 0.5% to 2.5% by price band; Toronto adds a matching tax. First-time buyers can get up to $4,000 back from Ontario and $4,475 from Toronto.' : kind === 'sell' ? 'Fees are paid from your proceeds at closing, with HST. Your lawyer pays out your mortgage first.' : kind === 'rent' ? 'The only deposit allowed in Ontario is last month’s rent, plus a refundable key deposit.' : 'Give the tenant a copy of the signed lease within 21 days and pay interest on the deposit each year.';
+    const parties = m.parties.map(x => ({ ...x, first: x.name.replace(/^The /, '').split(' ')[0], avBg: x.active ? 'var(--tint)' : 'var(--card)', avFg: x.active ? 'var(--onTint)' : 'var(--label2)', ring: x.active ? '0 0 0 3px var(--bg),0 0 0 5px var(--tint)' : 'none' }));
+    const events = m.events.map((e, i) => ({ ...e, bt: i ? '.5px solid var(--sep)' : '0' }));
+    const send = () => { const t = (st.msg || '').trim(); if (!t) return; this.upd(() => ({ log: this.logIt('“' + t + '”') })); this.setState({ msg: '' }); };
+    const keyArt = React.createElement('div', { key: 'k' + st.keysOpen, style: { position: 'relative', width: 88, height: 88, display: 'grid', placeItems: 'center' } },
+      React.createElement('div', { style: { position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid var(--tint)', animation: 'ringout 1.4s ease-out .3s both' } }),
+      React.createElement('div', { style: { width: 88, height: 88, borderRadius: '50%', background: 'var(--tint)', color: 'var(--onTint)', display: 'grid', placeItems: 'center', animation: 'keypop .9s cubic-bezier(.2,.8,.2,1) both' } },
+        React.createElement('svg', { width: 42, height: 42, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' },
+          React.createElement('circle', { cx: 8, cy: 15, r: 4 }), React.createElement('path', { d: 'M11 12l9-9M17 6l3 3M15 8l2 2' }))));
+    return {
+      guided, notGuided: !guided, next: next || {}, hasNext: !!next, allDone: guided && !next, ui, dplan: dplan || {}, hasPlan: !!dplan, phases, curShort, stepNow: Math.min(doneCount + 1, STEPS.length), stepCount: STEPS.length, goSearch: go('search'),
+      bk: bk || {}, hasBook: !!bk, closeBook: e => { if (e && e.target !== e.currentTarget) return; this.setState({ book: null }); }, closeBookBtn: () => this.setState({ book: null }),
+      theme: st.theme, flipTheme, showStart: !st.started, showApp: st.started, journeys, tabs, home: () => { this.stop(); this.setState({ started: false }); },
+      title: TITLES[st.tab] || m.j.short, m, stages, v: Math.round(v), vMax: S * 100, vPct: v / (S * 100) * 100, scrub: e => { this.stop(); this.setV(+e.target.value); },
+      playing: st.playing, paused: !st.playing, togglePlay: () => st.playing ? this.stop() : this.play(),
+      isDeal: st.tab === 'deal', isSearch: st.tab === 'search', isRoom: st.tab === 'room', isCosts: st.tab === 'costs', isForms: st.tab === 'forms', isServices: st.tab === 'services', showMini: st.tab !== 'deal' && st.tab !== 'search',
+      q: st.q || '', setQ: e => this.setState({ q: e.target.value }), results, aiSearch, sugg, hasListings: pool.length > 0, reqs, hasReqs: reqs.length > 0,
+      detail, hasDetail: !!detail, closeDetail: () => this.closeDet(), toast: st.toast || '', hasToast: !!st.toast,
+      ai, hasAi: ai.length > 0, saves, hasSave: saves.length > 0, saveTotal: K.fmt$(saveN), saveDone: saves.filter(x => x.done).length, saveAll: saves.length,
+      appts, hasAppts: appts.length > 0, after, hasAfter: after.length > 0, afterTitle: isBuild ? 'AFTER THE KEYS · TARION DATES' : 'AFTER THE KEYS · FOLLOW-UPS', plan, isPlanner: !!plan,
+      goCosts: go('costs'), activeParties: m.parties.filter(x => x.active).map((x, i) => ({ ...x, bt: i ? '.5px solid var(--sep)' : '0' })), conds, ready,
+      ringDash: (m.score / 100 * 213.6).toFixed(1) + ' 213.6', readyTitle: kind === 'buy' ? 'OFFER READINESS' : kind === 'rent' ? 'APPLICATION READINESS' : 'LISTING READINESS', readySub: m.score === 100 ? 'All set.' : 'Finish these before you commit.',
+      formGroups, form, sheetOpen: !!fm, closeSheet: e => { if (e.target === e.currentTarget) this.setState({ formNo: null }); }, closeSheetBtn: () => this.setState({ formNo: null }),
+      sigName: st.sigName, setSig: e => this.setState({ sigName: e.target.value }),
+      costPct: m.lineCount ? m.finalCount / m.lineCount * 100 : 0, lines, decisions, hasDecisions: decisions.length > 0, costNote,
+      parties, events, noEvents: !events.length, msg: st.msg, setMsg: e => this.setState({ msg: e.target.value }), msgKey: e => { if (e.key === 'Enter') send(); }, send,
+      services, showKeys: st.keysOpen && m.done, openKeys: () => this.setState({ keysOpen: true }), closeKeys: e => { if (e && e.target !== e.currentTarget) return; this.setState({ keysOpen: false }); }, keyArt
+    };
+  }
+}
+</script>
+</body>
+</html>

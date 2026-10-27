@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;-webkit-font-smoothing:antialiased;background:#F2F2F7}
+*{box-sizing:border-box}
+a{color:#2F5E53}a:hover{color:#1F2B27}
+button,input{font-family:inherit;color:inherit}
+button{cursor:pointer}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="height:100vh;display:flex;flex-direction:column;font-family:Sora,-apple-system,system-ui,sans-serif;color:#1C1C1E;font-size:15px;line-height:1.45;background:#F2F2F7">
+
+<sc-if value="{{ isWeb }}" hint-placeholder-val="{{ true }}">
+  <div style="position:relative;flex:1;min-height:0">
+    {{ webFrame }}
+    <button onClick="{{ toLogin }}" style="position:absolute;right:20px;bottom:20px;z-index:5;border:0;border-radius:999px;height:48px;padding:0 22px;background:#1F2B27;color:#fff;font-weight:700;font-size:15px;box-shadow:0 10px 30px rgba(0,0,0,.3)">Log in to Klyr ›</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));overflow:auto">
+    <div style="background:#1F2B27;color:#fff;padding:48px;display:flex;flex-direction:column;gap:18px;justify-content:space-between;min-height:320px">
+      <button style="align-self:flex-start;border:0;background:none;color:#fff;display:flex;align-items:center;gap:10px;padding:0"><img src="photos/klyr-mark.png" alt="" style="width:32px;height:32px;border-radius:8px;display:block"><span style="font-size:24px;font-weight:800;letter-spacing:-.02em">klyr</span></button>
+      <div style="display:flex;flex-direction:column;gap:12px;max-width:440px">
+        <div style="font-size:clamp(30px,3.6vw,44px);font-weight:800;letter-spacing:-.03em;line-height:1.08;text-wrap:balance">See every dollar before you buy, sell or rent.</div>
+        <div style="font-size:17px;color:rgba(255,255,255,.75);text-wrap:pretty">All-in cost to close for buyers, net proceeds for sellers, move-in cost for renters. Agents, lawyers, lenders, inspectors and insurers log in here too.</div>
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,.55)">Klyr Realty Inc. · RECO registered brokerage</div>
+    </div>
+    <div style="padding:48px 32px;display:flex;justify-content:center;align-items:center">
+      <div style="width:100%;max-width:400px;display:flex;flex-direction:column;gap:16px;animation:rise .3s">
+        <div><div style="font-size:28px;font-weight:800;letter-spacing:-.02em">Log in</div><div style="font-size:15px;color:#5E5E63">Use the email you signed up with.</div></div>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#5E5E63">Email<input value="{{ email }}" onChange="{{ setEmail }}" type="email" placeholder="you@example.com" style="height:50px;border-radius:12px;border:.5px solid rgba(60,60,67,.2);background:#fff;padding:0 14px;font-size:16px;font-weight:500;color:#1C1C1E;outline:none"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#5E5E63">Password<input value="{{ pw }}" onChange="{{ setPw }}" type="password" placeholder="••••••••" style="height:50px;border-radius:12px;border:.5px solid rgba(60,60,67,.2);background:#fff;padding:0 14px;font-size:16px;color:#1C1C1E;outline:none"></label>
+        <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;font-weight:600;color:#A54B00;background:#FBEBDD;border-radius:10px;padding:10px 12px">{{ err }}</div></sc-if>
+        <button onClick="{{ login }}" style="border:0;border-radius:14px;height:52px;background:#2F5E53;color:#fff;font-weight:700;font-size:17px">Log in</button>
+        <button onClick="{{ login }}" style="border:.5px solid rgba(60,60,67,.2);border-radius:14px;height:48px;background:#fff;font-weight:600;font-size:15px">Use a passkey</button>
+        <button onClick="{{ startNew }}" style="border:0;border-radius:14px;height:48px;background:#E4EEEA;color:#2F5E53;font-weight:700;font-size:15px">New to Klyr? Get started</button>
+        <div style="border-top:.5px solid rgba(60,60,67,.16);padding-top:14px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12px;font-weight:700;color:#8E8E93;letter-spacing:.05em">DEMO ACCOUNTS</div>
+          <div style="display:flex;flex-direction:column;gap:6px"><sc-for list="{{ demo }}" as="d" hint-placeholder-count="7"><button onClick="{{ d.pick }}" style="border:{{ d.bd }};border-radius:12px;background:#fff;padding:9px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left"><span style="font-size:14px;font-weight:700">{{ d.name }}</span><span style="font-size:12px;color:#5E5E63;text-align:right">{{ d.roles }}</span></button></sc-for></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isRoles }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1;min-height:0;overflow:auto;padding:56px 24px;display:flex;justify-content:center">
+    <div style="width:100%;max-width:720px;display:flex;flex-direction:column;gap:22px;animation:rise .3s">
+      <div style="display:flex;align-items:center;gap:10px"><img src="photos/klyr-mark.png" alt="" style="width:28px;height:28px;border-radius:7px;display:block"><span style="font-size:20px;font-weight:800">klyr</span><button onClick="{{ signOut }}" style="margin-left:auto;border:0;background:none;color:#2F5E53;font-weight:600;font-size:14px">Not you? Sign out</button></div>
+      <div><div style="font-size:32px;font-weight:800;letter-spacing:-.025em">Welcome back, {{ first }}.</div><div style="font-size:16px;color:#5E5E63">Your account has {{ roleCount }} roles. Pick one to continue. You can switch any time.</div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+        <sc-for list="{{ roleCards }}" as="r" hint-placeholder-count="2">
+          <div style="background:#fff;border-radius:20px;box-shadow:0 1px 2px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.05);padding:20px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;gap:12px;align-items:center"><div style="width:44px;height:44px;border-radius:12px;background:#E4EEEA;color:#2F5E53;display:grid;place-items:center;font-size:15px;font-weight:800;flex:none">{{ r.ab }}</div><div><div style="font-size:18px;font-weight:800">{{ r.l }}</div><div style="font-size:13px;color:#5E5E63">{{ r.app }}</div></div></div>
+            <div style="font-size:14px;color:#5E5E63;text-wrap:pretty">{{ r.sub }}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto"><button onClick="{{ r.web }}" style="border:0;border-radius:12px;height:44px;background:#2F5E53;color:#fff;font-weight:700;font-size:14px">Web app</button><button onClick="{{ r.phone }}" style="border:0;border-radius:12px;height:44px;background:rgba(118,118,128,.12);font-weight:600;font-size:14px">Phone app</button></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+  <div style="height:48px;flex:none;background:#1F2B27;color:#fff;display:flex;align-items:center;gap:12px;padding:0 14px;position:relative;z-index:10">
+    <button onClick="{{ toWeb }}" aria-label="Klyr website" style="border:0;background:none;padding:0;display:flex;align-items:center;gap:8px;color:#fff"><img src="photos/klyr-mark.png" alt="" style="width:24px;height:24px;border-radius:6px;display:block"><span style="font-size:16px;font-weight:800">klyr</span></button>
+    <div style="font-size:12px;font-weight:700;color:#8CC2B1;letter-spacing:.05em">PROTOTYPE</div>
+    <div style="position:relative;margin-left:8px">
+      <button onClick="{{ toggleMenu }}" style="border:0;border-radius:999px;height:32px;padding:0 12px;background:rgba(255,255,255,.12);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;white-space:nowrap">{{ acctName }} · {{ roleL }} <span style="opacity:.7">▾</span></button>
+      <sc-if value="{{ menu }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:38px;left:0;min-width:240px;background:#fff;color:#1C1C1E;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.25);padding:6px;display:flex;flex-direction:column">
+          <div style="font-size:11px;font-weight:700;color:#8E8E93;letter-spacing:.05em;padding:8px 10px 4px">SWITCH ROLE</div>
+          <sc-for list="{{ roleMenu }}" as="r" hint-placeholder-count="2"><button onClick="{{ r.go }}" style="border:0;border-radius:9px;padding:9px 10px;text-align:left;background:{{ r.bg }};font-size:14px;font-weight:600;display:flex;justify-content:space-between"><span>{{ r.l }}</span><span style="color:#2F5E53">{{ r.mark }}</span></button></sc-for>
+          <div style="height:.5px;background:rgba(60,60,67,.16);margin:4px 0"></div>
+          <button onClick="{{ toRoles }}" style="border:0;border-radius:9px;padding:9px 10px;text-align:left;background:none;font-size:14px">All roles</button>
+          <button onClick="{{ signOut }}" style="border:0;border-radius:9px;padding:9px 10px;text-align:left;background:none;font-size:14px;color:#A54B00">Sign out</button>
+        </div>
+      </sc-if>
+    </div>
+    <div style="margin-left:auto;display:flex;background:rgba(255,255,255,.12);border-radius:9px;padding:2px;gap:2px"><sc-for list="{{ devOpts }}" as="d" hint-placeholder-count="2"><button onClick="{{ d.pick }}" style="border:0;border-radius:7px;padding:5px 14px;font-size:13px;font-weight:600;background:{{ d.bg }};color:{{ d.fg }}">{{ d.l }}</button></sc-for></div>
+  </div>
+  <div style="flex:1;min-height:0;position:relative;background:{{ stageBg }}">
+    {{ appFrame }}
+    <sc-if value="{{ noApp }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;display:grid;place-items:center;padding:24px"><div style="background:#fff;border-radius:20px;padding:28px;max-width:420px;display:flex;flex-direction:column;gap:8px;box-shadow:0 6px 20px rgba(0,0,0,.06)"><div style="font-size:22px;font-weight:800">Admin app is next</div><div style="font-size:15px;color:#5E5E63;text-wrap:pretty">Sam can switch to Agent from the role menu for now. The admin app will cover partner checks, the forms library, disputes and payouts.</div></div></div>
+    </sc-if>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(p) { super(p); let s = {}; try { s = JSON.parse(localStorage.getItem('klyr-proto') || '{}'); } catch (e) {}
+    const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('s') : null;
+    this.state = { screen: q || (s.screen === 'web' ? 'login' : s.screen) || 'login', acct: s.acct || null, role: s.role || null, dev: s.dev || 'web', email: '', pw: '', err: '', menu: false }; }
+  save(p) { this.setState(p, () => { const { screen, acct, role, dev } = this.state; try { localStorage.setItem('klyr-proto', JSON.stringify({ screen, acct, role, dev })); } catch (e) {} }); }
+  renderVals() {
+    const st = this.state;
+    const ACC = {
+      alex: ['Alex Rivera', 'alex@example.com', ['buyer', 'seller', 'tenant', 'landlord']],
+      new: ['New account', 'new@example.com', ['new']],
+      maya: ['Maya Chen', 'maya@klyr.ca', ['agent', 'buyer']],
+      lina: ['Lina Chen', 'lina@chenreyes.ca', ['lawyer']],
+      dev: ['Dev Shah', 'dev@northgate.ca', ['lender']],
+      ruth: ['Ruth Osei', 'ruth@clearview.ca', ['inspector']],
+      kim: ['Kim Moreau', 'kim@coastline.ca', ['insurer']],
+      sam: ['Sam Ito', 'sam@klyr.ca', ['admin', 'agent']]
+    };
+    const ROLE = {
+      buyer: ['Buyer', 'BU', 'Klyr', 'Search by all-in cost, make an offer, track every step and get cash back at closing.', 'Klyr Web App.dc.html?role=buyer', 'Klyr Mobile App.dc.html?role=buyer', true],
+      seller: ['Seller', 'SE', 'Klyr', 'See your net proceeds, list for $999 or 1%, approve showings and compare offers.', 'Klyr Web App.dc.html?role=seller', 'Klyr Mobile App.dc.html?role=seller', true],
+      tenant: ['Renter', 'RE', 'Klyr', 'Move-in cost and rent-control status on every rental. Apply with one profile.', 'Klyr Web App.dc.html?role=tenant', 'Klyr Mobile App.dc.html?role=tenant', true],
+      landlord: ['Landlord', 'LL', 'Klyr', 'List your rental, screen applicants fairly and sign the Standard Lease.', 'Klyr Web App.dc.html?role=landlord', 'Klyr Mobile App.dc.html?role=landlord', true],
+      new: ['New to Klyr', 'NE', 'Klyr', 'Start onboarding: what you’re planning, quick setup, RECO guide, account.', 'Klyr Web App.dc.html?r=ob_welcome', 'Klyr Mobile App.dc.html?r=ob_welcome', true],
+      agent: ['Agent', 'AG', 'Klyr Agent', 'Geofenced showings, clients by step, offers, deadlines, documents and pay.', 'Klyr Agent.dc.html', 'Klyr Agent.dc.html?phone=1'],
+      lawyer: ['Lawyer', 'LA', 'Klyr Law', 'Closing files, retainers, client documents and deadlines.', 'Klyr Law.dc.html', 'Klyr Law.dc.html?phone=1'],
+      lender: ['Mortgage advisor', 'MO', 'Klyr Lend', 'Quote requests, ask-to-beat, documents and approvals.', 'Klyr Lend.dc.html', 'Klyr Lend.dc.html?phone=1'],
+      inspector: ['Home inspector', 'IN', 'Klyr Inspect', 'Bookings, access, reports and invoices.', 'Klyr Inspect.dc.html', 'Klyr Inspect.dc.html?phone=1'],
+      insurer: ['Insurance broker', 'IB', 'Klyr Cover', 'Quotes, binders to lawyers and policies.', 'Klyr Cover.dc.html', 'Klyr Cover.dc.html?phone=1'],
+      admin: ['Admin', 'AD', 'Klyr Admin', 'Partner checks, forms library, disputes and payouts.', null, null]
+    };
+    const A = st.acct && ACC[st.acct];
+    const enter = (acct, role, dev) => this.save({ acct, role, dev: dev || st.dev, screen: 'app', menu: false });
+    const afterLogin = id => { const rs = ACC[id][2]; if (rs.length === 1) enter(id, rs[0], 'web'); else this.save({ acct: id, screen: 'roles', err: '' }); };
+    const login = () => { const id = Object.keys(ACC).find(k => ACC[k][1] === st.email.trim().toLowerCase()); if (!id) return this.setState({ err: 'Pick a demo account below, or type one of their emails.' }); afterLogin(id); };
+    const demo = Object.keys(ACC).map(k => ({ name: ACC[k][0], roles: ACC[k][2].map(r => ROLE[r][0]).join(' · '), bd: st.email === ACC[k][1] ? '2px solid #2F5E53' : '.5px solid rgba(60,60,67,.16)', pick: () => this.setState({ email: ACC[k][1], pw: 'demo-pass', err: '' }) }));
+    const R = st.role && ROLE[st.role], phone = st.dev === 'phone';
+    const frame = (src, key, ph) => React.createElement('iframe', { key, src, title: 'Klyr app', style: { width: '100%', height: '100%', border: 0, display: 'block', background: '#F2F2F7' } });
+    let appFrame = null;
+    if (st.screen === 'app' && R && R[4]) {
+      const src = phone ? R[5] : R[4];
+      appFrame = phone && !R[6]
+        ? React.createElement('div', { style: { position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', padding: 20, background: '#1F2B27' } }, React.createElement('div', { style: { width: 390, height: 'min(844px, 100%)', borderRadius: 48, overflow: 'hidden', border: '10px solid #111', background: '#000', boxShadow: '0 30px 80px rgba(0,0,0,.4)' } }, frame(src, src)))
+        : React.createElement('div', { style: { position: 'absolute', inset: 0 } }, frame(src, src));
+    }
+    return {
+      isWeb: st.screen === 'web', isLogin: st.screen === 'login', isRoles: st.screen === 'roles', isApp: st.screen === 'app',
+      webFrame: st.screen === 'web' ? React.createElement('iframe', { key: 'home', src: 'Klyr Home.dc.html', title: 'Klyr website', style: { position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, display: 'block', background: '#fff' } }) : null,
+      toLogin: () => this.save({ screen: 'login' }), startNew: () => enter('new', 'new', st.dev), toWeb: () => this.save({ screen: 'web', menu: false }), toRoles: () => this.save({ screen: 'roles', menu: false }),
+      signOut: () => this.save({ screen: 'login', acct: null, role: null, menu: false, email: '', pw: '' }),
+      email: st.email, pw: st.pw, setEmail: e => this.setState({ email: e.target.value, err: '' }), setPw: e => this.setState({ pw: e.target.value }), login, err: st.err, hasErr: !!st.err, demo,
+      first: A ? A[0].split(' ')[0] : '', roleCount: A ? A[2].length : 0,
+      roleCards: A ? A[2].map(r => ({ l: ROLE[r][0], ab: ROLE[r][1], app: ROLE[r][2], sub: ROLE[r][3], web: () => enter(st.acct, r, 'web'), phone: () => enter(st.acct, r, 'phone') })) : [],
+      acctName: A ? A[0] : '', roleL: R ? R[0] : '', menu: st.menu, toggleMenu: () => this.setState({ menu: !st.menu }),
+      roleMenu: A ? A[2].map(r => ({ l: ROLE[r][0], mark: r === st.role ? '✓' : '', bg: r === st.role ? '#E4EEEA' : 'transparent', go: () => enter(st.acct, r) })) : [],
+      devOpts: [['web', 'Web'], ['phone', 'Phone']].map(([k, l]) => ({ l, bg: st.dev === k ? '#fff' : 'transparent', fg: st.dev === k ? '#1F2B27' : '#fff', pick: () => this.save({ dev: k }) })),
+      appFrame, noApp: st.screen === 'app' && !!R && !R[4], stageBg: phone ? '#1F2B27' : '#F2F2F7'
+    };
+  }
+}
+</script>
+</body>
+</html>

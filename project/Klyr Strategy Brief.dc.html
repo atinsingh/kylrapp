@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;background:#F2F2F7;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2F5E53;text-underline-offset:2px}a:hover{color:#1F2B27}
+</style>
+</helmet>
+<div style="font-family:Sora,system-ui,sans-serif;color:#1C1C1E;font-size:15px;line-height:1.65;padding:40px 20px 80px">
+<article style="max-width:900px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 1px 2px rgba(0,0,0,.05),0 8px 30px rgba(0,0,0,.05);overflow:hidden">
+
+<header style="background:#1F2B27;color:#fff;padding:48px 48px 40px;display:flex;flex-direction:column;gap:14px">
+  <div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#8CC2B1">KLYR · STRATEGY BRIEF · OCTOBER 2026</div>
+  <h1 style="margin:0;font-size:38px;line-height:1.12;font-weight:800;letter-spacing:-.025em;text-wrap:balance">Ontario residential brokerage: market, rules, competitors, and where Klyr can win</h1>
+  <p style="margin:0;font-size:16px;color:#C9DDD6;max-width:680px;text-wrap:pretty">Research on GTA market conditions, TRESA and RECO requirements, and the offers from Keypr, Zown, Wahi and flat-fee brokerages. Ends with a recommended position, pricing model and launch plan.</p>
+</header>
+
+<section style="padding:40px 48px;display:flex;flex-direction:column;gap:18px;border-bottom:1px solid #E5E5EA">
+  <h2 style="margin:0;font-size:13px;font-weight:700;letter-spacing:.08em;color:#2F5E53">KEY TAKEAWAYS</h2>
+  <ol style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:12px;font-size:16px">
+    <li><strong>The rebate war is crowded.</strong> Keypr returns 80% of the buyer-side commission; Zown up to 1.25% of price (max $25,000); Wahi has offered 1%. Competing on rebate size alone puts Klyr in a race to zero.</li>
+    <li><strong>Every competitor stops at the commission.</strong> None shows the buyer the full cost to close (lawyer, inspection, insurance, mortgage rate) or lets those providers compete for the job. Klyr already has this in the prototype.</li>
+    <li><strong>TRESA rewards a software-led process.</strong> Written buyer agreements, the RECO Information Guide, financial-benefit disclosures and multiple-representation consent are all required steps. A product that builds them into the flow turns compliance into trust.</li>
+    <li><strong>The market favours price-sensitive buyers right now.</strong> GTA sales were down 9% year over year in September 2026, average price $1,006,409. The new-build HST rebate (up to $130,000, until March 31, 2027) is pulling some buyers to new construction.</li>
+    <li><strong>Recommended position:</strong> “The lowest all-in cost to buy a home in Ontario, with a full-service agent.” A flat buyer fee with the rest rebated (no lender or lawyer strings), plus a competitive quote marketplace for every closing cost.</li>
+  </ol>
+</section>
+
+<section style="padding:40px 48px;display:flex;flex-direction:column;gap:20px;border-bottom:1px solid #E5E5EA">
+  <h2 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em">1. Market conditions</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+    <div style="background:#F2F2F7;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:4px"><div style="font-size:28px;font-weight:800;letter-spacing:-.02em">$1,006,409</div><div style="font-size:13px;color:#5E5E63">GTA average price, Sept 2026 (−5.1% YoY)</div></div>
+    <div style="background:#F2F2F7;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:4px"><div style="font-size:28px;font-weight:800;letter-spacing:-.02em">5,040</div><div style="font-size:13px;color:#5E5E63">GTA sales, Sept 2026 (−9.0% YoY)</div></div>
+    <div style="background:#F2F2F7;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:4px"><div style="font-size:28px;font-weight:800;letter-spacing:-.02em">$917,600</div><div style="font-size:13px;color:#5E5E63">MLS® HPI composite benchmark (−4.7% YoY)</div></div>
+    <div style="background:#F2F2F7;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:4px"><div style="font-size:28px;font-weight:800;letter-spacing:-.02em">$605,257</div><div style="font-size:13px;color:#5E5E63">GTA condo apartment average (−7.7% YoY)</div></div>
+  </div>
+  <p style="margin:0;text-wrap:pretty">TRREB’s September 2026 report shows falling sales and prices, with active listings down 9.3% (<a href="https://trreb.ca/wp-content/files/market-stats/market-watch/mw2609.pdf">TRREB Market Watch</a>). Independent analysis describes listings returning faster than buyers (<a href="https://wowa.ca/toronto-housing-market">WOWA</a>).</p>
+  <p style="margin:0;text-wrap:pretty"><strong>New-build HST rebate.</strong> Agreements signed between April 1, 2026 and March 31, 2027 for a new primary residence can qualify for relief of the full 13% HST up to $1M, capped at $130,000, phasing down between $1.5M and $1.85M (<a href="https://trreb.ca/wp-content/files/homeownership/2026-HST-New-Home-Buyer-Rebate.pdf">TRREB</a>, <a href="https://www.gta-homes.com/real-insights/news/ontario-homebuyers-save-up-to-130k-on-new-homes/">GTA-Homes</a>). One economist quoted in Now Toronto suggested it may be shifting buyers from resale (<a href="https://wahi.com/ca/en/in-the-news">via Wahi press page</a>). Builders reported a sales jump after launch (<a href="https://www.theglobeandmail.com/business/article-ontario-new-build-home-sales-surge-after-launch-of-hst-rebate/">Globe and Mail</a>). Implementation details (APS wording, assignments, lender treatment) were still being clarified mid-2026 (<a href="https://www.jodyandpaula.ca/blog/2026/05/28/Ontarios-Expanded-HST-Rebate-What-Buyers-and-Sellers-Need-to-Know-in-2026">Real Broker Ontario</a>).</p>
+  <div style="background:#E4EEEA;border-radius:14px;padding:18px 20px;font-size:14px"><strong>What this means for Klyr (inference).</strong> Buyers have more choice and more time, so cost and confidence matter more than speed. A new-build lane with HST-rebate guidance is a time-limited opportunity worth testing before March 2027.</div>
+</section>
+
+<section style="padding:40px 48px;display:flex;flex-direction:column;gap:16px;border-bottom:1px solid #E5E5EA">
+  <h2 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em">2. How brokerage is paid in Ontario</h2>
+  <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;text-wrap:pretty">
+    <li>Commission is negotiated, not regulated. The convention is 5% split 2.5% / 2.5% plus 13% HST, paid by the seller, but rate, split and payer are all negotiable (<a href="https://examace.ca/real-estate-commission-ontario">ExamAce</a>). Observed 2026 totals range 3.5–5% (<a href="https://examace.ca/blog/real-estate-agent-fees-commission-ontario">ExamAce</a>).</li>
+    <li>Brokerages may not collude to fix commissions or imply a “standard” rate (<a href="https://www.getwhatyouwant.ca/real-estate-commission-explained">source</a>). Klyr copy must avoid “the standard 2.5%”.</li>
+    <li>Under TRESA the buyer agreement must state how the buyer’s brokerage is paid. If the buyer can’t pay, their agent can negotiate a seller-paid clause in the APS (<a href="https://www.reco.on.ca/agents-and-brokerages/tresa-explained/tresa-faqs/">RECO TRESA FAQs</a>). The co-op offered by a listing is not guaranteed, so a rebate must be calculated on what Klyr actually receives.</li>
+    <li>Rebates to a brokerage’s own buyer client are legal if disclosed and paid by the brokerage; commission can’t be paid to an unregistered third party (<a href="https://zown.ca/blog/cashback-realtor-ontario">Zown, citing TRESA</a>).</li>
+  </ul>
+</section>
+
+<section style="padding:40px 48px;display:flex;flex-direction:column;gap:16px;border-bottom:1px solid #E5E5EA">
+  <h2 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em">3. Competitor offers</h2>
+  <div style="overflow-x:auto">
+  <table style="width:100%;min-width:640px;border-collapse:collapse;font-size:14px">
+    <thead><tr style="text-align:left;color:#5E5E63;font-size:12px;letter-spacing:.04em"><th style="padding:10px 10px 10px 0;border-bottom:1px solid #D1D1D6">BROKERAGE</th><th style="padding:10px;border-bottom:1px solid #D1D1D6">OFFER</th><th style="padding:10px;border-bottom:1px solid #D1D1D6">SERVICE MODEL</th><th style="padding:10px 0 10px 10px;border-bottom:1px solid #D1D1D6">CONDITIONS / GAPS</th></tr></thead>
+    <tbody style="vertical-align:top">
+      <tr><td style="padding:12px 10px 12px 0;border-bottom:1px solid #E5E5EA;font-weight:700">Keypr</td><td style="padding:12px 10px;border-bottom:1px solid #E5E5EA">80% of buyer-side commission back; ~$20,000 on a $1M home (<a href="https://www.keypr.ca/">keypr.ca</a>)</td><td style="padding:12px 10px;border-bottom:1px solid #E5E5EA">Self-directed. Claims ~15 agent hours per deal vs 80+ traditional; agents specialise in negotiation (<a href="https://keypr.ca/about">about</a>, <a href="https://keycrew.co/journal/keyprs-80-commission-refund-model-is-challenging-real-estates-traditional-pricing/">KeyCrew</a>)</td><td style="padding:12px 0 12px 10px;border-bottom:1px solid #E5E5EA">Buyer does the search and much of the legwork. Buy-side only.</td></tr>
+      <tr><td style="padding:12px 10px 12px 0;border-bottom:1px solid #E5E5EA;font-weight:700">Zown</td><td style="padding:12px 10px;border-bottom:1px solid #E5E5EA">0.75% of price, up to 1.25% (max $25,000) with partner lender (<a href="https://zown.ca/blog/cashback-realtor-ontario">zown.ca</a>). New rent-rewards app (<a href="https://www.morningstar.com/news/business-wire/20260915516669/zown-launches-canadas-first-of-its-kind-real-estate-app-that-turns-rent-payments-into-homebuying-rewards">Sept 2026</a>)</td><td style="padding:12px 10px;border-bottom:1px solid #E5E5EA">Full service, salaried agents (<a href="https://www.cbinsights.com/company/zown-2">CB Insights</a>). 1,000+ buyers, $7M+ returned since 2022</td><td style="padding:12px 0 12px 10px;border-bottom:1px solid #E5E5EA">Top rebate tied to its mortgage partner. With own lawyer, paid 2–8 weeks after closing. Earlier page listed $90K household income requirement (<a href="https://zown.ca/first-time-home-buyers">page</a>).</td></tr>
+      <tr><td style="padding:12px 10px 12px 0;border-bottom:1px solid #E5E5EA;font-weight:700">Wahi</td><td style="padding:12px 10px;border-bottom:1px solid #E5E5EA">1% of price back in Ontario, as reported by Radio-Canada (<a href="https://wahi.com/ca/en/in-the-news">press page</a>)</td><td style="padding:12px 10px;border-bottom:1px solid #E5E5EA">Digital platform + brokerage; expanded via Uppabe (Ottawa)</td><td style="padding:12px 0 12px 10px;border-bottom:1px solid #E5E5EA">Current rebate terms not verified in this research.</td></tr>
+      <tr><td style="padding:12px 10px 12px 0;border-bottom:1px solid #E5E5EA;font-weight:700">One Percent Realty</td><td style="padding:12px 10px;border-bottom:1px solid #E5E5EA">Seller: $7,950–$9,950, or 1% + $950 over $900K, buyer agent included (<a href="https://www.rocketlistings.ca/flat-fee-mls">as reported Oct 2026</a>)</td><td style="padding:12px 10px;border-bottom:1px solid #E5E5EA">Full-service listing</td><td style="padding:12px 0 12px 10px;border-bottom:1px solid #E5E5EA">Seller-side only.</td></tr>
+      <tr><td style="padding:12px 10px 12px 0;border-bottom:1px solid #E5E5EA;font-weight:700">Flat-fee MLS</td><td style="padding:12px 10px;border-bottom:1px solid #E5E5EA">From $69.99/month (<a href="https://www.rocketlistings.ca/flat-fee-mls">RocketListings</a>) or $249 for 2 months (<a href="https://flatrealestate.ca/">FlatRealEstate</a>)</td><td style="padding:12px 10px;border-bottom:1px solid #E5E5EA">Seller shows, negotiates, handles paperwork</td><td style="padding:12px 0 12px 10px;border-bottom:1px solid #E5E5EA">Seller usually still offers buyer-side commission. Work and risk move to the seller.</td></tr>
+      <tr><td style="padding:12px 10px 12px 0;font-weight:700">Traditional</td><td style="padding:12px 10px">~2.5% per side + HST</td><td style="padding:12px 10px">Agent-led, often paper and phone</td><td style="padding:12px 0 12px 10px">No price transparency; fragmented closing.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin:0;font-size:13px;color:#5E5E63">Offers taken from each company’s own pages where available; dates vary and terms change. Verify before using in comparative advertising.</p>
+</section>
+
+<section style="padding:40px 48px;display:flex;flex-direction:column;gap:16px;border-bottom:1px solid #E5E5EA">
+  <h2 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em">4. Rules the product must follow (TRESA / RECO)</h2>
+  <p style="margin:0;font-size:14px;color:#5E5E63;text-wrap:pretty">RECO is the regulator that enforces TRESA. OREA is the REALTOR® association that publishes the standard forms (for example the Buyer Representation Agreement) and member guidance.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+    <div style="border:1px solid #E5E5EA;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-weight:700">Client or self-represented, nothing in between</div><div style="font-size:14px;color:#3A3A3C;text-wrap:pretty">TRESA removed the “customer” category. Giving advice or services can create an implied agreement (<a href="https://realestatemagazine.ca/when-helpful-advice-becomes-representation-tresas-hidden-risks/">REM, citing RECO Bulletins 2.3, 2.6, 2.7</a>).</div><div style="font-size:13px;color:#2F5E53;font-weight:600">Product: label every in-app tip as general information until the buyer agreement is signed.</div></div>
+    <div style="border:1px solid #E5E5EA;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-weight:700">Written buyer agreement</div><div style="font-size:14px;color:#3A3A3C;text-wrap:pretty">Must be in writing, signed by the brokerage and given to the buyer before an offer; must set term, services, remuneration and termination (<a href="https://realestatemagazine.ca/when-helpful-advice-becomes-representation-tresas-hidden-risks/">REM</a>, O. Reg. 567/05 s.13.6). Industry guidance treats it as required before showings (<a href="https://examace.ca/tresa-phase-2-ontario">ExamAce</a>).</div><div style="font-size:13px;color:#2F5E53;font-weight:600">Product: current gate before the first visit is correct. Rename “RECO Form 300” to “OREA Form 300” in the prototype.</div></div>
+    <div style="border:1px solid #E5E5EA;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-weight:700">RECO Information Guide</div><div style="font-size:14px;color:#3A3A3C;text-wrap:pretty">Must be provided before services, to clients and self-represented parties alike (<a href="https://filipesells.ca/buyer-rights-tresa-checklist/">checklist</a>, <a href="https://www.orea.com/advocacy/TRESA-Phase-2-Updates">OREA</a>).</div><div style="font-size:13px;color:#2F5E53;font-weight:600">Product: show and log acknowledgement at sign-up.</div></div>
+    <div style="border:1px solid #E5E5EA;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-weight:700">Financial benefits</div><div style="font-size:14px;color:#3A3A3C;text-wrap:pretty">Any benefit an agent may receive from a referral must be disclosed as soon as known, with best efforts to get acknowledgement (<a href="https://www.reco.on.ca/agents-and-brokerages/reco-bulletins/reco-bulletin-3-3-financial-benefits">RECO Bulletin 3.3</a>).</div><div style="font-size:13px;color:#2F5E53;font-weight:600">Product: every provider quote shows whether Klyr earns anything from it.</div></div>
+    <div style="border:1px solid #E5E5EA;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-weight:700">Multiple representation</div><div style="font-size:14px;color:#3A3A3C;text-wrap:pretty">Representing buyer and seller in one trade requires written disclosure and each client’s consent (<a href="https://www.reco.on.ca/agents-and-brokerages/tresa-explained/tresa-faqs/">RECO</a>).</div><div style="font-size:13px;color:#2F5E53;font-weight:600">Product: auto-detect when a Klyr buyer views a Klyr listing and trigger consent.</div></div>
+    <div style="border:1px solid #E5E5EA;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-weight:700">Advertising</div><div style="font-size:14px;color:#3A3A3C;text-wrap:pretty">Brokerage named clearly with “brokerage”; claims accurate and verifiable; promises of savings and rebates are scrutinised (<a href="https://reco.on.ca/getmedia/fc6d0358-a8a1-4e6b-bfaa-2b8c312e1c3b/RECO-Bulletin-5-1-Advertising-requirements.pdf">Bulletin 5.1</a>, <a href="https://www.reco.on.ca/getmedia/398b2b0c-2c20-4bec-a8d9-d88fc9e03d18/RECO-Bulletin-5-3-Advertising-online.pdf">5.3</a>).</div><div style="font-size:13px;color:#2F5E53;font-weight:600">Product: “Klyr Realty Inc., Brokerage” on every screen footer; savings calculator shows assumptions.</div></div>
+    <div style="border:1px solid #E5E5EA;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-weight:700">No paid help for self-represented sellers</div><div style="font-size:14px;color:#3A3A3C;text-wrap:pretty">Brokerages must not enter agreements to assist self-represented sellers or charge for it (<a href="https://www.reco.on.ca/agents-and-brokerages/tresa-explained/tresa-faqs/">RECO FAQs</a>).</div><div style="font-size:13px;color:#2F5E53;font-weight:600">Product: the seller app must be a representation service, not a “FSBO toolkit”.</div></div>
+  </div>
+</section>
+
+<section style="padding:40px 48px;display:flex;flex-direction:column;gap:18px;border-bottom:1px solid #E5E5EA;background:#FAFAFC">
+  <h2 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em">5. Recommended position</h2>
+  <blockquote style="margin:0;padding:24px 28px;background:#1F2B27;color:#fff;border-radius:16px;font-size:24px;line-height:1.3;font-weight:700;letter-spacing:-.015em;text-wrap:balance">The lowest all-in cost to buy a home in Ontario, with a full-service agent and every step on one timeline.</blockquote>
+  <p style="margin:0;text-wrap:pretty">Keypr owns “biggest rebate”. Zown owns “down payment help for first-timers”. Neither owns the <em>total</em> cost or the closing experience. Klyr’s prototype already covers what they don’t: lender, lawyer, inspector and insurer quotes, and a day-by-day plan tied to condition periods.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
+    <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:6px"><div style="font-size:12px;font-weight:700;color:#2F5E53;letter-spacing:.06em">PILLAR 1</div><div style="font-weight:700">Flat fee, no strings</div><div style="font-size:14px;color:#3A3A3C;text-wrap:pretty">Klyr keeps one flat buyer fee; the rest of the commission is rebated. Same amount whichever lender or lawyer the buyer chooses, unlike Zown’s tiered offer.</div></div>
+    <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:6px"><div style="font-size:12px;font-weight:700;color:#2F5E53;letter-spacing:.06em">PILLAR 2</div><div style="font-weight:700">Closing-cost marketplace</div><div style="font-size:14px;color:#3A3A3C;text-wrap:pretty">Licensed providers quote side by side, with Klyr’s financial interest disclosed on each. The buyer sees one “cost to close” number.</div></div>
+    <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:6px"><div style="font-size:12px;font-weight:700;color:#2F5E53;letter-spacing:.06em">PILLAR 3</div><div style="font-weight:700">Full-service, fewer hours</div><div style="font-size:14px;color:#3A3A3C;text-wrap:pretty">A real agent for showings and negotiation; the app handles scheduling, documents, conditions and check-ins. Positioned between Keypr (self-directed) and traditional.</div></div>
+    <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:6px"><div style="font-size:12px;font-weight:700;color:#2F5E53;letter-spacing:.06em">PILLAR 4</div><div style="font-weight:700">Compliance as a feature</div><div style="font-size:14px;color:#3A3A3C;text-wrap:pretty">Buyer agreement, Information Guide, disclosures and consents are signed in-app and stored. Marketed as “every promise in writing”.</div></div>
+  </div>
+
+  <h3 style="margin:10px 0 0;font-size:18px;font-weight:700">Illustrative economics on the GTA average ($1,006,409)</h3>
+  <div style="overflow-x:auto">
+  <table style="width:100%;min-width:560px;border-collapse:collapse;font-size:14px">
+    <thead><tr style="text-align:left;color:#5E5E63;font-size:12px;letter-spacing:.04em"><th style="padding:10px 10px 10px 0;border-bottom:1px solid #D1D1D6">MODEL</th><th style="padding:10px;border-bottom:1px solid #D1D1D6;text-align:right">BUYER GETS BACK</th><th style="padding:10px;border-bottom:1px solid #D1D1D6;text-align:right">BROKERAGE KEEPS</th><th style="padding:10px 0 10px 10px;border-bottom:1px solid #D1D1D6">SERVICE</th></tr></thead>
+    <tbody>
+      <tr><td style="padding:10px 10px 10px 0;border-bottom:1px solid #E5E5EA">Traditional</td><td style="padding:10px;border-bottom:1px solid #E5E5EA;text-align:right">$0</td><td style="padding:10px;border-bottom:1px solid #E5E5EA;text-align:right">$25,160</td><td style="padding:10px 0 10px 10px;border-bottom:1px solid #E5E5EA">Full</td></tr>
+      <tr><td style="padding:10px 10px 10px 0;border-bottom:1px solid #E5E5EA">Zown, own lender (0.75%)</td><td style="padding:10px;border-bottom:1px solid #E5E5EA;text-align:right">$7,548</td><td style="padding:10px;border-bottom:1px solid #E5E5EA;text-align:right">$17,612</td><td style="padding:10px 0 10px 10px;border-bottom:1px solid #E5E5EA">Full</td></tr>
+      <tr><td style="padding:10px 10px 10px 0;border-bottom:1px solid #E5E5EA">Zown, partner lender (1.25%)</td><td style="padding:10px;border-bottom:1px solid #E5E5EA;text-align:right">$12,580</td><td style="padding:10px;border-bottom:1px solid #E5E5EA;text-align:right">$12,580</td><td style="padding:10px 0 10px 10px;border-bottom:1px solid #E5E5EA">Full</td></tr>
+      <tr><td style="padding:10px 10px 10px 0;border-bottom:1px solid #E5E5EA">Keypr (80%)</td><td style="padding:10px;border-bottom:1px solid #E5E5EA;text-align:right">$20,128</td><td style="padding:10px;border-bottom:1px solid #E5E5EA;text-align:right">$5,032</td><td style="padding:10px 0 10px 10px;border-bottom:1px solid #E5E5EA">Self-directed</td></tr>
+      <tr style="background:#E4EEEA;font-weight:700"><td style="padding:10px 10px 10px 8px">Klyr proposal: $6,500 flat</td><td style="padding:10px;text-align:right">$18,660</td><td style="padding:10px;text-align:right">$6,500</td><td style="padding:10px 8px 10px 10px">Full, app-led</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin:0;font-size:13px;color:#5E5E63;text-wrap:pretty">Assumes a 2.5% buyer-side commission paid by the seller, before HST. Actual co-op varies by listing; if it is lower, the rebate shrinks and the buyer agreement must say who covers any gap. The $6,500 fee is a proposal to test, not a researched figure. On cheaper homes a flat fee leaves a smaller rebate, so set a floor (for example, minimum rebate 0 and fee capped at the commission received).</p>
+  <div style="background:#E4EEEA;border-radius:14px;padding:18px 20px;font-size:14px;text-wrap:pretty"><strong>Why not just beat 80%?</strong> Keypr keeps about $5,000 for ~15 agent hours. A full-service agent needs more time. Klyr’s pitch is a rebate within ~$1,500 of Keypr plus a real agent, plus savings on lawyer, inspection, insurance and mortgage that Keypr doesn’t surface.</div>
+</section>
+
+<section style="padding:40px 48px;display:flex;flex-direction:column;gap:16px;border-bottom:1px solid #E5E5EA">
+  <h2 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em">6. Target customers</h2>
+  <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;text-wrap:pretty">
+    <li><strong>First-time buyers, 28–40, GTA condo and townhouse.</strong> Most price-sensitive. In Zown’s Angus Reid survey, 42% of respondents chose a cash-back-style incentive as the most helpful support (<a href="https://www.morningstar.com/news/business-wire/20260915516669/zown-launches-canadas-first-of-its-kind-real-estate-app-that-turns-rent-payments-into-homebuying-rewards">Business Wire</a>).</li>
+    <li><strong>Newcomers.</strong> Unfamiliar with the Ontario process, so the step-by-step timeline and plain-language conditions matter most. Zown already targets this group.</li>
+    <li><strong>Move-up sellers who also buy.</strong> Klyr can represent both sides of their own move (list and buy) with one fee schedule, which rebate-only startups can’t.</li>
+    <li><strong>New-build buyers until March 2027.</strong> HST-rebate checker in the app; coordinate with a Klyr lawyer on APS rebate wording.</li>
+  </ul>
+</section>
+
+<section style="padding:40px 48px;display:flex;flex-direction:column;gap:16px;border-bottom:1px solid #E5E5EA">
+  <h2 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em">7. Launch plan</h2>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;padding:16px 0;border-bottom:1px solid #E5E5EA"><div style="font-weight:800;color:#2F5E53">0–3 mo<div style="font-size:12px;font-weight:600;color:#5E5E63">Foundation</div></div><div style="font-size:14px;text-wrap:pretty">Register brokerage and broker of record with RECO; E&amp;O insurance and trust account; board membership for MLS® access (TRREB). Lawyer review of rebate wording, buyer agreement schedule, provider fee disclosures and all savings advertising. Recruit 3–5 agents.</div></div>
+    <div style="display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;padding:16px 0;border-bottom:1px solid #E5E5EA"><div style="font-weight:800;color:#2F5E53">3–6 mo<div style="font-size:12px;font-weight:600;color:#5E5E63">Buyer pilot</div></div><div style="font-size:14px;text-wrap:pretty">Launch buyer app in Toronto and Mississauga. Onboard 2 lenders, 2 law firms, 3 inspectors, 2 insurers into the quote builders. Test two fee levels. Target: 20 closed buys, cost to close shown on every deal.</div></div>
+    <div style="display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;padding:16px 0;border-bottom:1px solid #E5E5EA"><div style="font-weight:800;color:#2F5E53">6–12 mo<div style="font-size:12px;font-weight:600;color:#5E5E63">Seller + scale</div></div><div style="font-size:14px;text-wrap:pretty">Launch fixed-fee full-service listing (benchmark: One Percent Realty’s $7,950–$9,950). Buy-and-sell bundle. Expand to 905 region and Ottawa. Target: 100 transactions.</div></div>
+    <div style="display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;padding:16px 0"><div style="font-weight:800;color:#2F5E53">12+ mo<div style="font-size:12px;font-weight:600;color:#5E5E63">Platform</div></div><div style="font-size:14px;text-wrap:pretty">Open provider subscriptions (disclosed), admin and compliance dashboard, agent productivity metrics.</div></div>
+  </div>
+  <h3 style="margin:8px 0 0;font-size:18px;font-weight:700">Metrics to track</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:14px">
+    <div style="background:#F2F2F7;border-radius:12px;padding:14px">Sign-up → signed buyer agreement</div>
+    <div style="background:#F2F2F7;border-radius:12px;padding:14px">Agreement → firm deal within 90 days</div>
+    <div style="background:#F2F2F7;border-radius:12px;padding:14px">Agent hours per closed deal</div>
+    <div style="background:#F2F2F7;border-radius:12px;padding:14px">Average buyer saving: rebate + provider savings</div>
+    <div style="background:#F2F2F7;border-radius:12px;padding:14px">Conditions waived on time</div>
+    <div style="background:#F2F2F7;border-radius:12px;padding:14px">Customer acquisition cost vs fee kept</div>
+  </div>
+</section>
+
+<section style="padding:40px 48px;display:flex;flex-direction:column;gap:14px;border-bottom:1px solid #E5E5EA">
+  <h2 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em">8. Risks</h2>
+  <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;text-wrap:pretty">
+    <li><strong>Falling co-op commissions.</strong> If listings offer less, rebate-led models weaken. A flat fee is easier to explain than a percentage of an uncertain number.</li>
+    <li><strong>Provider fees as conflicts.</strong> Referral income from lenders or lawyers must be disclosed under Bulletin 3.3 and could undermine the “lowest cost” claim. Consider flat platform subscriptions instead of per-deal referral fees.</li>
+    <li><strong>Lender treatment of rebates.</strong> Some lenders restrict how rebates count toward the down payment. Confirm with partner lenders before promising “at closing”.</li>
+    <li><strong>Advertising claims.</strong> Comparative savings against named competitors must be accurate and current.</li>
+    <li><strong>Capital.</strong> Zown and Keypr are funded and already have track records. Klyr needs a tight launch geography.</li>
+  </ul>
+</section>
+
+<section style="padding:40px 48px;display:flex;flex-direction:column;gap:12px">
+  <h2 style="margin:0;font-size:13px;font-weight:700;letter-spacing:.08em;color:#2F5E53">SOURCES</h2>
+  <p style="margin:0;font-size:13px;color:#5E5E63">Accessed October 26, 2026. Not legal advice; confirm regulatory items with a real estate lawyer and RECO.</p>
+  <ul style="margin:0;padding-left:18px;font-size:13px;display:flex;flex-direction:column;gap:4px;columns:2 280px">
+    <li><a href="https://trreb.ca/wp-content/files/market-stats/market-watch/mw2609.pdf">TRREB Market Watch, Sept 2026</a></li>
+    <li><a href="https://wowa.ca/toronto-housing-market">WOWA Toronto market, Oct 2026</a></li>
+    <li><a href="https://trreb.ca/wp-content/files/homeownership/2026-HST-New-Home-Buyer-Rebate.pdf">TRREB HST New Home Buyer Rebate</a></li>
+    <li><a href="https://www.theglobeandmail.com/business/article-ontario-new-build-home-sales-surge-after-launch-of-hst-rebate/">Globe and Mail, Apr 2026</a></li>
+    <li><a href="https://www.reco.on.ca/agents-and-brokerages/tresa-explained/tresa-faqs/">RECO TRESA FAQs</a></li>
+    <li><a href="https://www.reco.on.ca/agents-and-brokerages/reco-bulletins/reco-bulletin-3-3-financial-benefits">RECO Bulletin 3.3</a></li>
+    <li><a href="https://reco.on.ca/getmedia/fc6d0358-a8a1-4e6b-bfaa-2b8c312e1c3b/RECO-Bulletin-5-1-Advertising-requirements.pdf">RECO Bulletin 5.1</a></li>
+    <li><a href="https://www.orea.com/advocacy/TRESA-Phase-2-Updates">OREA TRESA Phase 2 updates</a></li>
+    <li><a href="https://realestatemagazine.ca/when-helpful-advice-becomes-representation-tresas-hidden-risks/">Real Estate Magazine on implied representation</a></li>
+    <li><a href="https://www.keypr.ca/">Keypr</a> · <a href="https://keypr.ca/about">About</a></li>
+    <li><a href="https://zown.ca/blog/cashback-realtor-ontario">Zown cashback explainer</a></li>
+    <li><a href="https://www.morningstar.com/news/business-wire/20260915516669/zown-launches-canadas-first-of-its-kind-real-estate-app-that-turns-rent-payments-into-homebuying-rewards">Zown rent rewards release</a></li>
+    <li><a href="https://wahi.com/ca/en/in-the-news">Wahi press page</a></li>
+    <li><a href="https://www.rocketlistings.ca/flat-fee-mls">RocketListings price comparison</a></li>
+    <li><a href="https://examace.ca/real-estate-commission-ontario">ExamAce commission guide</a></li>
+  </ul>
+</section>
+
+</article>
+</div>
+</x-dc>
+</body>
+</html>

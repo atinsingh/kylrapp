@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="klyr-photos-data.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;background:#fff;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2F5E53;text-decoration:none}a:hover{color:#1F2B27}
+button,input{font-family:inherit;color:inherit}button{cursor:pointer}
+.kr{-webkit-appearance:none;appearance:none;background:transparent;margin:0;width:100%}
+.kr::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:rgba(255,255,255,.25)}
+.kr::-moz-range-track{height:6px;border-radius:3px;background:rgba(255,255,255,.25)}
+.kr::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:grab}
+.kr::-moz-range-thumb{width:28px;height:28px;border:0;border-radius:50%;background:#fff;cursor:grab}
+.kr.dk::-webkit-slider-runnable-track{background:rgba(31,43,39,.15)}
+.kr.dk::-moz-range-track{background:rgba(31,43,39,.15)}
+.kr.dk::-webkit-slider-thumb{background:#2F5E53}
+.kr.dk::-moz-range-thumb{background:#2F5E53}
+</style>
+</helmet>
+<div style="font-family:Sora,-apple-system,system-ui,sans-serif;color:#1D1D1F;font-size:17px;line-height:1.47">
+
+  <nav style="position:sticky;top:0;z-index:10;background:rgba(251,251,253,.8);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid rgba(0,0,0,.08)">
+    <div style="max-width:1080px;margin:0 auto;height:52px;padding:0 22px;display:flex;align-items:center;gap:28px">
+      <a href="#top" style="display:flex;align-items:center;gap:8px;color:#1D1D1F"><img src="photos/klyr-mark.png" alt="" style="width:24px;height:24px;border-radius:6px;display:block"><span style="font-size:18px;font-weight:800;letter-spacing:-.02em">Klyr</span></a>
+      <div style="display:flex;gap:24px;font-size:13px;flex:1;min-width:0;white-space:nowrap;overflow:hidden">
+        <a href="#ai" style="color:#1D1D1F">Klyr AI</a><a href="#buy" style="color:#1D1D1F">Cash back</a><a href="#sell" style="color:#1D1D1F">Sell</a><a href="#how" style="color:#1D1D1F">How it works</a>
+      </div>
+      <button onClick="{{ openApp }}" style="white-space:nowrap;flex:none;border:0;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;background:#2F5E53;color:#fff;border-radius:999px;padding:6px 14px">{{ cta }}</button>
+    </div>
+  </nav>
+
+  <section id="top" style="background:#1F2B27;color:#fff;overflow:hidden">
+    <div style="max-width:1080px;margin:0 auto;padding:96px 22px 0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px">
+      <div style="font-size:17px;font-weight:600;color:#8CC2B1">Klyr · Ontario real estate with AI</div>
+      <h1 style="margin:0;font-size:clamp(48px,8vw,96px);font-weight:900;letter-spacing:-.045em;line-height:.98;text-wrap:balance">Buy smarter with AI.<br>Get paid at closing.</h1>
+      <p style="margin:0;font-size:clamp(19px,2.2vw,24px);color:rgba(255,255,255,.78);max-width:640px;text-wrap:pretty">Klyr AI finds the home, shapes your offer and spots every saving. You get up to 80% of the buyer commission back, and your whole move runs in one app.</p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+        <a href="#buy" style="white-space:nowrap;background:#fff;color:#1F2B27;font-weight:700;border-radius:999px;padding:13px 24px;font-size:17px">See your cash back</a>
+        <a href="#sell" style="white-space:nowrap;color:#8CC2B1;font-weight:600;padding:13px 8px;font-size:17px">Selling? ›</a>
+      </div>
+      <div style="position:relative;width:100%;max-width:980px;margin-top:48px;border-radius:24px 24px 0 0;overflow:hidden;aspect-ratio:16/8">
+        <img src="photos/home-1.png" alt="A detached brick house at dusk" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(31,43,39,0) 55%,rgba(31,43,39,.7))"></div>
+        <div style="position:absolute;right:24px;bottom:24px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:#1D1D1F;border-radius:18px;padding:16px 20px;text-align:left;display:flex;flex-direction:column;gap:2px;box-shadow:0 10px 30px rgba(0,0,0,.25)">
+          <div style="font-size:12px;font-weight:700;color:#2F5E53;letter-spacing:.05em">CASH BACK ON CLOSING DAY</div>
+          <div style="font-size:34px;font-weight:900;letter-spacing:-.03em;line-height:1.05">$20,240</div>
+          <div style="font-size:13px;color:#6E6E73">48 Bellwoods Ave · $1,150,000</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ai" style="background:#fff">
+    <div style="max-width:1080px;margin:0 auto;padding:110px 22px;display:flex;flex-direction:column;gap:48px">
+      <div style="display:flex;flex-direction:column;gap:14px;text-align:center;align-items:center">
+        <div style="font-size:17px;font-weight:600;color:#2F5E53">Klyr AI</div>
+        <h2 style="margin:0;font-size:clamp(40px,5.5vw,64px);font-weight:900;letter-spacing:-.04em;line-height:1.02;text-wrap:balance">The smartest offer in Ontario.</h2>
+        <p style="margin:0;font-size:20px;color:#6E6E73;max-width:640px;text-wrap:pretty">Klyr AI reads recent sales, days on market and the listing itself. It tells you what to offer, which safety checks to keep, and how likely the seller is to say yes.</p>
+      </div>
+      <div style="background:#F5F5F7;border-radius:28px;padding:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;align-items:center">
+        <div style="background:#fff;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="font-size:12px;font-weight:700;color:#8E8E93;letter-spacing:.05em">YOUR OFFER · 48 BELLWOODS AVE</div><div style="font-size:12px;font-weight:700;color:#2B7A4B;background:#E3F2E8;border-radius:999px;padding:4px 10px">Good chance</div></div>
+          <div style="font-size:46px;font-weight:900;letter-spacing:-.04em;line-height:1">$1,140,000</div>
+          <div style="height:6px;border-radius:3px;background:rgba(118,118,128,.12);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:58%;border-radius:3px;background:#2F5E53"></div><div style="position:absolute;left:58%;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25)"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#6E6E73"><span>$1,035,000</span><span>Asking $1,150,000</span><span>$1,240,000</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;background:#E4EEEA;border-radius:12px;padding:12px"><div style="font-size:11px;font-weight:800;color:#2F5E53;letter-spacing:.04em;padding-top:2px;white-space:nowrap">KLYR AI</div><div style="font-size:14px">Similar homes sold for $1,115,000 to $1,160,000. Keep your inspection check: the furnace is 14 years old.</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:22px;font-weight:800;letter-spacing:-.02em">Search in your own words</div><div style="font-size:16px;color:#6E6E73">“3 bed under $1.2M near a park.” Klyr AI filters, ranks and explains every match.</div></div>
+          <div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:22px;font-weight:800;letter-spacing:-.02em">Tours, schools and the real story</div><div style="font-size:16px;color:#6E6E73">Room-by-room virtual tours, nearby schools, and what makes each home special, or risky.</div></div>
+          <div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:22px;font-weight:800;letter-spacing:-.02em">Every saving, found for you</div><div style="font-size:16px;color:#6E6E73">Tax refunds, cheaper insurance, a lower rate. Klyr adds them up and applies them in one tap.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="buy" style="background:#2F5E53;color:#fff">
+    <div style="max-width:1080px;margin:0 auto;padding:110px 22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:56px;align-items:center">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="font-size:17px;font-weight:600;color:#BFE0D5">Buying</div>
+        <h2 style="margin:0;font-size:clamp(40px,5.5vw,64px);font-weight:900;letter-spacing:-.04em;line-height:1.02;text-wrap:balance">The commission comes back to you.</h2>
+        <p style="margin:0;font-size:20px;color:rgba(255,255,255,.82);text-wrap:pretty">When you buy, the seller pays the buyer-side commission. Klyr keeps a small share and sends the rest to your bank account after closing. We disclose it to your lender, and you never owe a commission shortfall.</p>
+      </div>
+      <div style="background:rgba(0,0,0,.18);border-radius:28px;padding:32px;display:flex;flex-direction:column;gap:22px">
+        <div style="display:flex;background:rgba(255,255,255,.14);border-radius:12px;padding:3px;gap:3px">
+          <button onClick="{{ guided.pick }}" style="flex:1;border:0;border-radius:10px;padding:9px 0;font-size:15px;font-weight:700;background:{{ guided.bg }};color:{{ guided.fg }}">Guided · 60%</button>
+          <button onClick="{{ self.pick }}" style="flex:1;border:0;border-radius:10px;padding:9px 0;font-size:15px;font-weight:700;background:{{ self.bg }};color:{{ self.fg }}">Self-directed · 80%</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;font-size:15px;color:rgba(255,255,255,.8)"><span>Home price</span><span style="font-weight:700;color:#fff;font-variant-numeric:tabular-nums">{{ priceFmt }}</span></div>
+          <input class="kr" type="range" min="400000" max="2500000" step="10000" value="{{ price }}" onChange="{{ setPrice }}" aria-label="Home price">
+        </div>
+        <div style="border-top:.5px solid rgba(255,255,255,.2);padding-top:20px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:15px;color:rgba(255,255,255,.8)">Your cash back at closing</div>
+          <div style="font-size:clamp(56px,7vw,80px);font-weight:900;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums">{{ cb }}</div>
+          <div style="font-size:14px;color:rgba(255,255,255,.72)">{{ pct }} of a {{ comm }} buyer-side commission (2.2% assumed). {{ planNote }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sell" style="background:#F5F5F7">
+    <div style="max-width:1080px;margin:0 auto;padding:110px 22px;display:flex;flex-direction:column;gap:48px">
+      <div style="display:flex;flex-direction:column;gap:14px;text-align:center;align-items:center">
+        <div style="font-size:17px;font-weight:600;color:#2F5E53">Selling</div>
+        <h2 style="margin:0;font-size:clamp(40px,5.5vw,64px);font-weight:900;letter-spacing:-.04em;line-height:1.02">Sell for $999.</h2>
+        <p style="margin:0;font-size:20px;color:#6E6E73;max-width:620px;text-wrap:pretty">A flat listing fee, or 1% if you want an advisor to run showings and offers. Keep what a typical 2.5% listing commission would have cost.</p>
+      </div>
+      <div style="background:#fff;border-radius:28px;padding:36px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,.04)">
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <div style="display:flex;background:rgba(118,118,128,.12);border-radius:10px;padding:2px;gap:2px">
+            <button onClick="{{ flat.pick }}" style="flex:1;border:0;border-radius:8px;padding:8px 0;font-size:15px;font-weight:600;background:{{ flat.bg }};box-shadow:{{ flat.sh }}">Flat · $999</button>
+            <button onClick="{{ assisted.pick }}" style="flex:1;border:0;border-radius:8px;padding:8px 0;font-size:15px;font-weight:600;background:{{ assisted.bg }};box-shadow:{{ assisted.sh }}">Assisted · 1%</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between;font-size:15px;color:#6E6E73"><span>Sale price</span><span style="font-weight:700;color:#1D1D1F;font-variant-numeric:tabular-nums">{{ spriceFmt }}</span></div>
+            <input class="kr dk" type="range" min="400000" max="2500000" step="10000" value="{{ sprice }}" onChange="{{ setSprice }}" aria-label="Sale price">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:#6E6E73">Typical 2.5% listing fee</span><span style="font-weight:600;font-variant-numeric:tabular-nums">{{ typical }}</span></div><div style="height:10px;border-radius:5px;background:#D2D2D7"></div></div>
+            <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:#2F5E53;font-weight:600">Klyr · {{ feeLabel }}</span><span style="font-weight:600;font-variant-numeric:tabular-nums;color:#2F5E53">{{ fee }}</span></div><div style="height:10px;border-radius:5px;background:#2F5E53;width:{{ barKlyr }}%;transition:width .3s"></div></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:15px;color:#6E6E73">You keep</div>
+          <div style="font-size:clamp(56px,7vw,80px);font-weight:900;letter-spacing:-.045em;line-height:1;color:#2F5E53;font-variant-numeric:tabular-nums">{{ save }}</div>
+          <div style="font-size:14px;color:#6E6E73">Difference including HST. The buyer’s agent commission is set separately and shown before you list.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" style="background:#fff">
+    <div style="max-width:1080px;margin:0 auto;padding:110px 22px;display:flex;flex-direction:column;gap:56px">
+      <div style="display:flex;flex-direction:column;gap:14px;text-align:center;align-items:center">
+        <div style="font-size:17px;font-weight:600;color:#2F5E53">Easy, start to finish</div>
+        <h2 style="margin:0;font-size:clamp(40px,5.5vw,64px);font-weight:900;letter-spacing:-.04em;line-height:1.02;text-wrap:balance">Offer to keys.<br>One app.</h2>
+        <p style="margin:0;font-size:20px;color:#6E6E73;max-width:640px;text-wrap:pretty">Every Ontario form, condition, cost and professional sits on one timeline. You always know what happens next and who is doing it.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px;background:#F5F5F7;border-radius:20px;padding:6px">
+        <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><div style="font-size:13px;font-weight:700;color:#2F5E53">01</div><div style="font-size:17px;font-weight:700">Get ready</div><div style="font-size:14px;color:#6E6E73">ID, pre-approval and agreement in minutes.</div></div>
+        <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><div style="font-size:13px;font-weight:700;color:#2F5E53">02</div><div style="font-size:17px;font-weight:700">Offer</div><div style="font-size:14px;color:#6E6E73">Build and sign Form 100 on your phone.</div></div>
+        <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><div style="font-size:13px;font-weight:700;color:#2F5E53">03</div><div style="font-size:17px;font-weight:700">Conditions</div><div style="font-size:14px;color:#6E6E73">Countdowns. Waive or fulfil in one tap.</div></div>
+        <div style="background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><div style="font-size:13px;font-weight:700;color:#2F5E53">04</div><div style="font-size:17px;font-weight:700">Closing</div><div style="font-size:14px;color:#6E6E73">Lawyer, lender and insurer in one room.</div></div>
+        <div style="background:#2F5E53;color:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><div style="font-size:13px;font-weight:700;color:#BFE0D5">05</div><div style="font-size:17px;font-weight:700">Keys + cash back</div><div style="font-size:14px;color:rgba(255,255,255,.85)">Sent to your bank after closing.</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
+        <div style="background:#F5F5F7;border-radius:24px;padding:32px;display:flex;flex-direction:column;gap:8px"><div style="font-size:26px;font-weight:800;letter-spacing:-.025em">A receipt that fills itself in.</div><div style="font-size:17px;color:#6E6E73">Land transfer tax, legal fees, title insurance and adjustments appear as each is confirmed, with your cash back already counted.</div></div>
+        <div style="background:#F5F5F7;border-radius:24px;padding:32px;display:flex;flex-direction:column;gap:8px"><div style="font-size:26px;font-weight:800;letter-spacing:-.025em">Forms in plain words.</div><div style="font-size:17px;color:#6E6E73">Every OREA clause explained beside the form. Sign when it unlocks, with a full audit trail.</div></div>
+        <div style="background:#F5F5F7;border-radius:24px;padding:32px;display:flex;flex-direction:column;gap:8px"><div style="font-size:26px;font-weight:800;letter-spacing:-.025em">Everyone in one room.</div><div style="font-size:17px;color:#6E6E73">Your agent, lender, lawyer, inspector and insurer share one timeline. No chasing emails.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#1F2B27;color:#fff">
+    <div style="max-width:1080px;margin:0 auto;padding:110px 22px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px">
+      <img src="photos/klyr-mark.png" alt="" style="width:64px;height:64px;border-radius:15px;display:block">
+      <h2 style="margin:0;font-size:clamp(40px,5.5vw,64px);font-weight:900;letter-spacing:-.04em;line-height:1.02;text-wrap:balance">Keep more of the money.</h2>
+      <p style="margin:0;font-size:20px;color:rgba(255,255,255,.78);max-width:560px">Buy, sell, rent or lease out in Ontario. Start in the app; a licensed advisor is there when you need one.</p>
+      <button onClick="{{ openApp }}" style="white-space:nowrap;flex:none;border:0;cursor:pointer;font-family:inherit;margin-top:8px;background:#fff;color:#1F2B27;font-weight:700;border-radius:999px;padding:14px 26px;font-size:17px">{{ cta }}</button>
+    </div>
+  </section>
+
+  <footer style="background:#F5F5F7;color:#6E6E73;font-size:12px">
+    <div style="max-width:1080px;margin:0 auto;padding:22px;display:flex;flex-direction:column;gap:8px;line-height:1.5">
+      <div>Cash back examples assume a 2.2% buyer-side commission; actual commission depends on the listing. Cash back is paid after closing and may have tax implications. Klyr Realty is a brokerage registered with RECO. Figures shown are illustrative.</div>
+      <div style="border-top:.5px solid #D2D2D7;padding-top:8px">© 2026 Klyr Realty · Toronto, Ontario</div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { price: 1150000, plan: 'self', sprice: 1150000, tier: 'flat' };
+  renderVals() {
+    const s = this.state, f = n => '$' + Math.round(n).toLocaleString('en-CA');
+    const share = s.plan === 'self' ? .8 : .6, comm = s.price * .022, cb = comm * share;
+    const fee = s.tier === 'flat' ? 999 : s.sprice * .01, typical = s.sprice * .025, save = (typical - fee) * 1.13;
+    const seg = (cur, k) => ({ bg: cur === k ? '#fff' : 'transparent', fg: cur === k ? '#1F2B27' : '#fff' });
+    const segD = (cur, k) => ({ bg: cur === k ? '#fff' : 'transparent', sh: cur === k ? '0 1px 3px rgba(0,0,0,.15)' : 'none' });
+    const openApp = () => { if (this.props.onOpen) { this.props.onOpen(); try { window.scrollTo(0, 0); } catch (e) {} } else { try { window.top.location.href = 'Klyr.dc.html?s=login'; } catch (e) { location.href = 'Klyr.dc.html?s=login'; } } };
+    return { openApp, cta: this.props.cta || 'Log in',
+      price: s.price, priceFmt: f(s.price), setPrice: e => this.setState({ price: +e.target.value }),
+      cb: f(cb), comm: f(comm), pct: Math.round(share * 100) + '%',
+      guided: { ...seg(s.plan, 'guided'), pick: () => this.setState({ plan: 'guided' }) },
+      self: { ...seg(s.plan, 'self'), pick: () => this.setState({ plan: 'self' }) },
+      planNote: s.plan === 'self' ? 'Self-directed: you lead, a licensed advisor is on call.' : 'Guided: an advisor and showing agent with you at every step.',
+      sprice: s.sprice, spriceFmt: f(s.sprice), setSprice: e => this.setState({ sprice: +e.target.value }),
+      fee: f(fee), feeLabel: s.tier === 'flat' ? '$999 + HST' : '1% + HST', typical: f(typical), save: f(save),
+      flat: { ...segD(s.tier, 'flat'), pick: () => this.setState({ tier: 'flat' }) },
+      assisted: { ...segD(s.tier, 'assisted'), pick: () => this.setState({ tier: 'assisted' }) },
+      barKlyr: Math.max(2, fee / typical * 100)
+    };
+  }
+}
+</script>
+</body>
+</html>

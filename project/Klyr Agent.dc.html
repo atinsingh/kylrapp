@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="klyr-partners.js"></script>
+<style>
+html,body{margin:0;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2F5E53}a:hover{color:#1F2B27}
+button,input,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer}
+[data-theme="light"]{--bg:#F2F2F7;--card:#FFFFFF;--card2:#F5F5F8;--side:#E9E9EE;--label:#1C1C1E;--label2:#5E5E63;--label3:#8E8E93;--sep:rgba(60,60,67,.16);--fill:rgba(118,118,128,.12);--tint:#2F5E53;--tintSoft:#E4EEEA;--onTint:#FFFFFF;--ok:#2B7A4B;--okSoft:#E3F2E8;--warn:#A54B00;--warnSoft:#FBEBDD;--bar:rgba(242,242,247,.86);--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.05)}
+@keyframes ringout{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.9);opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div data-theme="light" style="min-height:100vh;background:var(--bg);color:var(--label);font-family:Sora,-apple-system,system-ui,sans-serif;font-size:15px;line-height:1.45;display:grid;grid-template-columns:{{ cols }}">
+
+<sc-if value="{{ desk }}" hint-placeholder-val="{{ true }}">
+  <aside style="background:var(--side);border-right:.5px solid var(--sep);padding:18px 10px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;height:100vh">
+    <div style="display:flex;align-items:center;gap:9px;padding:2px 8px"><img src="photos/klyr-mark.png" alt="" style="width:26px;height:26px;border-radius:7px;display:block"><span style="font-size:19px;font-weight:800;letter-spacing:-.02em">klyr</span><span style="font-size:11px;font-weight:700;color:var(--tint);background:var(--tintSoft);border-radius:999px;padding:2px 8px;letter-spacing:.04em">AGENT</span></div>
+    <div style="display:flex;gap:10px;align-items:center;background:var(--card);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow)">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--tintSoft);color:var(--tint);display:grid;place-items:center;font-size:13px;font-weight:800;flex:none">MC</div>
+      <div style="min-width:0"><div style="font-size:14px;font-weight:700">Maya Chen</div><div style="font-size:12px;color:var(--label2)">RECO salesperson · Klyr</div></div>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6"><button onClick="{{ n.go }}" style="border:0;border-radius:9px;padding:9px 12px;text-align:left;display:flex;justify-content:space-between;align-items:center;background:{{ n.bg }};color:{{ n.fg }};font-size:15px;font-weight:{{ n.fw }}"><span>{{ n.l }}</span><sc-if value="{{ n.hasBadge }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;background:var(--warn);color:#fff;border-radius:999px;padding:1px 7px">{{ n.badge }}</span></sc-if></button></sc-for>
+    </nav>
+    <button onClick="{{ openPhone }}" style="margin-top:auto;border:0;border-radius:12px;height:40px;background:var(--card);box-shadow:var(--shadow);font-size:14px;font-weight:600">Open phone view</button>
+  </aside>
+</sc-if>
+
+<main style="min-width:0;padding:{{ pad }};display:flex;flex-direction:column;gap:20px;max-width:1180px;width:100%">
+  <sc-if value="{{ mob }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;gap:8px"><img src="photos/klyr-mark.png" alt="" style="width:24px;height:24px;border-radius:6px;display:block"><span style="font-size:17px;font-weight:800">klyr</span><span style="font-size:10px;font-weight:700;color:var(--tint);background:var(--tintSoft);border-radius:999px;padding:2px 7px">AGENT</span><div style="margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--tintSoft);color:var(--tint);display:grid;place-items:center;font-size:12px;font-weight:800">MC</div></div>
+  </sc-if>
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:13px;font-weight:700;color:var(--tint);letter-spacing:.04em">{{ kicker }}</div>
+    <div style="font-size:{{ h1 }};font-weight:800;letter-spacing:-.025em;line-height:1.15">{{ title }}</div>
+  </div>
+
+  <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+      <div style="flex:1 1 380px;min-width:0;background:var(--card);border-radius:24px;box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div><div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">NOW · {{ cur.time }}</div><div style="font-size:22px;font-weight:800;letter-spacing:-.02em">{{ cur.addr }}</div><div style="font-size:14px;color:var(--label2)">{{ cur.who }} · {{ cur.what }}</div></div>
+          <div style="font-size:13px;font-weight:700;border-radius:999px;padding:5px 12px;background:{{ geo.pillBg }};color:{{ geo.pillFg }};white-space:nowrap">{{ geo.pill }}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;align-items:center">
+          <div style="position:relative;aspect-ratio:1;max-width:260px;width:100%;justify-self:center;border-radius:50%;background:var(--card2);overflow:hidden">
+            <div style="position:absolute;inset:0;border-radius:50%;background:repeating-radial-gradient(circle at 50% 50%,transparent 0 18%,var(--sep) 18% calc(18% + 1px))"></div>
+            <div style="position:absolute;left:50%;top:50%;width:{{ geo.fence }}%;height:{{ geo.fence }}%;transform:translate(-50%,-50%);border-radius:50%;background:{{ geo.fenceBg }};border:2px dashed var(--tint)"></div>
+            <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:7px;background:var(--tint);color:#fff;display:grid;place-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3z"></path></svg></div>
+            <div style="position:absolute;left:{{ geo.x }}%;top:{{ geo.y }}%;transform:translate(-50%,-50%);transition:left .6s,top .6s">
+              <div style="position:absolute;inset:-10px;border-radius:50%;background:var(--tint);opacity:.3;animation:ringout 1.6s ease-out infinite"></div>
+              <div style="position:relative;width:16px;height:16px;border-radius:50%;background:#fff;border:4px solid #2F7BF6"></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:34px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums">{{ geo.big }}</div>
+            <div style="font-size:14px;color:var(--label2);text-wrap:pretty">{{ geo.sub }}</div>
+            <sc-if value="{{ geo.showCode }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:space-between;align-items:center;background:var(--tintSoft);border-radius:12px;padding:10px 14px"><span style="font-size:13px;font-weight:600;color:var(--tint)">Lockbox code</span><span style="font-size:22px;font-weight:800;letter-spacing:.2em;color:var(--tint)">4 7 1 9</span></div></sc-if>
+            <sc-for list="{{ geo.checks }}" as="c" hint-placeholder-count="3"><div style="display:flex;gap:8px;align-items:center;font-size:14px"><span style="width:18px;height:18px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:11px;font-weight:800;background:{{ c.bg }};color:#fff">✓</span><span style="color:{{ c.fg }}">{{ c.t }}</span></div></sc-for>
+          </div>
+        </div>
+        <sc-if value="{{ geo.isFb }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--card2);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;animation:rise .3s">
+            <div style="font-size:15px;font-weight:700">How did {{ cur.whoShort }} feel about it?</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ geo.fbOpts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.pick }}" style="border:{{ o.bd }};border-radius:999px;padding:7px 16px;background:{{ o.bg }};color:{{ o.fg }};font-size:14px;font-weight:600">{{ o.t }}</button></sc-for></div>
+            <div style="font-size:13px;color:var(--label2)">Sent to the buyer’s Klyr app and to the listing agent as showing feedback.</div>
+          </div>
+        </sc-if>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:.5px solid var(--sep);padding-top:14px">
+          <sc-if value="{{ geo.hasAct }}" hint-placeholder-val="{{ true }}"><button onClick="{{ geo.act }}" style="flex:1;min-width:160px;border:0;border-radius:12px;height:46px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:15px">{{ geo.actL }}</button></sc-if>
+          <button onClick="{{ geo.msg }}" style="border:0;border-radius:12px;height:46px;padding:0 16px;background:var(--fill);font-weight:600;font-size:14px">Message {{ cur.whoShort }}</button>
+          <button onClick="{{ geo.help }}" style="border:0;border-radius:12px;height:46px;padding:0 16px;background:var(--warnSoft);color:var(--warn);font-weight:700;font-size:14px">Safety alert</button>
+        </div>
+        <div style="font-size:12px;color:var(--label3)">Demo: the button moves you through the fence. Check-in and check-out happen on their own within 50 m. Your safety contact is alerted if you’re inside for more than 60 minutes.</div>
+      </div>
+      <div style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:16px">
+        <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:17px;font-weight:800">Today’s route</div><div style="font-size:13px;color:var(--label2)">{{ routeSum }}</div></div>
+          <sc-for list="{{ route }}" as="r" hint-placeholder-count="4">
+            <button onClick="{{ r.pick }}" style="border:0;background:{{ r.bg }};border-radius:12px;padding:10px;display:grid;grid-template-columns:52px 12px minmax(0,1fr);gap:10px;text-align:left;align-items:start">
+              <div style="font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ r.fg }}">{{ r.time }}</div>
+              <div style="width:12px;height:12px;border-radius:50%;margin-top:4px;background:{{ r.dotBg }};border:{{ r.dotBd }};box-sizing:border-box"></div>
+              <div style="min-width:0"><div style="font-size:15px;font-weight:600;color:{{ r.fg }}">{{ r.addr }}</div><div style="font-size:13px;color:var(--label2)">{{ r.who }} · {{ r.what }}</div><div style="font-size:12px;color:var(--label3)">{{ r.note }}</div></div>
+            </button>
+          </sc-for>
+        </div>
+        <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:17px;font-weight:800">Deadlines this week</div>
+          <sc-for list="{{ dues }}" as="d" hint-placeholder-count="3"><button onClick="{{ d.go }}" style="border:0;background:none;padding:0;text-align:left;display:flex;gap:12px;align-items:center"><div style="width:46px;flex:none;text-align:center;border-radius:10px;padding:4px 0;background:{{ d.bg }};color:{{ d.fg }}"><div style="font-size:11px;font-weight:700">{{ d.wd }}</div><div style="font-size:18px;font-weight:800;line-height:1.1">{{ d.dn }}</div></div><div style="min-width:0"><div style="font-size:15px;font-weight:600">{{ d.t }}</div><div style="font-size:13px;color:var(--label2)">{{ d.who }}</div></div></button></sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isClients }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;align-items:start">
+      <sc-for list="{{ board }}" as="col" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 4px"><div style="font-size:15px;font-weight:800">{{ col.l }}</div><div style="font-size:13px;color:var(--label2)">{{ col.n }}</div></div>
+          <sc-for list="{{ col.items }}" as="c" hint-placeholder-count="2">
+            <button onClick="{{ c.open }}" style="border:{{ c.bd }};text-align:left;background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-size:16px;font-weight:700">{{ c.name }}</div><div style="font-size:12px;color:var(--label2);white-space:nowrap">{{ c.plan }}</div></div>
+              <div style="font-size:13px;color:var(--label2)">{{ c.addrL }}</div>
+              <div style="display:flex;gap:3px"><sc-for list="{{ c.segs }}" as="g" hint-placeholder-count="12"><div style="flex:1;height:5px;border-radius:3px;background:{{ g.bg }}"></div></sc-for></div>
+              <div style="display:flex;justify-content:space-between;gap:8px;font-size:13px"><span style="font-weight:600">{{ c.stepL }}</span><span style="color:{{ c.dueFg }};font-weight:600">{{ c.due }}</span></div>
+            </button>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+    <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:20px;display:flex;flex-direction:column;gap:14px;animation:rise .25s">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><div style="font-size:21px;font-weight:800">{{ sel.name }}</div><div style="font-size:14px;color:var(--label2)">{{ sel.kind }} · {{ sel.addrL }} · {{ sel.priceFmt }}</div></div><button onClick="{{ closeSel }}" aria-label="Close" style="width:32px;height:32px;border-radius:50%;border:0;background:var(--fill);font-size:18px;line-height:32px;padding:0">×</button></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px"><sc-for list="{{ sel.steps }}" as="s" hint-placeholder-count="12"><div style="border-radius:10px;padding:8px 10px;background:{{ s.bg }};font-size:13px;font-weight:{{ s.fw }};color:{{ s.fg }}">{{ s.n }}. {{ s.l }}</div></sc-for></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ sel.msg }}" style="border:0;border-radius:12px;height:42px;padding:0 16px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:14px">Message</button><button onClick="{{ sel.docs }}" style="border:0;border-radius:12px;height:42px;padding:0 16px;background:var(--fill);font-weight:600;font-size:14px">Documents</button></div>
+      </div>
+    </sc-if>
+  </sc-if>
+
+  <sc-if value="{{ isDeals }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">OFFERS AND COUNTER-OFFERS</div>
+      <sc-for list="{{ offers }}" as="o" hint-placeholder-count="2">
+        <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start"><div><div style="font-size:18px;font-weight:800">{{ o.addr }}</div><div style="font-size:14px;color:var(--label2)">{{ o.who }} · listed {{ o.list }}</div></div><div style="font-size:13px;font-weight:700;border-radius:999px;padding:5px 12px;background:{{ o.pillBg }};color:{{ o.pillFg }}">{{ o.pill }}</div></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px"><sc-for list="{{ o.rows }}" as="x" hint-placeholder-count="4"><div style="background:var(--card2);border-radius:12px;padding:10px 12px"><div style="font-size:12px;color:var(--label2)">{{ x.k }}</div><div style="font-size:16px;font-weight:800">{{ x.v }}</div></div></sc-for></div>
+          <div style="font-size:14px;background:var(--tintSoft);border-radius:12px;padding:10px 12px;text-wrap:pretty"><span style="font-weight:800;color:var(--tint);font-size:11px;letter-spacing:.04em">KLYR AI · </span>{{ o.ai }}</div>
+          <sc-if value="{{ o.open }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ o.acts }}" as="a" hint-placeholder-count="3"><button onClick="{{ a.go }}" style="border:0;border-radius:12px;height:42px;padding:0 16px;background:{{ a.bg }};color:{{ a.fg }};font-weight:700;font-size:14px">{{ a.l }}</button></sc-for></div></sc-if>
+        </div>
+      </sc-for>
+      <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em;margin-top:8px">CONDITION DEADLINES</div>
+      <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden">
+        <sc-for list="{{ conds }}" as="c" hint-placeholder-count="3">
+          <div style="display:flex;gap:14px;align-items:center;padding:14px 18px;border-top:{{ c.bt }};flex-wrap:wrap">
+            <div style="width:52px;flex:none;text-align:center;border-radius:10px;padding:4px 0;background:{{ c.bg }};color:{{ c.fg }}"><div style="font-size:11px;font-weight:700">{{ c.wd }}</div><div style="font-size:18px;font-weight:800;line-height:1.1">{{ c.dn }}</div></div>
+            <div style="flex:1;min-width:180px"><div style="font-size:15px;font-weight:700">{{ c.t }}</div><div style="font-size:13px;color:var(--label2)">{{ c.who }} · {{ c.left }}</div></div>
+            <sc-if value="{{ c.open }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:8px"><button onClick="{{ c.ful }}" style="border:0;border-radius:10px;height:38px;padding:0 14px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:13px">Send Form 124</button><button onClick="{{ c.waive }}" style="border:0;border-radius:10px;height:38px;padding:0 14px;background:var(--fill);font-weight:600;font-size:13px">Waive · Form 123</button></div></sc-if>
+            <sc-if value="{{ c.done }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;font-weight:700;color:var(--ok)">✓ {{ c.doneL }}</div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isDocs }}" hint-placeholder-val="{{ false }}">
+    <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">BUYER AGREEMENTS · FORM 300</div>
+    <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden">
+      <sc-for list="{{ bras }}" as="b" hint-placeholder-count="3">
+        <div style="display:flex;gap:12px;align-items:center;padding:14px 18px;border-top:{{ b.bt }};flex-wrap:wrap">
+          <div style="flex:1;min-width:180px"><div style="font-size:15px;font-weight:700">{{ b.name }}</div><div style="font-size:13px;color:var(--label2)">{{ b.sub }}</div></div>
+          <div style="font-size:13px;font-weight:700;border-radius:999px;padding:4px 12px;background:{{ b.pillBg }};color:{{ b.pillFg }}">{{ b.pill }}</div>
+          <sc-if value="{{ b.hasAct }}" hint-placeholder-val="{{ false }}"><button onClick="{{ b.go }}" style="border:0;border-radius:10px;height:36px;padding:0 14px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:13px">{{ b.actL }}</button></sc-if>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px"><div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">DEAL FILE</div><div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ docClients }}" as="d" hint-placeholder-count="4"><button onClick="{{ d.pick }}" style="border:0;border-radius:999px;padding:6px 12px;background:{{ d.bg }};color:{{ d.fg }};font-size:13px;font-weight:600">{{ d.l }}</button></sc-for></div></div>
+    <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden">
+      <sc-for list="{{ docs }}" as="d" hint-placeholder-count="6">
+        <div style="display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 18px;border-top:{{ d.bt }}">
+          <div style="width:20px;height:20px;border-radius:50%;margin-top:2px;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:{{ d.dotBg }};border:{{ d.dotBd }};box-sizing:border-box">{{ d.mark }}</div>
+          <div style="min-width:0"><div style="font-size:15px;font-weight:600">{{ d.t }}</div><div style="font-size:13px;color:var(--label2);text-wrap:pretty">{{ d.why }} · {{ d.from }} · {{ d.when }}</div></div>
+          <div style="font-size:12px;font-weight:700;color:{{ d.stFg }};white-space:nowrap;padding-top:3px">{{ d.st }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em;margin-top:6px">WHO YOU TALK TO</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px"><sc-for list="{{ comms }}" as="c" hint-placeholder-count="4"><div style="background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px;display:flex;flex-direction:column;gap:4px"><div style="font-size:15px;font-weight:700">{{ c.w }}</div><div style="font-size:13px;text-wrap:pretty">{{ c.what }}</div><div style="font-size:12px;color:var(--label2)">{{ c.when }} · {{ c.how }}</div></div></sc-for></div>
+  </sc-if>
+
+  <sc-if value="{{ isMsgs }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:{{ msgCols }};gap:16px;align-items:start">
+      <sc-if value="{{ showList }}" hint-placeholder-val="{{ true }}"><div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden"><sc-for list="{{ threads }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.pick }}" style="width:100%;border:0;border-top:{{ t.bt }};background:{{ t.bg }};text-align:left;padding:12px 16px;display:flex;flex-direction:column;gap:2px"><div style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:15px;font-weight:700">{{ t.name }}</span><span style="font-size:12px;color:var(--label3)">{{ t.at }}</span></div><div style="font-size:12px;color:var(--tint);font-weight:600">{{ t.role }}</div><div style="font-size:13px;color:var(--label2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.last }}</div></button></sc-for></div></sc-if>
+      <sc-if value="{{ showThread }}" hint-placeholder-val="{{ true }}">
+        <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:420px">
+          <div style="padding:14px 18px;border-bottom:.5px solid var(--sep);display:flex;gap:10px;align-items:center"><sc-if value="{{ mob }}" hint-placeholder-val="{{ false }}"><button onClick="{{ backList }}" style="border:0;background:none;color:var(--tint);font-weight:700;font-size:15px;padding:0">‹</button></sc-if><div><div style="font-size:16px;font-weight:800">{{ th.name }}</div><div style="font-size:12px;color:var(--label2)">{{ th.role }}</div></div></div>
+          <div style="flex:1;padding:16px 18px;display:flex;flex-direction:column;gap:8px"><sc-for list="{{ th.msgs }}" as="m" hint-placeholder-count="3"><div style="align-self:{{ m.side }};max-width:78%;background:{{ m.bg }};color:{{ m.fg }};border-radius:16px;padding:9px 13px;font-size:14px;text-wrap:pretty">{{ m.t }}</div></sc-for></div>
+          <div style="padding:10px 14px;border-top:.5px solid var(--sep);display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ quick }}" as="q" hint-placeholder-count="3"><button onClick="{{ q.go }}" style="border:0;border-radius:999px;padding:6px 12px;background:var(--tintSoft);color:var(--tint);font-size:13px;font-weight:600">{{ q.t }}</button></sc-for></div>
+            <div style="display:flex;gap:8px"><input value="{{ draft }}" onChange="{{ setDraft }}" placeholder="Write a message" aria-label="Message" style="flex:1;min-width:0;height:42px;border-radius:12px;border:.5px solid var(--sep);background:var(--card2);padding:0 12px;font-size:15px;outline:none"><button onClick="{{ send }}" style="border:0;border-radius:12px;height:42px;padding:0 16px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:14px">Send</button></div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isPay }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px"><sc-for list="{{ payK }}" as="k" hint-placeholder-count="3"><div style="background:{{ k.bg }};border-radius:18px;padding:16px 18px;box-shadow:var(--shadow)"><div style="font-size:13px;color:{{ k.fg2 }};font-weight:600">{{ k.l }}</div><div style="font-size:28px;font-weight:800;letter-spacing:-.02em;color:{{ k.fg }};font-variant-numeric:tabular-nums">{{ k.v }}</div><div style="font-size:12px;color:{{ k.fg2 }}">{{ k.s }}</div></div></sc-for></div>
+    <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:auto">
+      <div style="min-width:640px">
+        <div style="display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr)) minmax(0,1.1fr);gap:10px;padding:12px 18px;font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.04em"><span>DEAL</span><span style="text-align:right">COMMISSION</span><span style="text-align:right">BUYER CASH BACK</span><span style="text-align:right">KLYR</span><span style="text-align:right">YOU</span><span style="text-align:right">STATUS</span></div>
+        <sc-for list="{{ pay }}" as="p" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr)) minmax(0,1.1fr);gap:10px;padding:12px 18px;border-top:.5px solid var(--sep);font-size:14px;font-variant-numeric:tabular-nums;align-items:center"><div style="min-width:0"><div style="font-weight:700">{{ p.name }}</div><div style="font-size:12px;color:var(--label2)">{{ p.addr }} · {{ p.priceFmt }}</div></div><span style="text-align:right">{{ p.comm }}</span><span style="text-align:right;color:var(--tint);font-weight:700">{{ p.cb }}</span><span style="text-align:right">{{ p.klyr }}</span><span style="text-align:right;font-weight:800">{{ p.you }}</span><span style="text-align:right;font-size:12px;font-weight:700;color:{{ p.stFg }}">{{ p.st }}</span></div></sc-for>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--label2);text-wrap:pretty">The seller’s brokerage pays the buyer-side commission to Klyr at closing. The buyer’s cash back (60% Guided, 80% Self-directed) is paid to their bank after closing and disclosed to the lender. Your share is 70% of what Klyr keeps, paid the Friday after closing.</div>
+  </sc-if>
+  <div style="height:{{ bottomSpace }}"></div>
+</main>
+
+<sc-if value="{{ mob }}" hint-placeholder-val="{{ false }}">
+  <nav style="position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--bar);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--sep);display:grid;grid-template-columns:repeat(6,1fr);padding:6px 4px 18px">
+    <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6"><button onClick="{{ n.go }}" style="border:0;background:none;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:3px;color:{{ n.tabFg }};font-size:11px;font-weight:600;position:relative"><span style="width:6px;height:6px;border-radius:50%;background:{{ n.tabDot }}"></span>{{ n.short }}<sc-if value="{{ n.hasBadge }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:0;right:22%;font-size:10px;font-weight:700;background:var(--warn);color:#fff;border-radius:999px;padding:0 5px">{{ n.badge }}</span></sc-if></button></sc-for>
+  </nav>
+</sc-if>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}"><div style="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:40;background:#1C1C1E;color:#fff;border-radius:999px;padding:10px 18px;font-size:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:rise .25s;white-space:nowrap">{{ toast }}</div></sc-if>
+
+{{ phoneEl }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { tab: 'today', geo: 0, cur: 's2', fb: null, sel: null, docC: 'alex', bra: {}, offer: {}, cond: {}, thread: 'nguyen', mList: true, draft: '', toast: '', phone: false, w: typeof window !== 'undefined' ? window.innerWidth : 1200, ok: !!window.KLYR_P,
+    msgs: {
+      nguyen: [{ me: false, t: 'We’re parking now, see you at the front door!' }],
+      patel: [{ me: false, t: 'Seller countered at $912,000, same closing. Open until 9 pm tonight.' }],
+      alex: [{ me: false, t: 'Inspector said the roof has about 5 years left. Is that a problem?' }, { me: true, t: 'Not a deal breaker. I can ask for a $6,000 credit before Wednesday’s deadline.' }],
+      chen: [{ me: false, t: 'Farah file: status certificate reviewed, no issues. Signing booked Thu 4 pm.' }]
+    } };
+  componentDidMount() {
+    this._r = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._r);
+    if (!this.state.ok) this._w = setInterval(() => { if (window.KLYR_P) { clearInterval(this._w); this.setState({ ok: true }); } }, 60);
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this._r); clearInterval(this._w); clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 2400); }
+  say(id, t, me = true) { this.setState(s => ({ msgs: { ...s.msgs, [id]: [...(s.msgs[id] || []), { me, t }] } })); }
+  renderVals() {
+    const st = this.state, P = window.KLYR_P, mob = st.w < 760 || /phone=1/.test(location.search);
+    if (!P) return { cols: '1fr', desk: false, mob: false };
+    const $ = n => '$' + Math.round(n).toLocaleString('en-CA');
+    const D0 = new Date(2026, 9, 5), dt = d => { const x = new Date(D0); x.setDate(x.getDate() + d); return x; };
+    const wd = d => dt(d).toLocaleDateString('en-CA', { weekday: 'short' }).toUpperCase(), dn = d => dt(d).getDate(), full = d => dt(d).toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' });
+    const C = P.CLIENTS, byC = id => C.find(c => c.id === id);
+    const go = tab => () => this.setState({ tab, sel: null });
+    const NAV = [['today', 'Today', 'Today'], ['clients', 'Clients', 'Clients'], ['deals', 'Offers & deadlines', 'Deals'], ['docs', 'Documents', 'Docs'], ['msgs', 'Messages', 'Chat'], ['pay', 'Pay', 'Pay']];
+    const openOffers = ['walsh', 'nguyen'].filter(k => !st.offer[k]).length;
+    const badges = { deals: openOffers, msgs: 2, docs: st.bra.okafor ? 0 : 1 };
+    const nav = NAV.map(([k, l, short]) => { const on = st.tab === k, b = badges[k] || 0; return { l, short, go: go(k), bg: on ? 'var(--card)' : 'transparent', fg: on ? 'var(--tint)' : 'var(--label)', fw: on ? 700 : 500, hasBadge: b > 0, badge: b, tabFg: on ? 'var(--tint)' : 'var(--label2)', tabDot: on ? 'var(--tint)' : 'transparent' }; });
+    // Today
+    const SH = [
+      { id: 's1', time: '9:30', addr: '12 Pape Ave', who: 'Priya & Dev Nguyen', whoShort: 'Priya', what: 'Showing · 30 min', cid: 'nguyen', th: 'nguyen' },
+      { id: 's2', time: '11:00', addr: '88 Perth Ave', who: 'Priya & Dev Nguyen', whoShort: 'Priya', what: 'Showing · 30 min', cid: 'nguyen', th: 'nguyen' },
+      { id: 's3', time: '13:30', addr: '41 Bertmount Ave', who: 'Priya & Dev Nguyen', whoShort: 'Priya', what: 'Showing · 30 min', cid: 'nguyen', th: 'nguyen' },
+      { id: 's4', time: '16:00', addr: '48 Bellwoods Ave', who: 'Alex Rivera', whoShort: 'Alex', what: 'Let the inspector in · 2.5 h', cid: 'alex', th: 'alex' }
+    ];
+    const ci = SH.findIndex(s => s.id === st.cur), cur = SH[ci];
+    const g = st.geo, GEO = [
+      { d: 2400, pill: 'Driving', big: '2.4 km', sub: 'About 7 minutes away. Priya can see you’re on the way.', actL: 'Arrive (demo)' },
+      { d: 180, pill: 'Nearby', big: '180 m', sub: 'Almost there. Check-in starts on its own inside 50 m.', actL: 'Walk to the door (demo)' },
+      { d: 0, pill: 'Checked in', big: '0:00 inside', sub: 'Checked in on your own at 10:58. Buyer ID matched to the booking. The lockbox code works for this visit only.', actL: 'Leave the home (demo)' },
+      { d: 300, pill: 'Checked out', big: '31 min', sub: 'Checked out on your own at 11:29. Visit time is saved on the showing record and shared with the listing agent.', actL: '' }
+    ][g];
+    const ang = -0.9, rr = g === 0 ? 46 : g === 1 ? 24 : g === 2 ? 0 : 30;
+    const checks = [['Buyer agreement signed (Form 300)', true], ['Showing confirmed by listing agent', true], ['Inside the geofence', g === 2], ['Checked out and locked up', g === 3]];
+    const geo = { ...GEO, x: 50 + Math.cos(ang) * rr, y: 50 + Math.sin(ang) * rr, fence: 22, fenceBg: g === 2 ? 'rgba(47,94,83,.18)' : 'rgba(47,94,83,.07)',
+      pillBg: g === 2 ? 'var(--okSoft)' : g === 3 ? 'var(--fill)' : 'var(--tintSoft)', pillFg: g === 2 ? 'var(--ok)' : g === 3 ? 'var(--label2)' : 'var(--tint)',
+      showCode: g === 1 || g === 2, checks: checks.map(([t, on]) => ({ t, bg: on ? 'var(--ok)' : 'var(--label3)', fg: on ? 'var(--label)' : 'var(--label2)' })),
+      hasAct: g < 3 || !!st.fb, actL: g < 3 ? GEO.actL : 'Start next showing', isFb: g === 3,
+      fbOpts: ['Not for us', 'Maybe', 'Loved it'].map(t => { const on = st.fb === t; return { t, bg: on ? 'var(--tint)' : 'var(--card)', fg: on ? 'var(--onTint)' : 'var(--label)', bd: on ? '0' : '.5px solid var(--sep)', pick: () => { this.setState({ fb: t }); this.flash('Feedback sent to buyer and listing agent'); } }; }),
+      act: () => { if (g < 3) { this.setState({ geo: g + 1 }); if (g === 1) this.flash('Checked in automatically · Priya notified'); if (g === 2) this.flash('Checked out automatically'); } else if (ci < SH.length - 1) this.setState({ cur: SH[ci + 1].id, geo: 0, fb: null }); },
+      msg: () => this.setState({ tab: 'msgs', thread: cur.th, mList: false }), help: () => this.flash('Safety alert sent to Klyr and your contact') };
+    const route = SH.map((s, i) => { const done = i < ci || (i === ci && g === 3), now = i === ci && !done;
+      return { ...s, note: done ? (i === ci ? 'Done · 31 min' : 'Done · 28 min') : now ? 'Now' : i === ci + 1 ? '12 min drive' : '', fg: done ? 'var(--label2)' : 'var(--label)', bg: now ? 'var(--tintSoft)' : 'transparent',
+        dotBg: done ? 'var(--tint)' : now ? 'var(--card)' : 'transparent', dotBd: done ? '0' : now ? '3px solid var(--tint)' : '1.5px solid var(--label3)', pick: () => this.setState({ cur: s.id, geo: i < ci ? 3 : 0, fb: i < ci ? 'Maybe' : null }) }; });
+    const DUE = [['walsh', 0, 'Counter-offer expires 9 pm', 'deals'], ['lin', 1, 'Mortgage check ends', 'deals'], ['alex', 2, 'Inspection check ends', 'deals'], ['farah', 3, 'Closing papers signed', 'clients'], ['farah', 9, 'Closing day · key release', 'clients']];
+    const dues = DUE.map(([id, d, t, tab]) => ({ t, who: byC(id).name + ' · ' + (byC(id).addr || ''), wd: d === 0 ? 'TODAY' : wd(d), dn: dn(d), bg: d <= 1 ? 'var(--warnSoft)' : 'var(--card2)', fg: d <= 1 ? 'var(--warn)' : 'var(--label)', go: go(tab) }));
+    // Clients board
+    const stepOf = c => c.id === 'okafor' && st.bra.okafor ? 1 : c.step;
+    const card = c => { const s = stepOf(c), sd = s >= 11 && c.dueDay < 0; return { ...c, addrL: c.addr || 'Still searching', stepL: sd ? 'Closed' : 'Step ' + (s + 1) + ' · ' + P.STEPS[s], due: c.id === 'okafor' && st.bra.okafor ? 'Agreement signed' : c.due, dueFg: c.dueDay >= 0 && c.dueDay <= 1 && !sd ? 'var(--warn)' : 'var(--label2)', bd: st.sel === c.id ? '2px solid var(--tint)' : '0',
+      segs: P.STEPS.map((_, i) => ({ bg: i < s || sd ? 'var(--tint)' : i === s ? 'var(--label3)' : 'var(--fill)' })), open: () => this.setState({ sel: c.id }) }; };
+    const board = ['Find your home', 'Secure the deal', 'Move in'].map(l => { const items = C.filter(c => P.PHASE(stepOf(c)) === l).map(card); return { l, n: items.length, items }; });
+    const sc = st.sel && byC(st.sel), sel = sc ? { ...card(sc), priceFmt: $(sc.price), steps: P.STEPS.map((l, i) => { const s = stepOf(sc); return { n: i + 1, l, bg: i < s ? 'var(--tintSoft)' : i === s ? 'var(--tint)' : 'var(--card2)', fg: i === s ? 'var(--onTint)' : i < s ? 'var(--tint)' : 'var(--label2)', fw: i === s ? 700 : 500 }; }),
+      msg: () => this.setState({ tab: 'msgs', thread: st.msgs[sc.id] ? sc.id : 'nguyen', mList: false }), docs: () => this.setState({ tab: 'docs', docC: sc.id }) } : null;
+    // Offers
+    const OF = [
+      { id: 'walsh', addr: '64 Galley Ave', who: 'M. Walsh', list: $(925000), rows: [['Your offer', $(899000)], ['Seller counter', $(912000)], ['Deposit', $(45000)], ['Expires', 'Today 9 pm']], pill: 'Countered', ai: 'Two similar homes on this street sold for $905,000 and $918,000. Meeting at $906,000 keeps the 60-day closing M. asked for.',
+        acts: [['Accept $912,000', 'accept'], ['Counter at $906,000', 'counter'], ['Let it expire', 'expire']] },
+      { id: 'nguyen', addr: '41 Bertmount Ave', who: 'Priya & Dev Nguyen', list: $(1095000), rows: [['Draft price', $(1085000)], ['Deposit', $(54250)], ['Conditions', 'Mortgage 5 d · Inspection 7 d'], ['Closing', '60 days']], pill: 'Draft · after today’s visit', ai: 'Offers on this street are due Wednesday at 7 pm. If the visit goes well, send the draft for their signature tonight.',
+        acts: [['Send for signature', 'sign'], ['Edit draft', 'edit']] }
+    ];
+    const OL = { accept: 'Accepted · deposit due in 24 hours', counter: 'Counter sent · $906,000', expire: 'Expired', sign: 'Sent to Priya & Dev to sign', edit: 'Draft opened' };
+    const offers = OF.map(o => { const r = st.offer[o.id]; return { ...o, rows: o.rows.map(([k, v]) => ({ k, v })), open: !r, pill: r ? OL[r] : o.pill, pillBg: r === 'accept' ? 'var(--okSoft)' : r ? 'var(--fill)' : 'var(--warnSoft)', pillFg: r === 'accept' ? 'var(--ok)' : r ? 'var(--label2)' : 'var(--warn)',
+      acts: o.acts.map(([l, k], i) => ({ l, bg: i === 0 ? 'var(--tint)' : 'var(--fill)', fg: i === 0 ? 'var(--onTint)' : 'var(--label)', go: () => { this.setState(s => ({ offer: { ...s.offer, [o.id]: k } })); this.flash(OL[k]); } })) }; });
+    const CD = [['lin', 1, 'Mortgage check · 227 Symington Ave'], ['alex', 2, 'Inspection check · 48 Bellwoods Ave'], ['alex', 4, 'Mortgage check · 48 Bellwoods Ave']];
+    const conds = CD.map(([id, d, t], i) => { const k = id + i, r = st.cond[k]; return { t, who: byC(id).name, left: d === 1 ? 'Ends tomorrow 11:59 pm' : 'Ends ' + full(d) + ' · ' + d + ' days left', wd: wd(d), dn: dn(d), bg: d <= 1 ? 'var(--warnSoft)' : 'var(--card2)', fg: d <= 1 ? 'var(--warn)' : 'var(--label)', bt: i ? '.5px solid var(--sep)' : '0', open: !r, done: !!r, doneL: r === 'ful' ? 'Form 124 sent · condition met' : 'Form 123 sent · waived',
+      ful: () => { this.setState(s => ({ cond: { ...s.cond, [k]: 'ful' } })); this.flash('Sent to ' + byC(id).name.split(' ')[0] + ' to sign'); }, waive: () => { this.setState(s => ({ cond: { ...s.cond, [k]: 'waive' } })); this.flash('Waiver sent to sign'); } }; });
+    // Docs
+    const BR = [['okafor', 'Sent Oct 2 · opened twice · not signed'], ['nguyen', 'Signed Sep 21 · 90 days · ends Dec 20'], ['walsh', 'Signed Sep 12 · ends Dec 11'], ['alex', 'Signed Aug 30 · ends Nov 28 · renew before closing']];
+    const bras = BR.map(([id, sub], i) => { const signed = id !== 'okafor' || st.bra.okafor, rem = id === 'okafor' && st.bra.okaforRem;
+      return { name: byC(id).name, sub: id === 'okafor' && st.bra.okafor ? 'Signed today · 90 days' : sub, bt: i ? '.5px solid var(--sep)' : '0', pill: signed ? (id === 'alex' ? 'Renew soon' : 'Signed') : rem ? 'Reminder sent' : 'Waiting', pillBg: signed ? (id === 'alex' ? 'var(--warnSoft)' : 'var(--okSoft)') : 'var(--warnSoft)', pillFg: signed ? (id === 'alex' ? 'var(--warn)' : 'var(--ok)') : 'var(--warn)',
+        hasAct: !signed || id === 'alex', actL: id === 'alex' ? 'Send renewal' : rem ? 'Mark signed (demo)' : 'Remind',
+        go: () => { if (id === 'alex') return this.flash('Renewal sent to Alex'); if (rem) { this.setState(s => ({ bra: { ...s.bra, okafor: true } })); this.flash('J. Okafor signed · visits unlocked'); } else { this.setState(s => ({ bra: { ...s.bra, okaforRem: true } })); this.flash('Reminder sent by text and email'); } } }; });
+    const dcl = byC(st.docC) || byC('alex'), ds = stepOf(dcl);
+    const need = [2, 2, 4, 5, 5, 5, 6, 6, 8, 8, 8, 1];
+    const docs = P.DOCS.agent.map(([t, why, from, when], i) => { const done = ds >= need[i] + (i === 3 ? 0 : 1) || (i < 2 && ds >= 1) || (i === 11 && ds >= 1); const opt = i === 10;
+      return { t, why, from, when, bt: i ? '.5px solid var(--sep)' : '0', mark: done ? '✓' : '', dotBg: done ? 'var(--ok)' : 'transparent', dotBd: done ? '0' : '1.5px solid var(--label3)', st: done ? 'Done' : opt ? 'If needed' : ds >= need[i] ? 'Due now' : 'Later', stFg: done ? 'var(--ok)' : ds >= need[i] && !opt ? 'var(--warn)' : 'var(--label3)' }; });
+    const docClients = ['alex', 'lin', 'nguyen', 'farah', 'walsh'].map(id => { const on = dcl.id === id; return { l: byC(id).name.split(' ')[0].replace('&', ''), bg: on ? 'var(--tint)' : 'var(--card)', fg: on ? 'var(--onTint)' : 'var(--label)', pick: () => this.setState({ docC: id }) }; });
+    const comms = P.COMMS.agent.map(([w, what, when, how]) => ({ w, what, when, how }));
+    // Messages
+    const TH = { nguyen: ['Priya & Dev Nguyen', 'Buyers · 3 visits today'], patel: ['R. Patel · Harbour Realty', 'Listing agent · 64 Galley Ave'], alex: ['Alex Rivera', 'Buyer · 48 Bellwoods Ave'], chen: ['Chen & Reyes LLP', 'Lawyer · Farah closing'] };
+    const threads = Object.keys(TH).map((id, i) => { const m = st.msgs[id] || []; return { name: TH[id][0], role: TH[id][1], last: (m[m.length - 1] || {}).t || '', at: i ? 'Yesterday' : '10:52', bt: i ? '.5px solid var(--sep)' : '0', bg: st.thread === id ? 'var(--tintSoft)' : 'transparent', pick: () => this.setState({ thread: id, mList: false }) }; });
+    const th = { name: TH[st.thread][0], role: TH[st.thread][1], msgs: (st.msgs[st.thread] || []).map(m => ({ t: m.t, side: m.me ? 'flex-end' : 'flex-start', bg: m.me ? 'var(--tint)' : 'var(--card2)', fg: m.me ? 'var(--onTint)' : 'var(--label)' })) };
+    const quick = ['I’m here, at the front door', 'Running 5 minutes late', 'Offer update coming tonight'].map(t => ({ t, go: () => this.say(st.thread, t) }));
+    // Pay
+    const payC = ['kim', 'farah', 'lin', 'alex'].map(byC);
+    const pay = payC.map(c => { const cm = c.price * c.comm, cb = cm * (c.plan === 'Guided' ? .6 : .8), kl = cm - cb, you = kl * .7, paid = c.closeDay < 0;
+      return { name: c.name, addr: c.addr, priceFmt: $(c.price), comm: $(cm), cb: $(cb), klyr: $(kl - you), you: $(you), youN: you, paid, st: paid ? 'Paid Oct 2' : 'At closing · ' + full(c.closeDay), stFg: paid ? 'var(--ok)' : 'var(--label2)' }; });
+    const sum = f => pay.filter(f).reduce((a, p) => a + p.youN, 0);
+    const payK = [{ l: 'Paid this month', v: $(sum(p => p.paid)), s: '1 closing', bg: 'var(--card)', fg: 'var(--label)', fg2: 'var(--label2)' }, { l: 'Coming at closing', v: $(sum(p => !p.paid)), s: '3 firm deals', bg: 'var(--tintSoft)', fg: 'var(--tint)', fg2: 'var(--tint)' }, { l: 'Cash back your buyers get', v: $(payC.reduce((a, c) => a + c.price * c.comm * (c.plan === 'Guided' ? .6 : .8), 0)), s: 'Paid by Klyr after closing', bg: 'var(--card)', fg: 'var(--label)', fg2: 'var(--label2)' }];
+    const T = { today: ['MON, OCT 5 · 4 VISITS', 'Today'], clients: ['7 CLIENTS', 'Clients'], deals: ['2 OPEN · 3 DEADLINES', 'Offers & deadlines'], docs: ['WHAT EACH DEAL NEEDS', 'Documents'], msgs: ['2 UNREAD', 'Messages'], pay: ['COMMISSION AND CASH BACK', 'Pay'] }[st.tab];
+    return {
+      desk: !mob, mob, cols: mob ? 'minmax(0,1fr)' : '232px minmax(0,1fr)', pad: mob ? '16px 16px 0' : '28px 32px 48px', h1: mob ? '28px' : '34px', bottomSpace: mob ? '90px' : '0',
+      nav, kicker: T[0], title: T[1], isToday: st.tab === 'today', isClients: st.tab === 'clients', isDeals: st.tab === 'deals', isDocs: st.tab === 'docs', isMsgs: st.tab === 'msgs', isPay: st.tab === 'pay',
+      cur, geo, route, routeSum: '4 stops · 38 km', dues, board, sel: sel || {}, hasSel: !!sel, closeSel: () => this.setState({ sel: null }),
+      offers, conds, bras, docs, docClients, comms,
+      threads, th, quick, draft: st.draft, setDraft: e => this.setState({ draft: e.target.value }), send: () => { if (st.draft.trim()) { this.say(st.thread, st.draft.trim()); this.setState({ draft: '' }); } },
+      msgCols: mob ? 'minmax(0,1fr)' : 'minmax(0,320px) minmax(0,1fr)', showList: !mob || st.mList, showThread: !mob || !st.mList, backList: () => this.setState({ mList: true }),
+      pay, payK, toast: st.toast, hasToast: !!st.toast,
+      phoneEl: st.phone ? React.createElement('div', { onClick: e => { if (e.target === e.currentTarget) this.setState({ phone: false }); }, style: { position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,.5)', display: 'grid', placeItems: 'center', padding: 20 } }, React.createElement('div', { style: { width: 390, height: 'min(844px, calc(100vh - 40px))', borderRadius: 48, overflow: 'hidden', border: '10px solid #111', background: '#000' } }, React.createElement('iframe', { src: 'Klyr Agent.dc.html?phone=1', title: 'Phone view', style: { width: '100%', height: '100%', border: 0, display: 'block', background: '#F2F2F7' } }))) : null, openPhone: () => this.setState({ phone: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

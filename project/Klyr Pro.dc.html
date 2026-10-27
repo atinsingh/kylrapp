@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="klyr-partners.js"></script>
+<style>
+html,body{margin:0;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2F5E53}a:hover{color:#1F2B27}
+button,input{font-family:inherit;color:inherit}
+button{cursor:pointer}
+[data-theme="light"]{--bg:#F2F2F7;--card:#FFFFFF;--card2:#F5F5F8;--side:#E9E9EE;--label:#1C1C1E;--label2:#5E5E63;--label3:#8E8E93;--sep:rgba(60,60,67,.16);--fill:rgba(118,118,128,.12);--tint:#2F5E53;--tintSoft:#E4EEEA;--onTint:#FFFFFF;--ok:#2B7A4B;--okSoft:#E3F2E8;--warn:#A54B00;--warnSoft:#FBEBDD;--bar:rgba(242,242,247,.86);--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.05)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div data-theme="light" style="min-height:100vh;background:var(--bg);color:var(--label);font-family:Sora,-apple-system,system-ui,sans-serif;font-size:15px;line-height:1.45;display:grid;grid-template-columns:{{ cols }}">
+
+<sc-if value="{{ desk }}" hint-placeholder-val="{{ true }}">
+  <aside style="background:var(--side);border-right:.5px solid var(--sep);padding:18px 10px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;height:100vh">
+    <div style="display:flex;align-items:center;gap:9px;padding:2px 8px"><img src="photos/klyr-mark.png" alt="" style="width:26px;height:26px;border-radius:7px;display:block"><span style="font-size:19px;font-weight:800;letter-spacing:-.02em">klyr</span><span style="font-size:11px;font-weight:700;color:var(--tint);background:var(--tintSoft);border-radius:999px;padding:2px 8px;letter-spacing:.04em">{{ C.app }}</span></div>
+    <div style="display:flex;gap:10px;align-items:center;background:var(--card);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow)">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--tintSoft);color:var(--tint);display:grid;place-items:center;font-size:13px;font-weight:800;flex:none">{{ C.init }}</div>
+      <div style="min-width:0"><div style="font-size:14px;font-weight:700">{{ C.me }}</div><div style="font-size:12px;color:var(--label2)">{{ C.firm }}</div></div>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6"><button onClick="{{ n.go }}" style="border:0;border-radius:9px;padding:9px 12px;text-align:left;display:flex;justify-content:space-between;align-items:center;background:{{ n.bg }};color:{{ n.fg }};font-size:15px;font-weight:{{ n.fw }}"><span>{{ n.l }}</span><sc-if value="{{ n.hasBadge }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;background:var(--warn);color:#fff;border-radius:999px;padding:1px 7px">{{ n.badge }}</span></sc-if></button></sc-for>
+    </nav>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:12px;color:var(--label2);padding:0 8px">{{ C.reg }}</div>
+      <button onClick="{{ openPhone }}" style="border:0;border-radius:12px;height:40px;background:var(--card);box-shadow:var(--shadow);font-size:14px;font-weight:600">Open phone view</button>
+    </div>
+  </aside>
+</sc-if>
+
+<main style="min-width:0;padding:{{ pad }};display:flex;flex-direction:column;gap:20px;max-width:1180px;width:100%">
+  <sc-if value="{{ mob }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;gap:8px"><img src="photos/klyr-mark.png" alt="" style="width:24px;height:24px;border-radius:6px;display:block"><span style="font-size:17px;font-weight:800">klyr</span><span style="font-size:10px;font-weight:700;color:var(--tint);background:var(--tintSoft);border-radius:999px;padding:2px 7px">{{ C.app }}</span><div style="margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--tintSoft);color:var(--tint);display:grid;place-items:center;font-size:12px;font-weight:800">{{ C.init }}</div></div>
+  </sc-if>
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:13px;font-weight:700;color:var(--tint);letter-spacing:.04em">{{ kicker }}</div>
+    <div style="font-size:{{ h1 }};font-weight:800;letter-spacing:-.025em;line-height:1.15">{{ title }}</div>
+  </div>
+
+  <sc-if value="{{ isReq }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ hasBeat }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--card);border:2px solid var(--warn);border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><div style="font-size:12px;font-weight:700;color:var(--warn);letter-spacing:.05em">ASK TO BEAT · {{ beat.due }}</div><div style="font-size:19px;font-weight:800">{{ beat.t }}</div><div style="font-size:14px;color:var(--label2)">{{ beat.sub }}</div></div></div>
+        <sc-if value="{{ beat.open }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;background:var(--fill);border-radius:12px"><button onClick="{{ beat.down }}" aria-label="Lower rate" style="border:0;background:none;width:44px;height:44px;font-size:20px;font-weight:700">−</button><div style="font-size:22px;font-weight:800;min-width:90px;text-align:center;font-variant-numeric:tabular-nums">{{ beat.rate }}</div><button onClick="{{ beat.up }}" aria-label="Raise rate" style="border:0;background:none;width:44px;height:44px;font-size:20px;font-weight:700">+</button></div>
+            <div style="font-size:14px;color:{{ beat.fg }};font-weight:600">{{ beat.note }}</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ beat.send }}" style="border:0;border-radius:12px;height:44px;padding:0 18px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:14px">Send new rate</button><button onClick="{{ beat.pass }}" style="border:0;border-radius:12px;height:44px;padding:0 18px;background:var(--fill);font-weight:600;font-size:14px">Can’t beat it</button></div>
+        </sc-if>
+        <sc-if value="{{ beat.done }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;font-weight:700;color:var(--ok)">✓ {{ beat.doneL }}</div></sc-if>
+      </div>
+    </sc-if>
+    <sc-for list="{{ reqs }}" as="r" hint-placeholder-count="2">
+      <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><div style="font-size:18px;font-weight:800">{{ r.name }}</div><div style="font-size:14px;color:var(--label2)">{{ r.what }}</div></div><div style="font-size:13px;font-weight:700;border-radius:999px;padding:5px 12px;background:{{ r.pillBg }};color:{{ r.pillFg }};white-space:nowrap">{{ r.pill }}</div></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px"><sc-for list="{{ r.facts }}" as="x" hint-placeholder-count="3"><div style="background:var(--card2);border-radius:12px;padding:10px 12px"><div style="font-size:12px;color:var(--label2)">{{ x.k }}</div><div style="font-size:15px;font-weight:700">{{ x.v }}</div></div></sc-for></div>
+        <div style="font-size:13px;color:var(--label2)">Shared by the buyer: {{ r.shared }}</div>
+        <sc-if value="{{ r.open }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ r.quote }}" style="border:0;border-radius:12px;height:44px;padding:0 18px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:14px">{{ C.quoteCta }}</button><button onClick="{{ r.decline }}" style="border:0;border-radius:12px;height:44px;padding:0 18px;background:var(--fill);font-weight:600;font-size:14px">Decline</button></div></sc-if>
+      </div>
+    </sc-for>
+  </sc-if>
+
+  <sc-if value="{{ isQuote }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+      <div style="flex:2 1 380px;min-width:0;background:var(--card);border-radius:24px;box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start"><div><div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">FOR</div><div style="font-size:18px;font-weight:800">{{ q.client }}</div><div style="font-size:14px;color:var(--label2)">{{ q.clientSub }}</div></div>
+          <div style="display:flex;background:var(--fill);border-radius:9px;padding:2px;gap:2px"><sc-for list="{{ q.srcOpts }}" as="s" hint-placeholder-count="2"><button onClick="{{ s.pick }}" style="border:0;border-radius:7px;padding:6px 12px;font-size:13px;font-weight:600;background:{{ s.bg }};box-shadow:{{ s.sh }};white-space:nowrap">{{ s.l }}</button></sc-for></div></div>
+        <sc-if value="{{ q.ext }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px;background:var(--card2);border-radius:16px;padding:16px">
+            <div style="font-size:14px;color:var(--label2);text-wrap:pretty">Your quote is priced in {{ q.extName }}. Pull it in or type the values. Klyr only shows the buyer what you enter here.</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+              <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.04em">REFERENCE<input value="{{ q.exRef }}" onChange="{{ q.setRef }}" placeholder="e.g. 48213" style="height:42px;border-radius:10px;border:.5px solid var(--sep);background:var(--card);padding:0 10px;font-size:15px;font-weight:600;letter-spacing:0;color:var(--label);outline:none"></label>
+              <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.04em">{{ q.exAmtL }}<input type="number" step="{{ q.step }}" value="{{ q.exAmt }}" onChange="{{ q.setAmt }}" style="height:42px;border-radius:10px;border:.5px solid var(--sep);background:var(--card);padding:0 10px;font-size:15px;font-weight:600;letter-spacing:0;color:var(--label);outline:none"></label>
+              <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.04em">VALID UNTIL<input value="{{ q.exUntil }}" onChange="{{ q.setUntil }}" placeholder="e.g. Oct 12" style="height:42px;border-radius:10px;border:.5px solid var(--sep);background:var(--card);padding:0 10px;font-size:15px;font-weight:600;letter-spacing:0;color:var(--label);outline:none"></label>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button onClick="{{ q.sync }}" style="border:0;border-radius:10px;height:40px;padding:0 16px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:14px">Pull from {{ q.extName }}</button><sc-if value="{{ q.exSynced }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:600;color:var(--ok)">✓ Pulled just now · you can still edit</span></sc-if></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ q.here }}" hint-placeholder-val="{{ true }}">
+        <sc-for list="{{ q.groups }}" as="gr" hint-placeholder-count="2">
+          <div style="display:flex;flex-direction:column;gap:8px"><div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">{{ gr.l }}</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px"><sc-for list="{{ gr.opts }}" as="o" hint-placeholder-count="3"><div style="border:{{ o.bd }};background:{{ o.bg }};border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px"><button onClick="{{ o.pick }}" style="border:0;background:none;padding:0;text-align:left;display:flex;gap:8px;align-items:center"><span style="color:var(--tint);font-size:14px">{{ o.mark }}</span><span style="font-size:15px;font-weight:700">{{ o.l }}</span></button><label style="display:flex;align-items:center;gap:6px;background:var(--card);border:.5px solid var(--sep);border-radius:10px;padding:0 10px;height:38px"><span style="font-size:13px;color:var(--label2)">{{ q.unit }}</span><input type="number" step="{{ q.step }}" value="{{ o.val }}" onChange="{{ o.set }}" aria-label="{{ o.l }} value" style="flex:1;min-width:0;border:0;background:transparent;font-size:15px;font-weight:600;outline:none;font-variant-numeric:tabular-nums"></label></div></sc-for></div>
+          </div>
+        </sc-for>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">ADD-ONS</div>
+          <div style="background:var(--card2);border-radius:14px;overflow:hidden"><sc-for list="{{ q.extras }}" as="x" hint-placeholder-count="2"><div style="display:flex;gap:12px;align-items:center;padding:12px 14px;border-top:{{ x.bt }}"><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">{{ x.l }}</div><label style="display:inline-flex;align-items:center;gap:6px;margin-top:4px;background:var(--card);border:.5px solid var(--sep);border-radius:8px;padding:0 8px;height:32px"><span style="font-size:12px;color:var(--label2)">{{ q.unit }}</span><input type="number" step="{{ q.step }}" value="{{ x.val }}" onChange="{{ x.set }}" aria-label="{{ x.l }} value" style="width:90px;border:0;background:transparent;font-size:14px;font-weight:600;outline:none"></label></div><button onClick="{{ x.toggle }}" role="switch" aria-checked="{{ x.on }}" aria-label="{{ x.l }}" style="position:relative;width:51px;height:31px;border-radius:16px;border:0;background:{{ x.bg }};flex:none"><span style="position:absolute;top:2px;left:{{ x.x }}px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:left .2s"></span></button></div></sc-for></div>
+        </div>
+        </sc-if>
+      </div>
+      <div style="flex:1 1 280px;min-width:0;background:var(--card);border-radius:24px;box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;gap:12px;position:sticky;top:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em">WHAT THE BUYER SEES</div>
+        <div style="font-size:40px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums">{{ q.big }}</div>
+        <div style="font-size:14px;color:var(--label2)">{{ q.bigSub }}</div>
+        <div style="display:flex;flex-direction:column;border-top:.5px solid var(--sep)"><sc-for list="{{ q.lines }}" as="l" hint-placeholder-count="3"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-bottom:.5px solid var(--sep);font-size:14px"><span style="color:var(--label2)">{{ l.k }}</span><input value="{{ l.v }}" onChange="{{ l.set }}" aria-label="{{ l.k }}" style="width:48%;min-width:0;border:0;border-radius:8px;background:var(--card2);padding:6px 8px;font-size:14px;font-weight:700;text-align:right;outline:none"></div></sc-for></div>
+        <sc-if value="{{ q.notSent }}" hint-placeholder-val="{{ true }}"><button onClick="{{ q.send }}" style="border:0;border-radius:14px;height:50px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:16px">{{ C.sendL }}</button></sc-if>
+        <sc-if value="{{ q.sent }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;font-weight:700;color:var(--ok);background:var(--okSoft);border-radius:12px;padding:12px">✓ Sent. It shows up in the buyer’s Klyr app next to the other quotes.</div></sc-if>
+        <div style="font-size:12px;color:var(--label3);text-wrap:pretty">{{ C.quoteNote }}</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isFiles }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px"><sc-for list="{{ kpis }}" as="k" hint-placeholder-count="3"><div style="background:var(--card);border-radius:18px;padding:14px 16px;box-shadow:var(--shadow)"><div style="font-size:13px;color:var(--label2)">{{ k.l }}</div><div style="font-size:28px;font-weight:800;letter-spacing:-.02em">{{ k.v }}</div></div></sc-for></div>
+    <sc-for list="{{ files }}" as="f" hint-placeholder-count="3">
+      <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><div style="font-size:18px;font-weight:800">{{ f.name }}</div><div style="font-size:14px;color:var(--label2)">{{ f.addr }} · {{ f.closeL }}</div></div><div style="font-size:13px;font-weight:700;border-radius:999px;padding:5px 12px;background:{{ f.pillBg }};color:{{ f.pillFg }};white-space:nowrap">{{ f.pill }}</div></div>
+        <div style="display:flex;gap:3px"><sc-for list="{{ f.segs }}" as="g" hint-placeholder-count="8"><div title="{{ g.t }}" style="flex:1;height:6px;border-radius:3px;background:{{ g.bg }}"></div></sc-for></div>
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+          <div style="font-size:14px"><span style="color:var(--label2)">Next: </span><span style="font-weight:700">{{ f.next }}</span><span style="color:{{ f.dueFg }};font-weight:600"> · {{ f.nextDue }}</span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-if value="{{ f.canMark }}" hint-placeholder-val="{{ true }}"><button onClick="{{ f.mark }}" style="border:0;border-radius:10px;height:38px;padding:0 14px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:13px">Mark done</button></sc-if><button onClick="{{ f.docs }}" style="border:0;border-radius:10px;height:38px;padding:0 14px;background:var(--fill);font-weight:600;font-size:13px">Documents · {{ f.docN }}</button><button onClick="{{ f.msg }}" style="border:0;border-radius:10px;height:38px;padding:0 14px;background:var(--fill);font-weight:600;font-size:13px">Message</button></div>
+        </div>
+        <div style="font-size:12px;color:var(--label3)">Marking a step done updates the buyer’s Klyr journey and tells their agent.</div>
+      </div>
+    </sc-for>
+    <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em;margin-top:4px">DEADLINES FROM THE DEAL PLANS</div>
+    <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden"><sc-for list="{{ dls }}" as="d" hint-placeholder-count="4"><div style="display:flex;gap:14px;align-items:center;padding:12px 18px;border-top:{{ d.bt }}"><div style="width:48px;flex:none;text-align:center;border-radius:10px;padding:4px 0;background:{{ d.bg }};color:{{ d.fg }}"><div style="font-size:11px;font-weight:700">{{ d.wd }}</div><div style="font-size:18px;font-weight:800;line-height:1.1">{{ d.dn }}</div></div><div style="min-width:0"><div style="font-size:15px;font-weight:600">{{ d.t }}</div><div style="font-size:13px;color:var(--label2)">{{ d.who }}</div></div></div></sc-for></div>
+  </sc-if>
+
+  <sc-if value="{{ isDocs }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ docClients }}" as="d" hint-placeholder-count="3"><button onClick="{{ d.pick }}" style="border:0;border-radius:999px;padding:7px 14px;background:{{ d.bg }};color:{{ d.fg }};font-size:14px;font-weight:600">{{ d.l }}</button></sc-for></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--tintSoft);border-radius:16px;padding:12px 16px"><div style="font-size:14px;color:var(--tint);font-weight:600">{{ docSum }}</div><sc-if value="{{ canReqAll }}" hint-placeholder-val="{{ true }}"><button onClick="{{ reqAll }}" style="border:0;border-radius:10px;height:36px;padding:0 14px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:13px">Request the rest in one message</button></sc-if></div>
+    <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden">
+      <sc-for list="{{ docs }}" as="d" hint-placeholder-count="6">
+        <div style="display:flex;gap:12px;align-items:center;padding:12px 18px;border-top:{{ d.bt }};flex-wrap:wrap">
+          <div style="flex:1;min-width:200px"><div style="font-size:15px;font-weight:600">{{ d.t }}</div><div style="font-size:13px;color:var(--label2);text-wrap:pretty">{{ d.why }} · {{ d.from }} · {{ d.when }}</div></div>
+          <div style="font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;background:{{ d.pillBg }};color:{{ d.pillFg }};white-space:nowrap">{{ d.pill }}</div>
+          <sc-if value="{{ d.hasAct }}" hint-placeholder-val="{{ false }}"><button onClick="{{ d.go }}" style="border:0;border-radius:10px;height:34px;padding:0 12px;background:var(--fill);font-weight:700;font-size:13px">{{ d.actL }}</button></sc-if>
+        </div>
+      </sc-for>
+    </div>
+    <div style="font-size:13px;color:var(--label2);text-wrap:pretty">Files stay in the buyer’s Klyr vault. You can open them for this deal only, every open is logged, and access ends 30 days after closing. Never ask for documents by email.</div>
+    <div style="font-size:12px;font-weight:700;color:var(--label3);letter-spacing:.05em;margin-top:6px">WHO YOU TALK TO</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px"><sc-for list="{{ comms }}" as="c" hint-placeholder-count="3"><div style="background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px;display:flex;flex-direction:column;gap:4px"><div style="font-size:15px;font-weight:700">{{ c.w }}</div><div style="font-size:13px;text-wrap:pretty">{{ c.what }}</div><div style="font-size:12px;color:var(--label2)">{{ c.when }} · {{ c.how }}</div></div></sc-for></div>
+  </sc-if>
+
+  <sc-if value="{{ isMsgs }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:{{ msgCols }};gap:16px;align-items:start">
+      <sc-if value="{{ showList }}" hint-placeholder-val="{{ true }}"><div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden"><sc-for list="{{ threads }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.pick }}" style="width:100%;border:0;border-top:{{ t.bt }};background:{{ t.bg }};text-align:left;padding:12px 16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:700">{{ t.name }}</span><span style="font-size:12px;color:var(--tint);font-weight:600">{{ t.role }}</span><span style="font-size:13px;color:var(--label2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.last }}</span></button></sc-for></div></sc-if>
+      <sc-if value="{{ showThread }}" hint-placeholder-val="{{ true }}">
+        <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:400px">
+          <div style="padding:14px 18px;border-bottom:.5px solid var(--sep);display:flex;gap:10px;align-items:center"><sc-if value="{{ mob }}" hint-placeholder-val="{{ false }}"><button onClick="{{ backList }}" style="border:0;background:none;color:var(--tint);font-weight:700;font-size:18px;padding:0">‹</button></sc-if><div><div style="font-size:16px;font-weight:800">{{ th.name }}</div><div style="font-size:12px;color:var(--label2)">{{ th.role }}</div></div></div>
+          <div style="flex:1;padding:16px 18px;display:flex;flex-direction:column;gap:8px"><sc-for list="{{ th.msgs }}" as="m" hint-placeholder-count="2"><div style="align-self:{{ m.side }};max-width:78%;background:{{ m.bg }};color:{{ m.fg }};border-radius:16px;padding:9px 13px;font-size:14px;text-wrap:pretty">{{ m.t }}</div></sc-for></div>
+          <div style="padding:10px 14px;border-top:.5px solid var(--sep);display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ quick }}" as="q" hint-placeholder-count="3"><button onClick="{{ q.go }}" style="border:0;border-radius:999px;padding:6px 12px;background:var(--tintSoft);color:var(--tint);font-size:13px;font-weight:600">{{ q.t }}</button></sc-for></div>
+            <div style="display:flex;gap:8px"><input value="{{ draft }}" onChange="{{ setDraft }}" placeholder="Write a message" aria-label="Message" style="flex:1;min-width:0;height:42px;border-radius:12px;border:.5px solid var(--sep);background:var(--card2);padding:0 12px;font-size:15px;outline:none"><button onClick="{{ send }}" style="border:0;border-radius:12px;height:42px;padding:0 16px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:14px">Send</button></div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isBill }}" hint-placeholder-val="{{ false }}">
+    <div style="background:{{ fee.bg }};border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:4px"><div style="font-size:15px;font-weight:800;color:{{ fee.fg }}">{{ fee.t }}</div><div style="font-size:14px;color:{{ fee.fg }};text-wrap:pretty">{{ fee.b }}</div></div>
+    <div style="background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden">
+      <sc-for list="{{ bills }}" as="b" hint-placeholder-count="3">
+        <div style="display:flex;gap:12px;align-items:center;padding:14px 18px;border-top:{{ b.bt }};flex-wrap:wrap">
+          <div style="flex:1;min-width:180px"><div style="font-size:15px;font-weight:700">{{ b.name }}</div><div style="font-size:13px;color:var(--label2)">{{ b.sub }}</div></div>
+          <div style="text-align:right"><div style="font-size:16px;font-weight:800;font-variant-numeric:tabular-nums">{{ b.amt }}</div><div style="font-size:12px;color:var(--label2)">{{ b.ref }}</div></div>
+          <div style="font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;background:{{ b.pillBg }};color:{{ b.pillFg }};white-space:nowrap">{{ b.pill }}</div>
+          <sc-if value="{{ b.canSend }}" hint-placeholder-val="{{ false }}"><button onClick="{{ b.go }}" style="border:0;border-radius:10px;height:34px;padding:0 12px;background:var(--tint);color:var(--onTint);font-weight:700;font-size:13px">Send invoice</button></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+  <div style="height:{{ bottomSpace }}"></div>
+</main>
+
+<sc-if value="{{ mob }}" hint-placeholder-val="{{ false }}">
+  <nav style="position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--bar);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--sep);display:grid;grid-template-columns:repeat(6,1fr);padding:6px 4px 18px">
+    <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6"><button onClick="{{ n.go }}" style="border:0;background:none;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:3px;color:{{ n.tabFg }};font-size:11px;font-weight:600;position:relative"><span style="width:6px;height:6px;border-radius:50%;background:{{ n.tabDot }}"></span>{{ n.short }}<sc-if value="{{ n.hasBadge }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:0;right:22%;font-size:10px;font-weight:700;background:var(--warn);color:#fff;border-radius:999px;padding:0 5px">{{ n.badge }}</span></sc-if></button></sc-for>
+  </nav>
+</sc-if>
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}"><div style="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:40;background:#1C1C1E;color:#fff;border-radius:999px;padding:10px 18px;font-size:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:rise .25s;white-space:nowrap">{{ toast }}</div></sc-if>
+{{ phoneEl }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;kind&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;lawyer&quot;,&quot;lender&quot;,&quot;inspector&quot;,&quot;insurer&quot;],&quot;default&quot;:&quot;lawyer&quot;,&quot;tsType&quot;:&quot;'lawyer'|'lender'|'inspector'|'insurer'&quot;}}">
+class Component extends DCLogic {
+  state = { tab: 'req', req: {}, q: {}, sent: {}, beatR: 3.99, beat: null, step: {}, docC: null, docs: {}, thread: null, mList: true, draft: '', msgs: {}, billed: {}, toast: '', phone: false, w: typeof window !== 'undefined' ? window.innerWidth : 1200, ok: !!window.KLYR_P };
+  componentDidMount() {
+    this._r = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this._r);
+    if (!this.state.ok) this._w = setInterval(() => { if (window.KLYR_P) { clearInterval(this._w); this.setState({ ok: true }); } }, 60);
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this._r); clearInterval(this._w); clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 2400); }
+  cfg(kind) {
+    return {
+      lawyer: { app: 'LAW', file: 'Klyr Law.dc.html', firm: 'Chen & Reyes LLP', me: 'Lina Chen', init: 'LC', reg: 'LSO P42817 · LawPRO insured', quoteCta: 'Send retainer', sendL: 'Send retainer to buyer', noun: 'Retainer',
+        quoteNote: 'The buyer compares your flat fee with other Klyr lawyers. Disbursements are listed separately.',
+        ms: ['Retainer signed', 'ID verified', 'Deal package', 'Title search', 'Mortgage instructions', 'Insurance binder', 'Adjustments', 'Signing', 'Funds in', 'Registered · keys'],
+        reqs: [{ c: 'alex', what: 'Purchase closing · 48 Bellwoods Ave', facts: [['Price', '$1,150,000'], ['Firm by', 'Oct 7 if checks clear'], ['Closing', 'Dec 2']], shared: 'Offer, deposit receipt, ID' }, { c: 'walsh', what: 'Purchase closing · 64 Galley Ave', facts: [['Price', '$912,000'], ['Status', 'Counter-offer'], ['Closing', '60 days']], shared: 'Offer draft' }],
+        files: [{ c: 'farah', at: 7, close: 9, dl: [['Signing appointment', 3], ['Funds wired', 8], ['Register and release keys', 9]] }, { c: 'lin', at: 2, close: 34, dl: [['Title search done', 24], ['Mortgage instructions due', 24]] }, { c: 'kim', at: 10, close: -5, dl: [] }],
+        groups: [['Service', [['Purchase closing', 1450], ['Condo purchase', 1650], ['Purchase + sale', 2450]]], ['Signing', [['In office', 0], ['Video', 0], ['Evening', 95]]]], extras: [['Title insurance policy', 395, true], ['Rush closing (under 15 days)', 350, false]],
+        sum: (t, x) => ({ big: '$' + t.toLocaleString('en-CA'), bigSub: 'Flat fee + disbursements · first-time buyer refund claimed for you', lines: [['Title search and registration', 'Included'], ['Disbursements (estimate)', '$480'], ['Land transfer tax refund', 'Claimed for you']] }),
+        bills: [['kim', 1845, 'Paid Oct 1'], ['farah', 2045, 'Due at closing'], ['lin', 1845, 'Due at closing']] },
+      lender: { app: 'LEND', file: 'Klyr Lend.dc.html', firm: 'Northgate Mortgage', me: 'Dev Shah', init: 'DS', reg: 'FSRA M22-0041 · Level 2', quoteCta: 'Send quote', sendL: 'Send quote to buyer', noun: 'Quote',
+        quoteNote: 'Only the advisor the buyer chooses runs a full credit check. Buyers can ask you to beat another quote once.',
+        ms: ['Quote sent', 'Chosen', 'Documents', 'Appraisal', 'Underwriting', 'Commitment', 'Instructions to lawyer', 'Funded'],
+        reqs: [{ c: 'alex', what: 'Purchase mortgage · 48 Bellwoods Ave', facts: [['Mortgage', '$920,000'], ['Down payment', '20%'], ['Needed by', 'Oct 9 · mortgage check']], shared: 'Income, down payment, credit consent' }, { c: 'walsh', what: 'Pre-approval · 64 Galley Ave', facts: [['Mortgage', '$729,600'], ['Down payment', '20%'], ['Needed by', 'Before offer']], shared: 'Income, down payment' }],
+        files: [{ c: 'lin', at: 4, close: 34, dl: [['Commitment due · mortgage check ends', 1], ['Instructions to lawyer', 24]] }, { c: 'farah', at: 6, close: 9, dl: [['Funds to lawyer', 8]] }, { c: 'kim', at: 8, close: -5, dl: [] }],
+        groups: [['Term', [['5-year fixed', 4.19], ['3-year fixed', 4.39], ['5-year variable', 4.6]]], ['Approval speed', [['2 days', 0], ['4 days', -.05]]]], extras: [['Prepay 20% a year', 0, true], ['120-day rate hold', .05, false], ['$1,500 cash back', .1, false]],
+        sum: (t, x) => { const P = 920000, r = t / 1200, n = 300, m = P * r / (1 - Math.pow(1 + r, -n)); return { big: t.toFixed(2) + '%', bigSub: '$' + Math.round(m).toLocaleString('en-CA') + ' a month · 25 years · $920,000', lines: [['5-year interest', '$' + Math.round(m * 60 - (P - (P * Math.pow(1 + r, 60) - m * (Math.pow(1 + r, 60) - 1) / r))).toLocaleString('en-CA')], ['Prepayment', x[0] ? '20% a year' : '15% a year'], ['Credit check', 'Only if chosen']] }; },
+        bills: [['kim', 1500, 'Paid on funding'], ['farah', 1200, 'On funding'], ['lin', 1400, 'On funding']] },
+      inspector: { app: 'INSPECT', file: 'Klyr Inspect.dc.html', firm: 'ClearView Inspections', me: 'Ruth Osei', init: 'RO', reg: 'OAHI member · $2M E&O', quoteCta: 'Send price and times', sendL: 'Send to buyer', noun: 'Booking',
+        quoteNote: 'The report goes to the buyer the same day. Their agent sees it only if the buyer shares it.',
+        ms: ['Booked', 'Agreement signed', 'Access confirmed', 'Inspected', 'Report sent'],
+        reqs: [{ c: 'alex', what: 'Home inspection · 48 Bellwoods Ave · 1912 semi', facts: [['Inspection check ends', 'Wed Oct 7'], ['Best time', 'Today 4 pm'], ['Size', '1,850 sq ft']], shared: 'Address, listing, access through agent' }, { c: 'lin', what: 'Home inspection · 227 Symington Ave', facts: [['Inspection check ends', 'Fri Oct 9'], ['Best time', 'Wed or Thu'], ['Size', '1,420 sq ft']], shared: 'Address, listing' }],
+        files: [{ c: 'farah', at: 4, close: 9, dl: [] }, { c: 'kim', at: 4, close: -5, dl: [] }],
+        groups: [['Inspection', [['Full home', 475], ['Full home + sewer camera', 725], ['Condo unit', 395]]], ['Time', [['Today 4 pm', 0], ['Tue 9 am', 0], ['Tue 1 pm', 0]]]], extras: [['Thermal camera', 95, true], ['WETT wood stove check', 150, false]],
+        sum: (t, x) => ({ big: '$' + t.toLocaleString('en-CA'), bigSub: 'About 2.5 hours · report the same day', lines: [['Roof, wiring, plumbing, foundation', 'Included'], ['Repair cost estimates', 'Included'], ['Buyer can attend', 'Yes']] }),
+        bills: [['farah', 395, 'Paid'], ['kim', 570, 'Paid']] },
+      insurer: { app: 'COVER', file: 'Klyr Cover.dc.html', firm: 'Coastline Insurance', me: 'Kim Moreau', init: 'KM', reg: 'RIBO 40251', quoteCta: 'Send quote', sendL: 'Send quote to buyer', noun: 'Quote',
+        quoteNote: 'The binder goes to the buyer’s lawyer 5 days before closing with the lender listed as mortgagee.',
+        ms: ['Quote sent', 'Chosen', 'Details confirmed', 'Bound', 'Binder to lawyer', 'Policy issued'],
+        reqs: [{ c: 'alex', what: 'Home insurance · 48 Bellwoods Ave · 1912 semi', facts: [['Closing', 'Dec 2'], ['Lender', 'Northgate'], ['Roof', 'About 15 years old']], shared: 'Address, closing date, inspection report' }, { c: 'lin', what: 'Home insurance · 227 Symington Ave', facts: [['Closing', 'Nov 8'], ['Lender', 'Pine'], ['Roof', '2019']], shared: 'Address, closing date' }],
+        files: [{ c: 'farah', at: 3, close: 9, dl: [['Binder to lawyer', 4]] }, { c: 'kim', at: 5, close: -5, dl: [] }],
+        groups: [['Coverage', [['Standard', 1380], ['Comprehensive', 1640], ['Comprehensive + water', 1895]]], ['Deductible', [['$1,000', 0], ['$2,500', -120]]]], extras: [['Sewer backup', 180, true], ['Bundle with car (−12%)', -190, false]],
+        sum: (t, x) => ({ big: '$' + Math.round(t / 12) + '/mo', bigSub: '$' + t.toLocaleString('en-CA') + ' a year', lines: [['Liability', '$2,000,000'], ['Mortgagee clause', 'Lender named'], ['Binder to lawyer', '5 days before closing']] }),
+        bills: [['farah', 1520, 'Commission on binding'], ['kim', 1710, 'Paid']] }
+    }[kind];
+  }
+  renderVals() {
+    const st = this.state, P = window.KLYR_P, kind = this.props.kind || 'lawyer', C = this.cfg(kind), mob = st.w < 760 || /phone=1/.test(location.search);
+    if (!P) return { cols: '1fr', desk: false, mob: false, C };
+    const $ = n => '$' + Math.round(n).toLocaleString('en-CA');
+    const D0 = new Date(2026, 9, 5), dt = d => { const x = new Date(D0); x.setDate(x.getDate() + d); return x; };
+    const wd = d => d === 0 ? 'TODAY' : dt(d).toLocaleDateString('en-CA', { weekday: 'short' }).toUpperCase(), full = d => dt(d).toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' });
+    const byC = id => P.CLIENTS.find(c => c.id === id);
+    const go = tab => () => this.setState({ tab });
+    const openReq = C.reqs.filter(r => !st.req[r.c]).length;
+    const NAV = [['req', 'Requests', 'New'], ['quote', C.noun + ' builder', C.noun], ['files', 'Clients', 'Clients'], ['docs', 'Documents', 'Docs'], ['msgs', 'Messages', 'Chat'], ['bill', 'Billing', 'Billing']];
+    const nav = NAV.map(([k, l, short]) => { const on = st.tab === k, b = k === 'req' ? openReq + (kind === 'lender' && !st.beat ? 1 : 0) : k === 'msgs' ? 1 : 0; return { l, short, go: go(k), bg: on ? 'var(--card)' : 'transparent', fg: on ? 'var(--tint)' : 'var(--label)', fw: on ? 700 : 500, hasBadge: b > 0, badge: b, tabFg: on ? 'var(--tint)' : 'var(--label2)', tabDot: on ? 'var(--tint)' : 'transparent' }; });
+    // Requests
+    const reqs = C.reqs.map(r => { const c = byC(r.c), s = st.req[r.c];
+      return { name: c.name, what: r.what, facts: r.facts.map(([k, v]) => ({ k, v })), shared: r.shared, open: !s, pill: s === 'sent' ? C.noun + ' sent' : s === 'no' ? 'Declined' : 'New · reply within 2 h', pillBg: s === 'sent' ? 'var(--okSoft)' : s ? 'var(--fill)' : 'var(--warnSoft)', pillFg: s === 'sent' ? 'var(--ok)' : s ? 'var(--label2)' : 'var(--warn)',
+        quote: () => this.setState({ tab: 'quote', qFor: r.c }), decline: () => { this.setState(x => ({ req: { ...x.req, [r.c]: 'no' } })); this.flash('Declined · Klyr offers the buyer someone else'); } }; });
+    const target = 4.09, br = st.beatR;
+    const beat = { t: 'Alex Rivera asked you to beat 4.09%', sub: 'Pine Mortgages quoted 4.09% on 5-year fixed for $920,000. Your quote was 4.19%.', due: 'REPLY BY 6 PM', rate: br.toFixed(2) + '%', open: !st.beat, done: !!st.beat, doneL: st.beat === 'pass' ? 'You passed. Alex sees Pine as the best rate.' : 'New rate ' + br.toFixed(2) + '% sent to Alex',
+      note: br < target ? 'Beats Pine by ' + ((target - br) * 100).toFixed(0) + ' basis points · saves Alex about $' + Math.round((target - br) * 9200 * 5 / 1).toLocaleString('en-CA') + ' over 5 years' : 'Doesn’t beat 4.09% yet', fg: br < target ? 'var(--ok)' : 'var(--warn)',
+      down: () => this.setState({ beatR: Math.round((br - .05) * 100) / 100 }), up: () => this.setState({ beatR: Math.round((br + .05) * 100) / 100 }),
+      send: () => { if (br >= target) return this.flash('Go below 4.09% to beat it'); this.setState({ beat: 'sent' }); this.flash('Sent · Klyr AI updates Alex’s comparison'); }, pass: () => this.setState({ beat: 'pass' }) };
+    // Quote
+    const qc = byC(st.qFor || C.reqs[0].c), qr = C.reqs.find(r => r.c === qc.id) || C.reqs[0], Q = st.q[qc.id] || {};
+    const setQ = p => this.setState(x => ({ q: { ...x.q, [qc.id]: { ...(x.q[qc.id] || {}), ...p } } }));
+    const EXT = { lawyer: 'Unity', lender: 'Filogix Expert', inspector: 'Spectora', insurer: 'Applied Epic' }[kind], isL = kind === 'lender';
+    const num = e => { const n = parseFloat(String(e.target.value).replace(/[^0-9.\-]/g, '')); return isNaN(n) ? 0 : n; };
+    const sel = C.groups.map((g, i) => Q['g' + i] ?? 0), xon = C.extras.map((e, i) => Q['x' + i] ?? e[2]);
+    const gv = (i, j) => Q['v' + i + '_' + j] ?? C.groups[i][1][j][1], xv = i => Q['xv' + i] ?? C.extras[i][1];
+    const ext = Q.src === 'ext', E = Q.ext || {};
+    const built = C.groups.reduce((a, g, i) => a + gv(i, sel[i]), 0) + C.extras.reduce((a, e, i) => a + (xon[i] ? xv(i) : 0), 0);
+    const total = ext ? (E.amt || 0) : built;
+    const S = C.sum(total, xon);
+    const unit = isL ? '%' : '$', step = isL ? '0.01' : '1';
+    const srcOpts = [['here', 'Build it here'], ['ext', 'From ' + EXT]].map(([k, l]) => { const on = (Q.src || 'here') === k; return { l, bg: on ? 'var(--card)' : 'transparent', sh: on ? '0 1px 3px rgba(0,0,0,.12)' : 'none', pick: () => setQ({ src: k }) }; });
+    const sync = () => { const amt = { lawyer: 1895, lender: 4.14, inspector: 590, insurer: 1712 }[kind]; setQ({ ext: { ref: E.ref || ({ lawyer: 'UN-', lender: 'FX-', inspector: 'SP-', insurer: 'AE-' }[kind] + '48213'), amt, until: E.until || 'Oct 12', synced: true } }); this.flash('Pulled from ' + EXT + ' · check the values'); };
+    const q = { client: qc.name, clientSub: qr.what, big: S.big, bigSub: S.bigSub, sent: st.req[qc.id] === 'sent', notSent: st.req[qc.id] !== 'sent', unit, step, srcOpts, ext, here: !ext, extName: EXT,
+      lines: S.lines.map(([k, v], i) => ({ k, v: Q['l' + i] ?? v, set: e => setQ({ ['l' + i]: e.target.value }) })),
+      exRef: E.ref || '', exAmt: E.amt ?? '', exUntil: E.until || '', exSynced: !!E.synced, exAmtL: isL ? 'Rate (%)' : kind === 'insurer' ? 'Annual premium ($)' : 'Price ($)',
+      setRef: e => setQ({ ext: { ...E, ref: e.target.value } }), setAmt: e => setQ({ ext: { ...E, amt: num(e) } }), setUntil: e => setQ({ ext: { ...E, until: e.target.value } }), sync,
+      groups: C.groups.map((g, i) => ({ l: g[0].toUpperCase(), opts: g[1].map(([l], j) => { const on = sel[i] === j; return { l, val: gv(i, j), set: e => setQ({ ['v' + i + '_' + j]: num(e) }), mark: on ? '●' : '○', bg: on ? 'var(--tintSoft)' : 'var(--card)', bd: on ? '2px solid var(--tint)' : '.5px solid var(--sep)', pick: () => setQ({ ['g' + i]: j }) }; }) })),
+      extras: C.extras.map(([l], i) => { const on = xon[i]; return { l, val: xv(i), set: e => setQ({ ['xv' + i]: num(e) }), on, bt: i ? '.5px solid var(--sep)' : '0', bg: on ? 'var(--ok)' : 'var(--fill)', x: on ? 22 : 2, toggle: () => setQ({ ['x' + i]: !on }) }; }),
+      send: () => { if (ext && !E.amt) return this.flash('Enter the amount from ' + EXT + ' first'); this.setState(x => ({ req: { ...x.req, [qc.id]: 'sent' } })); this.flash(C.noun + ' sent to ' + qc.name.split(' ')[0]); } };
+    // Files
+    const files = C.files.map(f => { const c = byC(f.c), at = st.step[f.c] ?? f.at, done = at >= C.ms.length, closed = f.close < 0;
+      const nd = f.dl[0], docN = P.DOCS[kind].length;
+      return { name: c.name, addr: c.addr, closeL: closed ? 'Closed ' + full(f.close) : 'Closing ' + full(f.close), pill: done || closed ? 'Done' : C.ms[at], pillBg: done || closed ? 'var(--okSoft)' : 'var(--tintSoft)', pillFg: done || closed ? 'var(--ok)' : 'var(--tint)',
+        segs: C.ms.map((t, i) => ({ t, bg: i < at || closed ? 'var(--tint)' : i === at ? 'var(--label3)' : 'var(--fill)' })), next: done || closed ? 'Nothing due' : C.ms[at], nextDue: nd && !closed ? nd[0] + ' · ' + full(nd[1]) : closed ? 'File closed' : 'On track', dueFg: nd && nd[1] <= 1 ? 'var(--warn)' : 'var(--label2)',
+        canMark: !done && !closed, mark: () => { this.setState(x => ({ step: { ...x.step, [f.c]: at + 1 } })); this.flash(C.ms[at] + ' done · ' + c.name.split(' ')[0] + '’s journey updated'); },
+        docN: closed ? docN + '/' + docN : Math.min(docN, at + 3) + '/' + docN, docs: () => this.setState({ tab: 'docs', docC: f.c }), msg: () => this.setState({ tab: 'msgs', thread: f.c, mList: false }) }; });
+    const dls = C.files.flatMap(f => f.dl.map(([t, d]) => ({ t, d, who: byC(f.c).name + ' · ' + byC(f.c).addr }))).concat(C.reqs.slice(0, 1).map(r => ({ t: 'Reply to new request', d: 0, who: byC(r.c).name }))).sort((a, b) => a.d - b.d)
+      .map((x, i) => ({ ...x, wd: wd(x.d), dn: dt(x.d).getDate(), bt: i ? '.5px solid var(--sep)' : '0', bg: x.d <= 1 ? 'var(--warnSoft)' : 'var(--card2)', fg: x.d <= 1 ? 'var(--warn)' : 'var(--label)' }));
+    const kpis = [{ l: 'Open files', v: String(files.filter(f => f.canMark).length) }, { l: 'Due in 2 days', v: String(dls.filter(d => d.d <= 2).length) }, { l: 'New requests', v: String(openReq) }];
+    // Docs
+    const ids = [...C.reqs.map(r => r.c), ...C.files.map(f => f.c)].filter((v, i, a) => a.indexOf(v) === i && byC(v).dueDay >= -1 || false);
+    const dId = st.docC || C.files[0].c, dcl = byC(dId), fi = C.files.find(f => f.c === dId), base = fi ? Math.min(P.DOCS[kind].length, (st.step[dId] ?? fi.at) + 3) : 1;
+    const DS = st.docs[dId] || {};
+    const docs = P.DOCS[kind].map(([t, why, from, when], i) => { const s = DS[i] || (i < base ? 'ok' : i < base + 2 ? 'up' : 'none');
+      const mine = /Lawyer|Lender|Insurer|Inspector/.test(from) && from.split(' ').length <= 2;
+      return { t, why, from, when, bt: i ? '.5px solid var(--sep)' : '0', pill: mine && s === 'none' ? 'You prepare' : { ok: 'Verified', up: 'Uploaded · check it', req: 'Requested', none: 'Not requested' }[s], pillBg: s === 'ok' ? 'var(--okSoft)' : s === 'up' ? 'var(--tintSoft)' : s === 'req' ? 'var(--warnSoft)' : 'var(--fill)', pillFg: s === 'ok' ? 'var(--ok)' : s === 'up' ? 'var(--tint)' : s === 'req' ? 'var(--warn)' : 'var(--label2)',
+        hasAct: s === 'up' || (s === 'none' && !mine), actL: s === 'up' ? 'Verify' : 'Request',
+        go: () => { this.setState(x => ({ docs: { ...x.docs, [dId]: { ...(x.docs[dId] || {}), [i]: s === 'up' ? 'ok' : 'req' } } })); this.flash(s === 'up' ? 'Verified · buyer sees a green check' : 'Request sent to the buyer’s vault'); } }; });
+    const todo = docs.filter(d => d.actL === 'Request' && d.hasAct).length;
+    const docClients = [...new Set([...C.files.map(f => f.c), ...C.reqs.map(r => r.c)])].map(id => { const on = id === dId; return { l: byC(id).name, bg: on ? 'var(--tint)' : 'var(--card)', fg: on ? 'var(--onTint)' : 'var(--label)', pick: () => this.setState({ docC: id }) }; });
+    const reqAll = () => { const m = {}; docs.forEach((d, i) => { if (d.hasAct && d.actL === 'Request') m[i] = 'req'; }); this.setState(x => ({ docs: { ...x.docs, [dId]: { ...(x.docs[dId] || {}), ...m } } })); this.flash(todo + ' requests sent in one message'); };
+    const comms = P.COMMS[kind].map(([w, what, when, how]) => ({ w, what, when, how }));
+    // Messages
+    const TIDS = [...new Set([...C.reqs.map(r => r.c), ...C.files.map(f => f.c)])];
+    const seed = id => st.msgs[id] || [{ me: false, t: id === 'alex' ? 'Hi, Klyr sent you my file. What do you need from me?' : 'Thanks, I uploaded what you asked for.' }];
+    const tid = st.thread && TIDS.includes(st.thread) ? st.thread : TIDS[0];
+    const threads = TIDS.map((id, i) => { const m = seed(id); return { name: byC(id).name, role: byC(id).addr || byC(id).kind, last: m[m.length - 1].t, bt: i ? '.5px solid var(--sep)' : '0', bg: tid === id ? 'var(--tintSoft)' : 'transparent', pick: () => this.setState({ thread: id, mList: false }) }; });
+    const th = { name: byC(tid).name, role: 'Buyer · ' + (byC(tid).addr || 'searching') + ' · agent Maya Chen', msgs: seed(tid).map(m => ({ t: m.t, side: m.me ? 'flex-end' : 'flex-start', bg: m.me ? 'var(--tint)' : 'var(--card2)', fg: m.me ? 'var(--onTint)' : 'var(--label)' })) };
+    const say = t => this.setState(x => ({ msgs: { ...x.msgs, [tid]: [...seed(tid), { me: true, t }] } }));
+    const QK = { lawyer: ['Please upload two pieces of ID', 'Your signing is booked', 'Keys are released'], lender: ['Please upload your pay stubs', 'Appraisal is booked', 'You’re approved'], inspector: ['I’m on site now', 'Your report is ready', 'Can you join at 4 pm?'], insurer: ['Your quote is ready', 'Binder sent to your lawyer', 'How old is the roof?'] }[kind];
+    // Billing
+    const F = P.FEES[kind], noRef = kind === 'lawyer';
+    const refAmt = { lender: 1500, inspector: 50, insurer: 0.1 }[kind];
+    const bills = C.bills.map(([id, amt, stt], i) => { const c = byC(id), paid = /^Paid/.test(stt) || st.billed[id], ref = noRef ? 'No referral fee' : 'Referral to Klyr ' + $(refAmt < 1 ? amt * refAmt : refAmt) + ' · disclosed';
+      return { name: c.name, sub: c.addr + ' · ' + (st.billed[id] ? 'Invoice sent' : stt), amt: $(amt), ref, bt: i ? '.5px solid var(--sep)' : '0', pill: paid ? (st.billed[id] ? 'Sent' : 'Paid') : 'Open', pillBg: paid ? 'var(--okSoft)' : 'var(--fill)', pillFg: paid ? 'var(--ok)' : 'var(--label2)', canSend: !paid, go: () => { this.setState(x => ({ billed: { ...x.billed, [id]: true } })); this.flash('Invoice sent to ' + c.name.split(' ')[0]); } }; });
+    const T = { req: ['REPLY FAST · BUYERS PICK WITHIN 24 H', 'New requests'], quote: ['BUILT FROM WHAT THE BUYER SHARED', C.noun + ' builder'], files: ['FROM EVERY KLYR DEAL PLAN', 'Clients'], docs: ['WHAT YOU NEED TO DO THE WORK', 'Documents · ' + dcl.name], msgs: ['BUYERS AND THEIR AGENTS', 'Messages'], bill: ['INVOICES AND REFERRAL FEES', 'Billing'] }[st.tab];
+    return {
+      C, desk: !mob, mob, cols: mob ? 'minmax(0,1fr)' : '232px minmax(0,1fr)', pad: mob ? '16px 16px 0' : '28px 32px 48px', h1: mob ? '28px' : '34px', bottomSpace: mob ? '90px' : '0',
+      nav, kicker: T[0], title: T[1], isReq: st.tab === 'req', isQuote: st.tab === 'quote', isFiles: st.tab === 'files', isDocs: st.tab === 'docs', isMsgs: st.tab === 'msgs', isBill: st.tab === 'bill',
+      hasBeat: kind === 'lender', beat, reqs, q, files, dls, kpis, docs, docClients, docSum: docs.filter(d => d.pill === 'Verified').length + ' of ' + docs.length + ' verified · ' + todo + ' not requested yet', canReqAll: todo > 0, reqAll, comms,
+      threads, th, quick: QK.map(t => ({ t, go: () => say(t) })), draft: st.draft, setDraft: e => this.setState({ draft: e.target.value }), send: () => { if (st.draft.trim()) { say(st.draft.trim()); this.setState({ draft: '' }); } },
+      msgCols: mob ? 'minmax(0,1fr)' : 'minmax(0,300px) minmax(0,1fr)', showList: !mob || st.mList, showThread: !mob || !st.mList, backList: () => this.setState({ mList: true }),
+      fee: { t: F[0], b: F[1], bg: noRef ? 'var(--warnSoft)' : 'var(--tintSoft)', fg: noRef ? 'var(--warn)' : 'var(--tint)' }, bills,
+      toast: st.toast, hasToast: !!st.toast, phoneEl: st.phone ? React.createElement('div', { onClick: e => { if (e.target === e.currentTarget) this.setState({ phone: false }); }, style: { position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,.5)', display: 'grid', placeItems: 'center', padding: 20 } }, React.createElement('div', { style: { width: 390, height: 'min(844px, calc(100vh - 40px))', borderRadius: 48, overflow: 'hidden', border: '10px solid #111', background: '#000' } }, React.createElement('iframe', { src: C.file + '?phone=1', title: 'Phone view', style: { width: '100%', height: '100%', border: 0, display: 'block', background: '#F2F2F7' } }))) : null, openPhone: () => this.setState({ phone: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

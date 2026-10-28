@@ -5,7 +5,7 @@
  */
 import { sql } from 'drizzle-orm';
 import {
-  bigserial, boolean, char, date, geometry, index, integer, jsonb, numeric, pgEnum, pgTable,
+  bigserial, boolean, char, customType, date, geometry, index, integer, jsonb, numeric, pgEnum, pgTable,
   primaryKey, text, timestamp, uniqueIndex, uuid,
 } from 'drizzle-orm/pg-core';
 
@@ -14,6 +14,11 @@ const created = () => timestamp('created_at', { withTimezone: true }).notNull().
 const ts = (name: string) => timestamp(name, { withTimezone: true });
 /** Whole dollars. Trust-account money should move to bigint cents before deposits go live. */
 const dollars = (name: string) => integer(name);
+const bytea = customType<{ data: Uint8Array<ArrayBuffer>; driverData: Buffer }>({
+  dataType: () => 'bytea',
+  toDriver: v => Buffer.from(v),
+  fromDriver: v => new Uint8Array(v),
+});
 
 // ── Identity ────────────────────────────────────────────────────────────────
 export const roleEnum = pgEnum('role', [
@@ -38,6 +43,8 @@ export const users = pgTable('users', {
   phone: text('phone'),
   legalName: text('legal_name'),
   mfaEnrolledAt: ts('mfa_enrolled_at'),
+  /** Service-message preferences (deal updates by SMS/email, quiet hours). Marketing consent lives in `consents`. */
+  prefs: jsonb('prefs').notNull().default({}),
   deletedAt: ts('deleted_at'),
   createdAt: created(),
 }, t => [uniqueIndex('users_email_uq').on(sql`lower(${t.email})`)]);
@@ -62,12 +69,89 @@ export const agents = pgTable('agents', {
 export const consents = pgTable('consents', {
   id: id(),
   userId: uuid('user_id').notNull().references(() => users.id),
-  kind: text('kind', { enum: ['privacy_notice', 'vow_terms', 'marketing', 'credit_check', 'ai_notice', 'sold_data'] }).notNull(),
+  kind: text('kind', { enum: ['privacy_notice', 'vow_terms', 'reco_guide', 'marketing', 'credit_check', 'ai_notice', 'sold_data'] }).notNull(),
   documentVersion: text('document_version').notNull(),
   /** For credit checks: who receives the report. */
   recipient: text('recipient'),
   grantedAt: ts('granted_at').notNull().defaultNow(),
   revokedAt: ts('revoked_at'),
+});
+
+/** Answers from onboarding "Tell us about your move"; seeds the home screen. */
+export const moveProfiles = pgTable('move_profiles', {
+  userId: uuid('user_id').notNull().references(() => users.id),
+  plan: roleEnum('plan').notNull(),
+  data: jsonb('data').notNull(),
+  updatedAt: ts('updated_at').notNull().defaultNow(),
+}, t => [primaryKey({ columns: [t.userId, t.plan] })]);
+
+// ── Authentication ──────────────────────────────────────────────────────────
+/** Opaque bearer sessions. Only a SHA-256 of the token is stored. */
+export const sessions = pgTable('sessions', {
+  id: id(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  tokenHash: char('token_hash', { length: 64 }).notNull(),
+  /** 'mfa_pending' sessions can only complete the second factor. */
+  state: text('state', { enum: ['active', 'mfa_pending'] }).notNull(),
+  method: text('method', { enum: ['email_code', 'password', 'passkey'] }).notNull(),
+  /** Last strong verification (passkey or TOTP); step-up for signing and payouts checks this. */
+  mfaAt: ts('mfa_at'),
+  userAgent: text('user_agent'),
+  ip: text('ip'),
+  createdAt: created(),
+  lastSeenAt: ts('last_seen_at').notNull().defaultNow(),
+  expiresAt: ts('expires_at').notNull(),
+  revokedAt: ts('revoked_at'),
+}, t => [uniqueIndex('sessions_token_uq').on(t.tokenHash), index('sessions_user_ix').on(t.userId)]);
+
+export const emailCodes = pgTable('email_codes', {
+  id: id(),
+  email: text('email').notNull(),
+  purpose: text('purpose', { enum: ['signup', 'signin'] }).notNull(),
+  codeHash: char('code_hash', { length: 64 }).notNull(),
+  attempts: integer('attempts').notNull().default(0),
+  expiresAt: ts('expires_at').notNull(),
+  consumedAt: ts('consumed_at'),
+  createdAt: created(),
+}, t => [index('email_codes_email_ix').on(t.email, t.createdAt)]);
+
+export const passwordCredentials = pgTable('password_credentials', {
+  userId: uuid('user_id').primaryKey().references(() => users.id),
+  hash: text('hash').notNull(),
+  failedCount: integer('failed_count').notNull().default(0),
+  lockedUntil: ts('locked_until'),
+  updatedAt: ts('updated_at').notNull().defaultNow(),
+});
+
+export const passkeys = pgTable('passkeys', {
+  /** WebAuthn credential ID, base64url. */
+  id: text('id').primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  publicKey: bytea('public_key').notNull(),
+  counter: integer('counter').notNull(),
+  transports: text('transports').array(),
+  deviceType: text('device_type').notNull(),
+  backedUp: boolean('backed_up').notNull(),
+  name: text('name'),
+  createdAt: created(),
+  lastUsedAt: ts('last_used_at'),
+}, t => [index('passkeys_user_ix').on(t.userId)]);
+
+export const webauthnChallenges = pgTable('webauthn_challenges', {
+  id: id(),
+  userId: uuid('user_id').references(() => users.id),
+  kind: text('kind', { enum: ['registration', 'authentication'] }).notNull(),
+  challenge: text('challenge').notNull(),
+  expiresAt: ts('expires_at').notNull(),
+});
+
+/** TOTP secret, AES-256-GCM encrypted with AUTH_ENCRYPTION_KEY (KMS data key in AWS). */
+export const totpCredentials = pgTable('totp_credentials', {
+  userId: uuid('user_id').primaryKey().references(() => users.id),
+  secretEnc: text('secret_enc').notNull(),
+  enabledAt: ts('enabled_at'),
+  /** Last accepted 30-second step, so a code can't be replayed. */
+  lastStep: integer('last_step'),
 });
 
 // ── Listings (PropTx VOW / RESO Web API replica) ────────────────────────────

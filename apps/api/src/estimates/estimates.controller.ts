@@ -1,9 +1,12 @@
-import { Body, Controller, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Inject, Post, UseGuards } from '@nestjs/common';
 import { buyerEstimate, DEFAULT_ASSUMPTIONS } from '@klyr/core';
 import { EstimateRequest } from '@klyr/contracts';
 import { ZodPipe } from '../common/zod.pipe.js';
+import { AuthGuard } from '../identity/auth.guard.js';
 import { ListingsService, toEstimateInput } from '../listings/listings.service.js';
 
+/** VOW data: registered, signed-in users only. */
+@UseGuards(AuthGuard)
 @Controller('estimates')
 export class EstimatesController {
   constructor(@Inject(ListingsService) private readonly listings: ListingsService) {}

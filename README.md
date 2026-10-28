@@ -1,25 +1,39 @@
-# CODING AGENTS: READ THIS FIRST
+# Klyr
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+Ontario real estate brokerage app: all-in cost to close for buyers, net proceeds for sellers, and leasing for tenants and landlords.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+Start with **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**. The design prototype and the chats behind it are in [`design/`](design/README.md).
 
-## What you should do — IMPORTANT
+## Layout
 
-**Read the chat transcripts first.** There are 10 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+```
+apps/
+  api/      NestJS API + BullMQ worker, Drizzle + Postgres/PostGIS
+  web/      Next.js consumer web app
+  mobile/   Expo (React Native) consumer app
+  pro/      Next.js: agents and providers (lawyer, lender, inspector, insurer)
+  admin/    Next.js: internal back office
+packages/
+  core/       Ontario cost engine (LTT, CMHC, payments, all-in, seller net)
+  contracts/  Roles, deal stages, OREA forms, zod request schemas
+  tokens/     Design tokens from the prototype
+infra/      AWS ca-central-1 plan (Terraform)
+design/     Claude Design handoff: prototype HTML and chat transcripts
+```
 
-**Read `project/Klyr App Core.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+## Run it locally
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+Requires Node 22, pnpm 10 and Docker.
 
-## About the design files
+```sh
+pnpm install
+cp .env.example .env         # defaults already match docker compose
+pnpm db:up                      # Postgres+PostGIS, Redis, MinIO, Mailpit
+pnpm db:migrate && pnpm db:seed # schema + the six prototype listings
+pnpm build                      # builds the shared packages the apps import
+pnpm --filter @klyr/api dev     # http://localhost:4000/listings
+pnpm --filter @klyr/web dev     # http://localhost:3000
+pnpm --filter @klyr/mobile dev  # Expo dev server
+```
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
-
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
-
-## Bundle contents
-
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Awaiting design decisions` project files (HTML prototypes, assets, components)
+`pnpm build`, `pnpm typecheck` and `pnpm test` run across the whole repo.

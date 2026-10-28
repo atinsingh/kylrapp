@@ -1,30 +1,35 @@
+import { redirect } from 'next/navigation';
 import { money } from '@klyr/core';
-
-/** Placeholder until the real brokerage details are confirmed (Launch Checklist action 2). */
-const BROKERAGE_FOOTER = 'Klyr Realty Inc., Brokerage · RECO registration pending · Listing data © PropTx, used under VOW terms';
+import type { Me } from '@klyr/contracts';
+import { BROKERAGE_LINE, LISTING_DATA_LINE } from '@/lib/brand';
+import { api, sessionToken } from '@/lib/session';
+import { SignOut } from './sign-out';
 
 type Card = {
   id: string; address: string; city: string; type: string; beds: number | null; baths: number | null;
   price: number; allIn: number; cashBack: number; monthly: number; listingBrokerage: string;
 };
 
-async function search(): Promise<{ results: Card[]; capped: boolean } | null> {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'}/listings`, { cache: 'no-store' });
-    return res.ok ? res.json() : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Buyer search: the all-in cost to close is the hero number on every card. */
+/** Buyer search: the all-in cost to close is the hero number on every card. Signed-in only (VOW). */
 export default async function SearchPage() {
-  const data = await search();
+  if (!(await sessionToken())) redirect('/welcome');
+  const [me, search] = await Promise.all([api<Me>('/auth/me'), api<{ results: Card[]; capped: boolean }>('/listings')]);
+  if (me.status === 401) redirect('/welcome');
+  const data = search.data;
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px 48px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src="/klyr-mark.png" alt="" width={30} height={30} style={{ borderRadius: 8 }} />
+          <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-.02em' }}>klyr</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: 'var(--muted)' }}>
+          <span>{me.data?.legalName ?? me.data?.email}</span><SignOut />
+        </div>
+      </div>
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-.02em', margin: '0 0 4px' }}>Search</h1>
       <p style={{ color: 'var(--muted)', margin: '0 0 20px' }}>All-in cost to close after your cash back. Estimate as of Oct 27, 2026.</p>
-      {!data && <p role="alert">Can’t reach the Klyr API. Start it with <code>pnpm --filter @klyr/api dev</code>.</p>}
+      {!data && <p role="alert">Can’t load homes right now. Try again in a moment.</p>}
       <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
         {data?.results.map(l => (
           <li key={l.id} style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 0 0 .5px var(--sep)' }}>
@@ -38,7 +43,7 @@ export default async function SearchPage() {
         ))}
       </ul>
       {data?.capped && <p>Showing the first 100 homes. Refine your search to see more.</p>}
-      <footer style={{ fontSize: 12, color: 'var(--muted)', marginTop: 32 }}>{BROKERAGE_FOOTER}</footer>
+      <footer style={{ fontSize: 12, color: 'var(--muted)', marginTop: 32 }}>{BROKERAGE_LINE} · {LISTING_DATA_LINE}</footer>
     </main>
   );
 }

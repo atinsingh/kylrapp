@@ -56,7 +56,7 @@ One deployable, with each module owning its own tables (`apps/api/src/db/schema.
 
 | Module | Owns | Built now? |
 |---|---|---|
-| `identity` | users, roles, organizations, agents, consents, MFA, sessions | Schema only |
+| `identity` | users, roles, consents, sessions, email codes, passwords, passkeys, TOTP | **Yes**: sign-up, sign-in, step-up, devices |
 | `listings` | PropTx VOW replica, media, saved searches, views, 100-result cap, no-display flag | **Yes**: search, near-me, detail |
 | `estimates` | Wraps `@klyr/core`; records the estimate shown at each decision point | **Yes**: `POST /estimates` |
 | `deals` | Deals, parties, offers, conditions, timeline, sell + buy bundle | Schema only |
@@ -69,7 +69,7 @@ One deployable, with each module owning its own tables (`apps/api/src/db/schema.
 | `audit` | Append-only log (no UPDATE/DELETE grant for the app role) | Schema only |
 | `health` | Liveness/readiness | **Yes** |
 
-**Auth.** Self-hosted in our own Postgres, so identity data stays in Canada: email + passkeys, Sign in with Apple/Google, and TOTP/SMS step-up for signing and payouts. A library such as Better Auth fits; hosted IdPs (Clerk, Auth0) were rejected for data residency. Staff sign in to Admin through the company IdP (SAML/OIDC).
+**Auth.** Built in-house on Postgres so identity data stays in Canada (hosted IdPs such as Clerk or Auth0 were rejected for data residency): email codes, passkeys (WebAuthn), passwords (scrypt) and TOTP. Opaque session tokens, stored hashed; web keeps them in an httpOnly cookie via a same-origin proxy, the phone app will keep them in the secure keychain. Sign in with Apple/Google and SMS step-up are still to add. Staff sign in to Admin through the company IdP (SAML/OIDC).
 
 **Authorization.** Role plus relationship checks: a user acts on a deal only as one of its `deal_parties`. Agents see their own deals and their backup assignments. Providers see only deals that sent them a quote request.
 
@@ -118,12 +118,13 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 **Working now** (verified locally):
 * `@klyr/core`: the prototype's Ontario cost engine as typed TS, with 10 tests pinned to the prototype's own numbers.
 * `apps/api`: Postgres + PostGIS schema for all modules; the first migration; seed data; `GET /health`, `GET /listings` (filters, `near=lat,lng,metres`, 100 cap, brokerage label, all-in per card), `GET /listings/:id`, `POST /estimates`.
-* `apps/web`: search page rendering live all-in cards from the API.
+* Identity: sign-up that records terms, VOW, privacy and RECO-guide acceptance by version; 6-digit email codes; passkeys; passwords with lockout; TOTP two-step; MFA-pending sessions; step-up for sensitive actions; device list and sign-out. Listings and estimates require sign-in. Covered by RFC test vectors and end-to-end tests on Postgres.
+* `apps/web`: welcome → plan → your move → RECO guide → account → email code → passkey or password → search, matching App Core. The session lives in an httpOnly cookie behind a same-origin proxy (`app/api/[...path]`). Screenshots in `docs/screenshots/`.
 * `apps/mobile`: Expo Router app with an all-in hero computed on-device; Metro bundles it in the monorepo.
 * `apps/pro`, `apps/admin`: shells listing the role workspaces and admin modules.
 
 **Next, in order:**
-1. Identity module: sign-up with privacy and VOW consent, email verification, passkeys, MFA.
+1. Phone app sign-up (email code + password now; native passkeys need a config plugin and an associated domain), and the Security screen (devices, TOTP set-up).
 2. Port the consumer screens from App Core, starting with onboarding and the buyer home, search, listing and afford flows. Pull a shared component layer (money hero, breakdown row, task row, quote row, rule tag) into `packages/ui`.
 3. Deals: representation agreement gate (Form 300 before the first visit), offers, conditions, timeline, deadline jobs.
 4. Documents + e-sign, then compliance (ID check), then money (deposit, cash back).

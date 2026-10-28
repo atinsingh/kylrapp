@@ -31,8 +31,8 @@ cp .env.example .env         # defaults already match docker compose
 pnpm db:up                      # Postgres+PostGIS, Redis, MinIO, Mailpit
 pnpm db:migrate && pnpm db:seed # schema + the six prototype listings
 pnpm build                      # builds the shared packages the apps import
-pnpm --filter @klyr/api dev     # http://localhost:4000/listings
-pnpm --filter @klyr/web dev     # http://localhost:3000
+pnpm --filter @klyr/api dev     # http://localhost:4000/health (email codes print here)
+pnpm --filter @klyr/web dev     # http://localhost:3000 → sign up, then search
 pnpm --filter @klyr/mobile dev  # Expo dev server
 ```
 

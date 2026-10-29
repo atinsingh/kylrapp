@@ -198,10 +198,17 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * Offers on a Klyr listing reach the seller once the buyer's agent registers them. The seller sees what they'd keep at that price (and at a sign-back price as they type), then accepts or signs back (both signatures, with a fresh check) or declines. The buyer's agent can't record the answer for a Klyr seller (`seller_decides`).
   * Acceptance runs the same deal flow (deposit, conditions, closing) and moves the seller's deal to conditional or firm; the seller sees "Conditional sale" and the agent sees it on the Listings tab.
 
+* Renting and leasing out (web for both sides, phone for tenants, Klyr Pro web; screenshots `117`–`125`):
+  * Tenants sign Form 346 (no cost to them) and fill one profile that becomes Form 410 for every application. It holds only what Ontario landlords may consider: income, work, references, occupants, pets and credit-check consent. Nothing on Human Rights Code grounds.
+  * Rentals show the move-in cost (first month plus the last month's rent deposit, the only deposit Ontario allows) and rent-control status from the first-occupied date (units first occupied after November 15, 2018 are exempt from the guideline; `RENT_GUIDELINE` is 2.1% for 2026). Rentals never appear in the for-sale search.
+  * Landlords see their first year's rent after Klyr's fee ($699 + HST, still a placeholder) and the tenant-side fee they choose (none, half a month or one month). They sign Form 210 with a fresh check, and the agent publishes from the Listings tab.
+  * Klyr represents both sides on its own rentals, so Form 326 is signed by the tenant, then the landlord, before an application. Applications are Form 410 + 400 signed together.
+  * The landlord sees every applicant with the same facts (income ÷ rent, work, occupants, pets, references, credit consent) and a note on the Human Rights Code. Accepting is a signature: other applicants hear back the same day, the listing becomes leased, and both deals go firm. The Ontario Standard Lease (2229E) comes next and is prepared by the agent outside Klyr for now.
+  * Not built yet: viewings for rentals, the landlord screens on the phone, generating the Standard Lease, credit reports (needs a screening vendor), and tracking interest on the last month's rent deposit.
+
 **Next, in order:**
-1. Renting and leasing out (`t_*`, `l_*`): tenant profile and Form 400 offers to lease (with Form 346), and landlord listing and applicants.
-2. Provider marketplace: lawyer, lender, inspector and insurer quotes in Klyr Pro, with referral fees shown to the buyer before they choose.
-3. Remaining Admin modules in the order the Launch Checklist owners need them: listings feed status, Klyr AI review, privacy requests, content and assumptions, users and roles.
+1. Provider marketplace: lawyer, lender, inspector and insurer quotes in Klyr Pro, with referral fees shown to the buyer before they choose.
+2. Remaining Admin modules in the order the Launch Checklist owners need them: listings feed status, Klyr AI review, privacy requests, content and assumptions, users and roles.
 
 **Blocked on outside parties** (built as interfaces with development stand-ins, refused in production):
 * OREA forms licence and an e-sign provider: signed records are plain-language summaries until then.

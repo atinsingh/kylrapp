@@ -7,15 +7,20 @@ import { torontoWhen } from '@klyr/core';
 import { StepUp } from '@/components/step-up';
 import { errorText, klyr } from '@/lib/client';
 
-/** Form 326 in plain language, from either side. */
-export const consent326 = (side: 'buyer' | 'seller'): [string, string][] => [
-  ['What it means', `Klyr Realty represents both you and the ${side === 'buyer' ? 'seller' : 'buyer'} of this home. Each side keeps its own salesperson at Klyr.`],
-  ['What stays private', side === 'buyer'
-    ? 'Klyr won’t tell the seller the most you’d pay, or tell you the least they’d take, or share either side’s reasons.'
-    : 'Klyr won’t tell the buyer the least you’d take, or tell you the most they’d pay, or share either side’s reasons.'],
-  ['What Klyr still does', 'Treats both sides fairly, shares facts about the home’s value or condition, and helps each side with offers and paperwork.'],
-  ['Your choice', `You don’t have to consent. If either side says no, ${side === 'buyer' ? 'you can’t offer on this home' : 'this buyer can’t offer on your home'} through Klyr.`],
-];
+/** Form 326 in plain language, from either side of a sale or a lease. */
+export const consent326 = (side: 'buyer' | 'seller', lease = false): [string, string][] => {
+  const other = lease ? (side === 'buyer' ? 'landlord' : 'tenant') : (side === 'buyer' ? 'seller' : 'buyer');
+  const most = lease ? 'the most rent' : 'the most', least = lease ? 'the least rent' : 'the least';
+  const act = lease ? 'apply for' : 'offer on';
+  return [
+    ['What it means', `Klyr Realty represents both you and the ${other} of this home. Each side keeps its own salesperson at Klyr.`],
+    ['What stays private', side === 'buyer'
+      ? `Klyr won’t tell the ${other} ${most} you’d pay, or tell you ${least} they’d take, or share either side’s reasons.`
+      : `Klyr won’t tell the ${other} ${least} you’d take, or tell you ${most} they’d pay, or share either side’s reasons.`],
+    ['What Klyr still does', `Treats both sides fairly, shares facts about the home’s ${lease ? 'condition' : 'value or condition'}, and helps each side with ${lease ? 'applications' : 'offers'} and paperwork.`],
+    ['Your choice', `You don’t have to consent. If either side says no, ${side === 'buyer' ? `you can’t ${act} this home` : `this ${other} can’t ${act} your home`} through Klyr.`],
+  ];
+};
 
 /** Form 326 before an offer on a Klyr listing: the buyer signs, then waits for the seller. */
 export function ConsentCard({ listingId, consent, legalName }: { listingId: string; consent: Consent; legalName: string }) {

@@ -194,6 +194,38 @@ export type SellerDecision =
   | { result: 'accepted'; typedName: string; readConfirmed: true }
   | { result: 'signed_back'; price: number; irrevocableAt: string; typedName: string; readConfirmed: true }
   | { result: 'rejected' };
+export interface TenantProfile {
+  monthlyIncome: number; employer: string; jobTitle: string; occupants: number; pets?: string; moveIn: string;
+  references: { name: string; phone: string; relation: 'landlord' | 'employer' | 'personal' }[]; creditConsent: boolean;
+}
+export interface LeaseApplication {
+  id: string; listingId: string; status: 'submitted' | 'accepted' | 'declined' | 'withdrawn'; rent: number; startDate: string; termMonths: number;
+  moveIn: { firstMonth: number; lastMonth: number; total: number }; documentId: string | null; decidedAt: string | null; createdAt: string;
+}
+export interface Rental {
+  id: string; address: string; city: string; type: string; beds: number | null; baths: number | null; sqft: number | null;
+  rent: number; moveIn: { firstMonth: number; lastMonth: number; total: number }; rentControlled: boolean | null; guideline: { year: number; pct: number };
+  availableFrom: string | null; parking: string | null; utilities: string | null; furnished: boolean; description: string | null;
+  listingBrokerage: string; source: string; status: string; photo: { url: string; alt: string } | null;
+}
+export interface RentalDetail extends Rental { photos: { url: string; alt: string }[]; consent: Consent | null; application: LeaseApplication | null }
+export interface Renting {
+  agreement: { documentId: string; signedAt: string } | null; agent: { name: string; title: string } | null;
+  profile: TenantProfile | null; applications: (LeaseApplication & { address: string; city: string })[];
+}
+export interface LeaseProperty { address: string; unit?: string; city: string; type: 'House' | 'Townhouse' | 'Condo'; beds: number; baths: number; sqft?: number; firstOccupied: string; parking: string; utilities: string; furnished: boolean; description: string }
+export interface Leasing {
+  dealId: string; stage: string; property: LeaseProperty; rent: number; availableFrom: string; tenantSidePct: number;
+  rentControlled: boolean; guideline: { year: number; pct: number };
+  net: { gross: number; fee: number; tenantSide: number; net: number; months: number }; fee: number;
+  agreement: { documentId: string; signedAt: string } | null; listingId: string | null; publishedAt: string | null; agent: { name: string; title: string } | null;
+  consents: ({ id: string; tenant: string } & Consent)[];
+  applications: (LeaseApplication & {
+    name: string | null; net: number;
+    screening: { monthlyIncome: number; incomeToRent: number; employer: string; jobTitle: string; occupants: number; pets: string | null; references: number; creditConsent: boolean };
+  })[];
+}
+export interface ProRental extends Leasing { clientName: string | null; clientEmail: string }
 export interface ProListing extends Selling { clientName: string | null; clientEmail: string }
 
 export interface Assumptions { rate: number; downPct: number; firstTime: boolean; lawyerFee: number }
@@ -311,6 +343,20 @@ export function createClient(opts: ClientOptions) {
     setSellPlan: (p: { plan: Selling['plan']; coop: number; listPrice: number; mortgageBalance: number }) => call<Selling>('PUT', '/selling/plan', p),
     signListing: (typedName: string) => post<Selling>('/selling/agreement/sign', { typedName, readConfirmed: true }),
     sellTask: (t: SellTaskInput) => post<Selling>('/selling/tasks', t),
+    renting: () => get<Renting>('/renting'),
+    signTenantAgreement: (typedName: string) => post<Renting>('/renting/agreement/sign', { typedName, readConfirmed: true }),
+    saveTenantProfile: (p: TenantProfile) => call<Renting>('PUT', '/renting/profile', p),
+    withdrawApplication: (id: string) => del<Renting>(`/renting/applications/${encodeURIComponent(id)}`),
+    rentals: (q: { city?: string; maxRent?: number } = {}) => get<Rental[]>(`/rentals?${new URLSearchParams(Object.entries(q).filter(([, v]) => v).map(([k, v]) => [k, String(v)]))}`),
+    rental: (id: string) => get<RentalDetail>(`/rentals/${encodeURIComponent(id)}`),
+    consentToApply: (id: string, typedName: string) => post<RentalDetail>(`/rentals/${encodeURIComponent(id)}/consent`, { typedName, readConfirmed: true }),
+    applyForRental: (id: string, a: { rent: number; startDate: string; termMonths: number; typedName: string }) => post<RentalDetail>(`/rentals/${encodeURIComponent(id)}/apply`, { ...a, readConfirmed: true }),
+    leasing: () => get<Leasing>('/leasing'),
+    startLeasing: (p: Omit<LeaseProperty, never> & { rent: number; availableFrom: string }) => post<Leasing>('/leasing', p),
+    setLeasePlan: (p: { rent: number; tenantSidePct: 0 | 0.5 | 1; availableFrom: string }) => call<Leasing>('PUT', '/leasing/plan', p),
+    signLeaseListing: (typedName: string) => post<Leasing>('/leasing/agreement/sign', { typedName, readConfirmed: true }),
+    signLandlordConsent: (id: string, typedName: string) => post<Leasing>(`/leasing/consents/${encodeURIComponent(id)}/sign`, { typedName, readConfirmed: true }),
+    decideApplication: (id: string, d: { result: 'accepted'; typedName: string; readConfirmed: true } | { result: 'declined' }) => post<Leasing>(`/leasing/applications/${encodeURIComponent(id)}`, d),
     signSellerConsent: (id: string, typedName: string) => post<Selling>(`/selling/consents/${encodeURIComponent(id)}/sign`, { typedName, readConfirmed: true }),
     decideOffer: (id: string, d: SellerDecision) => post<Selling>(`/selling/offers/${encodeURIComponent(id)}`, d),
     searches: () => get<SavedSearch[]>('/me/searches'),
@@ -328,6 +374,8 @@ export function createClient(opts: ClientOptions) {
       deals: () => get<ProDeal[]>('/pro/deals'),
       listings: () => get<ProListing[]>('/pro/listings'),
       listingTask: (dealId: string, t: SellTaskInput) => post<{ ok: true }>(`/pro/listings/${encodeURIComponent(dealId)}/tasks`, t),
+      rentals: () => get<ProRental[]>('/pro/rentals'),
+      publishRental: (dealId: string, p: { lat: number; lng: number; photos: string[] }) => post<{ listingId: string }>(`/pro/rentals/${encodeURIComponent(dealId)}/publish`, p),
       publish: (dealId: string, p: { lat: number; lng: number; photos: string[] }) => post<{ listingId: string }>(`/pro/listings/${encodeURIComponent(dealId)}/publish`, p),
       dealTask: (dealId: string, t: DealTaskInput) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/tasks`, t),
       closeDeal: (dealId: string) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/close`),

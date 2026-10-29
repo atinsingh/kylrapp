@@ -16,6 +16,8 @@ export const OREA_FORMS = {
   '300': 'Buyer Representation Agreement',
   '326': 'Consent for Multiple Representation',
   '346': 'Tenant Representation Agreement',
+  '400': 'Agreement to Lease – Residential',
+  '410': 'Rental Application – Residential',
 } as const;
 export type OreaForm = keyof typeof OREA_FORMS;
 

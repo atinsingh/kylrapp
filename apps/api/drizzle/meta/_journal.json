@@ -99,6 +99,13 @@
       "when": 1793292234110,
       "tag": "0013_selling_offers",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793293953496,
+      "tag": "0014_renting",
+      "breakpoints": true
     }
   ]
 }

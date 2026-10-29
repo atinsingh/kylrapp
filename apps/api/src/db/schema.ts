@@ -384,6 +384,45 @@ export const sellProfiles = pgTable('sell_profiles', {
   createdAt: created(),
 });
 
+/** A tenant's profile, used to fill every Form 410 the same way. Only what Ontario landlords may ask. */
+export const tenantProfiles = pgTable('tenant_profiles', {
+  userId: uuid('user_id').primaryKey().references(() => users.id),
+  /** Monthly income, employer, job title, occupants, pets, move-in, references, credit-check consent. */
+  data: jsonb('data').notNull(),
+  updatedAt: ts('updated_at').notNull().defaultNow(),
+});
+
+/** A landlord's home and lease terms, on their lease_landlord deal. The listing exists once the agent publishes it. */
+export const leaseProfiles = pgTable('lease_profiles', {
+  dealId: uuid('deal_id').primaryKey().references(() => deals.id),
+  /** Address, city, type, beds, baths, sqft, first-occupied date, parking, utilities, furnished, description. */
+  property: jsonb('property').notNull(),
+  rent: dollars('rent').notNull(),
+  availableFrom: date('available_from', { mode: 'string' }).notNull(),
+  /** Offered to the tenant's brokerage, as a share of one month's rent. The landlord decides. */
+  tenantSidePct: numeric('tenant_side_pct', { precision: 4, scale: 2 }).notNull().default('0.5'),
+  listingId: uuid('listing_id').references(() => listings.id),
+  publishedAt: ts('published_at'),
+  createdAt: created(),
+});
+
+/** Form 410 (rental application) and Form 400 (offer to lease), submitted together on a rental. */
+export const leaseApplications = pgTable('lease_applications', {
+  id: id(),
+  listingId: uuid('listing_id').notNull().references(() => listings.id),
+  dealId: uuid('deal_id').notNull().references(() => deals.id),
+  rent: dollars('rent').notNull(),
+  startDate: date('start_date', { mode: 'string' }).notNull(),
+  termMonths: integer('term_months').notNull(),
+  /** The tenant profile as submitted, so every applicant is judged on what they sent. */
+  snapshot: jsonb('snapshot').notNull(),
+  status: text('status', { enum: ['submitted', 'accepted', 'declined', 'withdrawn'] }).notNull().default('submitted'),
+  documentId: uuid('document_id').references(() => documents.id),
+  landlordDocumentId: uuid('landlord_document_id').references(() => documents.id),
+  decidedAt: ts('decided_at'),
+  createdAt: created(),
+}, t => [index('lease_applications_listing_ix').on(t.listingId)]);
+
 /**
  * Multiple representation (OREA Form 326): Klyr represents the seller and the buyer of the same home.
  * Both sign before the buyer can make an offer; each signature is a document on that party's own deal.

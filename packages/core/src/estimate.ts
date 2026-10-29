@@ -103,3 +103,27 @@ export function sellerNet(o: SellerInput) {
     vsTraditional: Math.round(o.price * 0.025 * HST) - fee,
   };
 }
+
+// ── Leasing ────────────────────────────────────────────────────────────────
+
+/** Klyr's landlord fee before HST. A placeholder until pricing is decided. */
+export const LANDLORD_FEE = 699;
+/** Shares of one month's rent a landlord can offer the tenant's brokerage. */
+export const TENANT_SIDE_CHOICES = [0, 0.5, 1] as const;
+/** Ontario's rent increase guideline for rent-controlled units (Residential Tenancies Act s. 120). */
+export const RENT_GUIDELINE = { year: 2026, pct: 2.1 } as const;
+/** Units first occupied as a residence after this date are exempt from the guideline (RTA s. 6.1). */
+export const RENT_CONTROL_CUTOFF = '2018-11-15';
+
+/** Rent control from the first-occupied date: before the cutoff, increases are capped at the guideline. */
+export const rentControlled = (firstOccupied: string) => firstOccupied <= RENT_CONTROL_CUTOFF;
+
+/** What a tenant pays to move in: first month, plus the last month's rent deposit (the only deposit Ontario allows). */
+export const moveInCost = (rent: number) => ({ firstMonth: rent, lastMonth: rent, total: rent * 2 });
+
+/** The landlord's first-year rent after Klyr's fee and the tenant-side fee they chose, both with HST. */
+export function landlordNet(o: { rent: number; tenantSidePct: number; months?: number }) {
+  const months = o.months ?? 12;
+  const fee = Math.round(LANDLORD_FEE * HST), tenantSide = Math.round((o.rent * o.tenantSidePct * Math.round(HST * 100)) / 100);
+  return { gross: o.rent * months, fee, tenantSide, net: o.rent * months - fee - tenantSide, months };
+}

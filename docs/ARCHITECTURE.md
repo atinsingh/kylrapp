@@ -127,7 +127,7 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 * Identity: sign-up that records terms, VOW, privacy and RECO-guide acceptance by version; 6-digit email codes; passkeys; passwords with lockout; TOTP two-step; MFA-pending sessions; step-up for sensitive actions; device list and sign-out. Listings and estimates require sign-in. Covered by RFC test vectors and end-to-end tests on Postgres.
 * `apps/web`: welcome → plan → your move → RECO guide → account → email code → passkey or password → search, matching App Core. The session lives in an httpOnly cookie behind a same-origin proxy (`app/api/[...path]`). Screenshots in `docs/screenshots/`.
 * Security screen on web and phone: passkeys (add on web, remove), password set/change, authenticator app on/off (QR on web, open-in-app or copy key on phone), devices with "sign out" and "sign out all other devices". Sensitive changes ask "Confirm it’s you" (passkey on web, authenticator code on both).
-* `apps/mobile`: same onboarding as web with email code and password, then home with live all-in cards and the Security screen. Token in the iOS Keychain / Android Keystore (`expo-secure-store`); Sora font loaded. Screenshots `docs/screenshots/2*-phone-*.png`.
+* `apps/mobile`: same onboarding as web with email code and password, then home with live all-in cards and the Security screen. Token in the iOS Keychain / Android Keystore (`expo-secure-store`); Fonts: San Francisco on Apple devices, Inter elsewhere. Screenshots `docs/screenshots/2*-phone-*.png`.
 * `packages/api-client`: typed calls shared by web (through its proxy) and mobile (bearer token).
 * First visit (web and phone): Form 300 as a plain-language summary signed by typed name after a fresh check (passkey, authenticator, or an emailed code for email-only accounts); the signed record is stored with its SHA-256 and shown under Documents. FINTRAC ID check with occupation, source of funds, third-party, PEP and company questions; third-party, PEP and company cases wait for the compliance officer. Visits booked in Toronto time once both are done, listed under Visits with cancel. New buyers are spread across agents by open deals.
 * Buyer tools: "How we estimate" (rate, down payment, first-time status, lawyer — stored per buyer and applied to every all-in, with the down payment raised to the legal minimum where needed), "What you can afford" (stress test plus down-payment caps, feeding search), Compare (up to 3 homes, lowest all-in and monthly marked), and a map view with all-in pins on web.
@@ -230,7 +230,14 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * Each firm is emailed when a client asks it for a quote, and sees the requests that named it with only what it needs to quote: the client's first name, the amount and their note. The client's name and email appear only once the client chooses that firm.
   * The firm sends or updates its own quote. The same rules apply as when an agent enters one: ranked only by the client's cost, any referral fee shown to the client, none from lawyers or firms without a referral agreement. The client's agent is told when a partner quotes.
 
+* Design system (Apple Human Interface Guidelines; `packages/tokens`, `packages/web-kit/src/styles.ts`, `apps/*/components/ui.tsx`):
+  * iOS system colours: blue tint for actions, links and the selected tab; green for money; orange for waiting; red for alerts; dark grey panels for the one big number on a screen.
+  * Grouped grey backgrounds with white inset sections, iOS radii, large titles, filled and tinted buttons, capsule chips, Settings-style rows with coloured icon tiles (Ionicons on the phone, lucide on the web).
+  * Phone apps have bottom tab bars (client: Home, Saved, Offers, Visits, Account; agent: Today, Offers, Deals, Activity, Clients). Pro and Admin use a macOS-style sidebar.
+  * Type: San Francisco on iPhone and Mac, Inter on Android and other browsers. Text colours meet WCAG AA.
+
 **Still to build** (no outside dependency, smaller follow-ups):
+* Client web layouts in the new design (it already uses the new colours, type and controls).
 * Quote imports from providers' own systems.
 * Privacy requests on the phone (web only today); the client-facing "as of" date reading the published assumptions everywhere (the Admin value drives defaults today, the label still shows the shipped date on some screens).
 * Reassigning an agent's deals from Users and roles.

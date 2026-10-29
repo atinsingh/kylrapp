@@ -21,7 +21,7 @@ export default function Deals() {
   const open = (deals ?? []).filter(d => !(d.status === 'void' && d.deposit?.returnedAt) && !d.closedAt);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: color.surfaceGrouped }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 48 }} keyboardShouldPersistTaps="handled"
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 56 }} keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
         <Nav current="deals" />
         <ErrorText>{error}</ErrorText>

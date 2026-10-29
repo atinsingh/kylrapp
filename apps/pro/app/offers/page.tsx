@@ -21,7 +21,7 @@ export default async function OffersPage() {
     <main className="p-wrap">
       <ProHeader me={me} current="offers" />
       <h1 className="k-h1">Offers</h1>
-      <p className="k-note" style={{ margin: 0 }}>
+      <p className="k-sub">
         Review each offer your client signs, then register it with the listing brokerage and record its Form 801 confirmation.
         Record the seller’s answer here: your client is emailed at every step.
       </p>

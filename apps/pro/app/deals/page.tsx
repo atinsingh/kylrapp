@@ -19,7 +19,7 @@ export default async function DealsPage() {
     <main className="p-wrap">
       <ProHeader me={me} current="deals" />
       <h1 className="k-h1">Deals</h1>
-      <p className="k-note" style={{ margin: 0 }}>
+      <p className="k-sub">
         Accepted offers. Confirm the trust account by phone before your client sends the deposit, deliver each signed waiver or notice
         to the listing brokerage before its deadline, and record the deposit’s return if a deal ends.
       </p>

@@ -1,41 +1,52 @@
 import Link from 'next/link';
 
 /**
- * Klyr Admin: internal back office for the brokerage. Not yet designed; modules follow the
- * Launch Checklist owners. Served only on the corporate VPN / SSO, never to clients.
+ * Klyr Admin: the brokerage's back office. Modules follow the Launch Checklist owners. Served only on the
+ * corporate VPN / SSO, never to clients.
  */
-const MODULES = [
-  ['Broker of record', 'Field activity (showings with GPS check-in), deal review queue, agent registrations and titles, complaint escalations, multiple-representation consents'],
-  ['Compliance (FINTRAC)', 'ID verification results, third-party and PEP determinations, receipt-of-funds records, 5-year retention'],
-  ['Trust and payouts', 'Deposits due and received, call-back verification log, monthly reconciliation, cash-back payouts'],
-  ['Listings feed', 'PropTx VOW sync status, no-display flags, Klyr exclusive listings'],
-  ['Marketplace', 'Provider onboarding and licence checks, referral fee disclosures, quote audit'],
-  ['Klyr AI review', 'Conversations flagged “Send to agent”, sources, blocked advice under Form 326'],
-  ['Privacy', 'Data access and deletion requests, consent history, credit-check approvals'],
-  ['Content and assumptions', 'All-in assumptions with their review date, rule notes, form templates'],
-  ['Users and roles', 'Staff accounts, roles, MFA status, audit log'],
-] as const;
-
-/** Built so far. */
-const LIVE: Record<string, string> = {
-  'Compliance (FINTRAC)': '/id-reviews', 'Broker of record': '/field-activity', 'Trust and payouts': '/payouts', 'Listings feed': '/listings-feed',
-  Marketplace: '/marketplace', Privacy: '/privacy', 'Content and assumptions': '/assumptions', 'Users and roles': '/users',
-};
-/** Waiting on something outside the code. */
-const BLOCKED: Record<string, string> = { 'Klyr AI review': 'Waits on Klyr AI itself: a model provider agreement and an approved, legally reviewed prompt.' };
+const MODULES: [string, string, string | null, string | null][] = [
+  ['Broker of record', 'Field activity: showings with GPS check-in, refused attempts and time on site.', '/field-activity', null],
+  ['Compliance (FINTRAC)', 'ID checks waiting for review: third-party and politically exposed determinations, 5-year retention.', '/id-reviews', null],
+  ['Trust and payouts', 'Commission received, then each buyer’s cash back by EFT.', '/payouts', null],
+  ['Listings feed', 'PropTx VOW status, display rules, Klyr exclusive listings, suspend and restore.', '/listings-feed', null],
+  ['Marketplace', 'Providers, referral fee disclosures, the quote audit and partner portal access.', '/marketplace', null],
+  ['Privacy', 'Requests for a copy, a correction or deletion, answered within 30 days.', '/privacy', null],
+  ['Content and assumptions', 'The estimate defaults every client starts from, versioned and reviewed every 90 days.', '/assumptions', null],
+  ['Users and roles', 'Staff, their roles and second factor, and the audit log.', '/users', null],
+  ['Klyr AI review', 'Conversations sent to an agent, sources, and blocked advice under Form 326.', null, 'Waits on Klyr AI: a model provider agreement and a legally reviewed prompt.'],
+];
 
 export default function AdminHome() {
+  const today = new Date().toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/Toronto' });
   return (
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px' }}>
-      <h1 style={{ fontSize: 28, fontWeight: 800 }}>Klyr Admin</h1>
-      <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 12 }}>
-        {MODULES.map(([t, d]) => (
-          <li key={t} style={{ background: '#fff', borderRadius: 12, padding: 16 }}>
-            {LIVE[t] ? <Link href={LIVE[t]}><strong>{t}</strong></Link> : <strong>{t}</strong>}
-            <div style={{ color: 'var(--muted)' }}>{d}</div>
-            {BLOCKED[t] && <div style={{ color: '#A54B00', fontSize: 13, marginTop: 4 }}>{BLOCKED[t]}</div>}
-          </li>
-        ))}
+    <main className="a-wrap">
+      <header style={{ display: 'flex', alignItems: 'baseline', gap: 12, borderBottom: '1px solid var(--line)', paddingBottom: 14 }}>
+        <span style={{ fontFamily: 'var(--serif)', fontSize: 26, fontWeight: 700, letterSpacing: '-.02em', color: 'var(--ink)' }}>Klyr <span style={{ fontWeight: 400, color: 'var(--brand)' }}>Admin</span></span>
+        <span className="k-note" style={{ marginLeft: 'auto' }}>Klyr Realty Inc., Brokerage · internal</span>
+      </header>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: '20px 0 12px' }}>
+        <span className="k-label">{today}</span>
+        <h1 className="k-h1" style={{ fontSize: 48 }}>The back office.</h1>
+        <p className="k-sub">Everything the broker of record, compliance and privacy officers sign off on. Every action here is logged.</p>
+      </div>
+      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+        {MODULES.map(([title, desc, href, blocked]) => {
+          const body = (
+            <>
+              <span className="k-label" style={{ color: blocked ? 'var(--accent)' : 'var(--brand)' }}>{blocked ? 'Waiting' : 'Live'}</span>
+              <span className="k-h2">{title}</span>
+              <span className="k-note" style={{ fontSize: 14 }}>{desc}</span>
+              {blocked && <span className="k-note" style={{ color: 'var(--accent)' }}>{blocked}</span>}
+            </>
+          );
+          return (
+            <li key={title}>
+              {href
+                ? <Link href={href} className="k-card a-tile" style={{ color: 'var(--text)', textDecoration: 'none', height: '100%' }}>{body}<span style={{ marginTop: 'auto', fontWeight: 600, color: 'var(--ink)' }}>Open →</span></Link>
+                : <div className="k-card" style={{ height: '100%', background: 'transparent', borderStyle: 'dashed' }}>{body}</div>}
+            </li>
+          );
+        })}
       </ul>
     </main>
   );

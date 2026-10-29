@@ -6,7 +6,7 @@ import type { ListingDetail } from '@klyr/api-client';
 import { money } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { errorText, klyr } from '../../lib/klyr';
-import { Card, ErrorText, sora, t } from '../../components/ui';
+import { Hero, serif, Card, ErrorText, sora, t } from '../../components/ui';
 import { PhotoStrip } from '../../components/photo-strip';
 
 const EVENTS = { listed: 'Listed', price_change: 'Price change', sold: 'Sold', leased: 'Leased', terminated: 'Taken off the market', expired: 'Listing expired' } as const;
@@ -47,24 +47,26 @@ export default function Listing() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: color.surfaceGrouped }} edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        <View style={{ paddingHorizontal: 16 }}><Back /></View>
-        <PhotoStrip photos={l.photos} address={l.address} sample={l.samplePhotos} />
-        <View style={{ padding: 16, gap: 12 }}>
-          <Card>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <Text style={{ ...sora(800), fontSize: 26 }}>{money(l.price)}</Text>
-              {l.daysOnMarket != null && <Text style={t.note}>{l.daysOnMarket} days on market</Text>}
-            </View>
-            <Text accessibilityRole="header" style={{ ...sora(700), fontSize: 17 }}>{l.address}, {l.city}</Text>
-            <Text style={t.sub}>{l.beds} bed · {l.baths} bath{l.sqft ? ` · ${l.sqft.toLocaleString('en-CA')} sq ft` : ''} · {l.style ?? l.type}</Text>
+        <View style={{ paddingHorizontal: 20 }}><Back /></View>
+        <View style={{ marginHorizontal: 12, borderRadius: 26, overflow: 'hidden' }}>
+          <PhotoStrip photos={l.photos} address={l.address} sample={l.samplePhotos} />
+        </View>
+        <View style={{ paddingHorizontal: 20, paddingTop: 18, gap: 16 }}>
+          <View style={{ gap: 6 }}>
+            <Text style={t.label}>{l.city}{l.daysOnMarket != null ? ` · ${l.daysOnMarket} days on market` : ''}</Text>
+            <Text accessibilityRole="header" style={{ ...serif(600), fontSize: 36, lineHeight: 40, letterSpacing: -1, color: color.text }}>{l.address}</Text>
+            <Text style={t.sub}>Listed at {money(l.price)} · {l.beds} bed · {l.baths} bath{l.sqft ? ` · ${l.sqft.toLocaleString('en-CA')} sq ft` : ''} · {l.style ?? l.type}</Text>
             <Text style={t.note}>Listing brokerage: {l.listingBrokerage}</Text>
-          </Card>
+          </View>
+
+          <Hero label={`${e.allIn < 0 ? 'You get back at closing' : 'All-in cost to close'} · at asking`} value={money(Math.abs(e.allIn))}
+            sub={`After ${money(e.cashBack)} cash back · ${pct(l.coop)} offered to the buyer’s brokerage · estimate as of ${day(e.asOf)}${e.customAssumptions ? ' · using your inputs' : ''}`} />
 
           <Card>
-            <Text style={t.label}>{e.allIn < 0 ? 'YOU GET BACK AT CLOSING' : 'ALL-IN COST TO CLOSE'} · AT ASKING</Text>
-            <Text style={{ ...sora(800), fontSize: 32, color: color.brand }}>{money(Math.abs(e.allIn))}</Text>
-            <Text style={t.note}>after {money(e.cashBack)} cash back · {pct(l.coop)} offered to the buyer’s brokerage · estimate as of {day(e.asOf)}{e.customAssumptions ? ' · using your inputs' : ''}</Text>
-            <Text accessibilityRole="link" onPress={() => router.push('/estimate')} style={{ ...sora(700), fontSize: 13, color: color.brand }}>How we estimate ›</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={t.h2}>What goes into it</Text>
+              <Text accessibilityRole="link" onPress={() => router.push('/estimate')} style={{ ...sora(700), fontSize: 13, color: color.brand }}>How we estimate ›</Text>
+            </View>
             <Rows rows={[
               ['Ontario land transfer tax', money(e.ltt.on)],
               ...(e.ltt.onR ? [['First-time buyer refund', '−' + money(e.ltt.onR)] as Row] : []),
@@ -130,24 +132,24 @@ export default function Listing() {
         </View>
       </ScrollView>
 
-      <SafeAreaView edges={['bottom']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(242,242,247,.96)', borderTopWidth: 0.5, borderTopColor: color.separator }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10 }}>
+      <SafeAreaView edges={['bottom']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(245,241,234,.97)', borderTopWidth: 1, borderTopColor: color.line }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 }}>
           <View>
             <Text style={t.note}>{e.allIn < 0 ? 'You get back' : 'All-in to close'}</Text>
-            <Text style={{ ...sora(800), fontSize: 18, color: color.brand }}>{money(Math.abs(e.allIn))}</Text>
+            <Text style={{ ...serif(600), fontSize: 24, letterSpacing: -0.5, color: color.text }}>{money(Math.abs(e.allIn))}</Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 6 }}>
             <Pressable accessibilityRole="button" accessibilityState={{ selected: saved }} accessibilityLabel={`${saved ? 'Saved' : 'Save'} ${l.address}`} onPress={toggleSave}
-              style={{ width: 50, minHeight: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: saved ? color.brand : color.brandTint }}>
-              <Text style={{ ...sora(700), fontSize: 20, color: saved ? '#fff' : color.brand }}>{saved ? '♥' : '♡'}</Text>
+              style={{ width: 50, minHeight: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', backgroundColor: saved ? color.brandInk : 'transparent', borderWidth: 1.5, borderColor: color.brandInk }}>
+              <Text style={{ ...sora(700), fontSize: 20, color: saved ? '#fff' : color.brandInk }}>{saved ? '♥' : '♡'}</Text>
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Book a visit" onPress={() => router.push(`/visit/${l.id}`)}
-              style={{ minHeight: 50, borderRadius: 14, paddingHorizontal: 14, justifyContent: 'center', backgroundColor: color.brandTint }}>
-              <Text style={{ ...sora(700), fontSize: 15, color: color.brand }}>Visit</Text>
+              style={{ minHeight: 50, borderRadius: 25, paddingHorizontal: 18, justifyContent: 'center', borderWidth: 1.5, borderColor: color.brandInk }}>
+              <Text style={{ ...sora(600), fontSize: 15, color: color.brandInk }}>Visit</Text>
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Make an offer" onPress={() => router.push(`/offer/${l.id}`)}
-              style={{ minHeight: 50, borderRadius: 14, paddingHorizontal: 14, justifyContent: 'center', backgroundColor: color.brand }}>
-              <Text style={{ ...sora(700), fontSize: 15, color: '#fff' }}>Offer</Text>
+              style={{ minHeight: 50, borderRadius: 25, paddingHorizontal: 20, justifyContent: 'center', backgroundColor: color.brandInk }}>
+              <Text style={{ ...sora(600), fontSize: 15, color: '#fff' }}>Offer</Text>
             </Pressable>
           </View>
         </View>
@@ -167,7 +169,7 @@ function Back() {
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
-  return <Card><Text accessibilityRole="header" style={t.label}>{title}</Text>{children}</Card>;
+  return <Card><Text accessibilityRole="header" style={t.h2}>{title.charAt(0) + title.slice(1).toLowerCase()}</Text>{children}</Card>;
 }
 
 function Rows({ rows }: { rows: Row[] }) {

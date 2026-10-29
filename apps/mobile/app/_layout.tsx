@@ -1,13 +1,14 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Fraunces_400Regular, Fraunces_600SemiBold, Fraunces_700Bold } from '@expo-google-fonts/fraunces';
 import { useFonts, Sora_400Regular, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold } from '@expo-google-fonts/sora';
 import { color } from '@klyr/tokens';
 import { AuthProvider, useAuth } from '../lib/auth';
 import { usePush } from '../lib/push';
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ Sora_400Regular, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold });
+  const [fontsLoaded] = useFonts({ Sora_400Regular, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold, Fraunces_400Regular, Fraunces_600SemiBold, Fraunces_700Bold });
   if (!fontsLoaded) return null;
   return (
     <SafeAreaProvider>

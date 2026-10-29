@@ -6,7 +6,7 @@ import type { FieldDay } from '@klyr/api-client';
 import { TORONTO, torontoTime } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
-import { Card, Chip, ErrorText, sora, t } from '../components/ui';
+import { serif, Card, Chip, ErrorText, sora, t } from '../components/ui';
 import { describeFieldEvent as describe } from '@klyr/api-client';
 import { errorText, klyr } from '../lib/klyr';
 
@@ -41,7 +41,7 @@ export default function Activity() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: color.surfaceGrouped }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 48 }}
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 56 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
         <Nav current="activity" />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
@@ -52,7 +52,7 @@ export default function Activity() {
           {tiles.map(([k, v]) => (
             <View key={k} style={{ flexGrow: 1, flexBasis: '45%', backgroundColor: color.surface, borderRadius: 14, padding: 12 }} accessibilityLabel={`${k}: ${v}`}>
               <Text style={t.note}>{k}</Text>
-              <Text style={{ ...sora(800), fontSize: 22, color: k === 'Refused' && v !== '0' ? '#A11B1B' : color.text }}>{v}</Text>
+              <Text style={{ ...serif(600), fontSize: 26, letterSpacing: -0.6, color: k === 'Refused' && v !== '0' ? '#A11B1B' : color.text }}>{v}</Text>
             </View>
           ))}
         </View>

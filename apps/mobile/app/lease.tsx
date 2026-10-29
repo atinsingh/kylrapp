@@ -6,7 +6,7 @@ import { landlordNet, money, moneyCents, rentControlled, TENANT_SIDE_CHOICES, to
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
-import { Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { serif, Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 
@@ -91,7 +91,7 @@ function PlanSign({ l, legalName, onDone }: { l: Leasing; legalName: string; onD
     <>
       <View style={{ backgroundColor: color.brandInk, borderRadius: 20, padding: 18, gap: 6 }} accessibilityLabel={`First year after fees ${money(net.net)}`}>
         <Text style={{ ...t.label, color: '#8CC2B1' }}>{l.property.address.toUpperCase()} · FIRST YEAR AFTER FEES</Text>
-        <Text style={{ ...sora(800), fontSize: 34, color: '#fff' }}>{money(net.net)}</Text>
+        <Text style={{ ...serif(600), fontSize: 38, letterSpacing: -0.6, color: '#fff' }}>{money(net.net)}</Text>
         <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>12 × {money(l.rent)} · Klyr fee {money(net.fee)} · tenant’s brokerage {money(net.tenantSide)}</Text>
       </View>
       <Card>
@@ -151,7 +151,7 @@ function Live({ l, legalName, onDone }: { l: Leasing; legalName: string; onDone:
     <>
       <View style={{ backgroundColor: color.brandInk, borderRadius: 20, padding: 18, gap: 6 }}>
         <Text style={{ ...t.label, color: '#8CC2B1' }}>{l.property.address.toUpperCase()} · {money(l.rent)}/MONTH</Text>
-        <Text accessibilityRole="header" style={{ ...sora(800), fontSize: 30, color: '#fff' }}>{leased ? 'Leased' : l.publishedAt ? 'You’re live' : 'Getting listed'}</Text>
+        <Text accessibilityRole="header" style={{ ...serif(600), fontSize: 34, letterSpacing: -0.6, color: '#fff' }}>{leased ? 'Leased' : l.publishedAt ? 'You’re live' : 'Getting listed'}</Text>
         <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>
           {leased ? `${leased.name} at ${money(leased.rent)}/month from ${leased.startDate}. Next: the Ontario Standard Lease.` : l.publishedAt ? `Listed ${torontoWhen(l.publishedAt)}.` : `${l.agent?.name ?? 'Your agent'} adds photos and publishes it.`}
         </Text>

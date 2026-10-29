@@ -20,7 +20,7 @@ export default async function PartnerPage() {
         <nav className="p-tabs" aria-label="Klyr Partners"><SignOut to="/partner/signin" /></nav>
       </header>
       <h1 className="k-h1">Quote requests</h1>
-      <p className="k-note" style={{ margin: 0 }}>
+      <p className="k-sub">
         Klyr clients who asked {me.org.name} for a quote. Klyr ranks quotes only by what the client pays{me.org.kind === 'lender' ? ' (for mortgages, interest and fees over 5 years)' : ''}, and shows them any referral fee before they choose.
         You see the client’s name and email once they choose you.{me.org.referralAgreement ? '' : ' Your firm has no referral agreement with Klyr, so referral fees are $0.'}
       </p>

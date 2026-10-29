@@ -7,7 +7,7 @@ import { GEOFENCE } from '@klyr/contracts';
 import { TORONTO, torontoTime, visitSlots } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
-import { Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
+import { serif, Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
 import { errorText, klyr } from '../lib/klyr';
 import { metres, metresBetween, readLocation, useLivePosition } from '../lib/location';
 import { usePushState } from '../lib/push-context';
@@ -54,9 +54,9 @@ export default function Today() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: color.surfaceGrouped }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 48 }} keyboardShouldPersistTaps="handled"
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 56 }} keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
-        <Nav current="today" />
+        <Nav current="today" sub={visits ? `${waiting.length ? `${waiting.length} to answer · ` : ''}${scheduled.filter(v => v.status === 'confirmed').length} confirmed` : undefined} />
         {push.state === 'off' && (
           <Card style={{ backgroundColor: '#FBEBDD' }}>
             <Text style={{ ...sora(700), color: '#A54B00' }}>Notifications are off</Text>
@@ -132,7 +132,7 @@ function VisitCard({ v, pos, onChange }: { v: ProShowing; pos: { lat: number; ln
   return (
     <Card>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Text style={{ ...sora(800), fontSize: 20 }}>{time(v.at)}</Text>
+        <Text style={{ ...serif(600), fontSize: 24, letterSpacing: -0.6 }}>{time(v.at)}</Text>
         {v.status === 'requested' && <Text style={t.note}>{dayLabel(v.at).toLowerCase()}</Text>}
         <Text style={{ ...sora(700), fontSize: 12, marginLeft: 'auto', backgroundColor: bg, color: fg, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 2, overflow: 'hidden' }}>{label}</Text>
       </View>

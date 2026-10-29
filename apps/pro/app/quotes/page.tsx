@@ -13,7 +13,7 @@ export default async function QuotesPage() {
     <main className="p-wrap">
       <ProHeader me={me} current="quotes" />
       <h1 className="k-h1">Quotes</h1>
-      <p className="k-note" style={{ margin: 0 }}>
+      <p className="k-sub">
         Your clients asked these providers for quotes. Enter each quote from the provider’s own system. Klyr ranks them only by what the client pays,
         and shows any referral fee to the client before they choose. Lawyers can’t pay referral fees.
       </p>

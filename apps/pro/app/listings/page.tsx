@@ -19,7 +19,7 @@ export default async function ListingsPage() {
     <main className="p-wrap">
       <ProHeader me={me} current="listings" />
       <h1 className="k-h1">Listings</h1>
-      <p className="k-note" style={{ margin: 0 }}>
+      <p className="k-sub">
         Sellers you represent. Book the photos, mark the inspection if one was done, and publish once the seller has signed the listing
         agreement and approved the listing. It goes live as a Klyr listing; the MLS® feed comes later.
       </p>

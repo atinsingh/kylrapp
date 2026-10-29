@@ -27,7 +27,7 @@ export default async function VisitsPage() {
     <main className="p-wrap">
       <ProHeader me={me} current="visits" />
       <h1 className="k-h1">Visits</h1>
-      <p className="k-note" style={{ margin: 0 }}>
+      <p className="k-sub">
         Check in and complete each visit in the Klyr Pro phone app, at the property: within {GEOFENCE.radiusM} m, from {GEOFENCE.earlyMinutes} minutes before the time,
         and at least {GEOFENCE.minOnSiteMinutes} minutes on site. Every attempt is recorded for the broker of record.
       </p>

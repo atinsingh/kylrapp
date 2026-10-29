@@ -6,7 +6,7 @@ import { calendarDate, money, nextBankingDate, torontoInputValue, torontoWhen } 
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
-import { Button, Card, ErrorText, Field, Screen, sora, t } from '../components/ui';
+import { serif, Button, Card, ErrorText, Field, Screen, sora, t } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 
@@ -81,7 +81,7 @@ export default function DealScreen() {
       <Back />
       <View style={{ backgroundColor: isVoid ? '#5E5E63' : color.brandInk, borderRadius: 20, padding: 18, gap: 6 }}>
         <Text style={{ ...t.label, color: isVoid ? '#E5E5EA' : '#8CC2B1' }}>{d.address.toUpperCase()} · {money(d.price)}</Text>
-        <Text style={{ ...sora(800), fontSize: 28, color: '#fff' }}>{isVoid ? 'Ended' : closed ? 'Welcome home' : d.stage === 'firm' ? 'Firm' : 'Conditional'}</Text>
+        <Text style={{ ...serif(600), fontSize: 32, letterSpacing: -0.6, color: '#fff' }}>{isVoid ? 'Ended' : closed ? 'Welcome home' : d.stage === 'firm' ? 'Firm' : 'Conditional'}</Text>
         <Text style={{ ...sora(), fontSize: 13, color: isVoid ? '#E5E5EA' : '#C9DDD6' }}>
           {isVoid ? 'A condition wasn’t met in time, so the agreement is void. Your deposit comes back in full.' : closed ? `Closed ${when(d.closedAt!)}. The keys are yours.` : `Closing ${longDate(d.closingDate)} · cash back ${money(d.cashBack)}`}
         </Text>
@@ -93,7 +93,7 @@ export default function DealScreen() {
       {d.payout && (
         <Card style={{ borderWidth: 2, borderColor: color.brand }}>
           <Text style={t.label}>YOUR CASH BACK · {d.payout.pct}% OF THE COMMISSION</Text>
-          <Text style={{ ...sora(800), fontSize: 24 }}>{money(d.payout.amount)}</Text>
+          <Text style={{ ...serif(600), fontSize: 28, letterSpacing: -0.6 }}>{money(d.payout.amount)}</Text>
           <Text style={t.body}>{d.payout.status === 'sent' ? `Sent by EFT ${when(d.payout.paidAt!)} · reference ${d.payout.reference}.` : 'Paid by EFT after Klyr receives its commission, usually within a few business days of closing.'}</Text>
         </Card>
       )}
@@ -120,7 +120,7 @@ export default function DealScreen() {
           <Text style={{ ...t.label, color: d.deposit.receivedAt || isVoid ? color.textSecondary : '#A54B00' }}>
             {d.deposit.returnedAt ? 'DEPOSIT RETURNED' : d.deposit.receivedAt ? 'DEPOSIT RECEIVED' : isVoid ? 'DEPOSIT' : `DEPOSIT DUE BY ${when(d.deposit.dueAt).toUpperCase()}`}
           </Text>
-          <Text style={{ ...sora(800), fontSize: 24 }}>{money(d.deposit.amount)}</Text>
+          <Text style={{ ...serif(600), fontSize: 28, letterSpacing: -0.6 }}>{money(d.deposit.amount)}</Text>
           <Text style={t.body}>{d.deposit.receivedAt ? `${d.deposit.holder} has it in trust.` : isVoid ? 'Nothing to send now. If you already sent it, it comes back after the release.' : `To ${d.deposit.holder} in trust, by bank draft or wire.`}</Text>
           {d.deposit.trustVerifiedAt && <Text style={{ ...sora(600), fontSize: 12, color: '#2B7A4B' }}>✓ Trust account confirmed by phone · {when(d.deposit.trustVerifiedAt)}</Text>}
           {!d.deposit.receivedAt && !isVoid && <Text style={{ ...sora(600), fontSize: 13, color: '#A11B1B', backgroundColor: '#FDECEC', padding: 10, borderRadius: 10 }}>Before you send money, phone {d.deposit.holder} at a number you look up yourself to confirm the trust account. Klyr never changes payment details by email.</Text>}

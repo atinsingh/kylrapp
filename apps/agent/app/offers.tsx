@@ -6,7 +6,7 @@ import type { ProOffer } from '@klyr/api-client';
 import { money, TORONTO, torontoInstant, torontoToday, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
-import { Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
+import { serif, Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
 import { errorText, klyr } from '../lib/klyr';
 
 const when = (iso: string) => torontoWhen(iso);
@@ -33,7 +33,7 @@ export default function Offers() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: color.surfaceGrouped }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 48 }} keyboardShouldPersistTaps="handled"
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 56 }} keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
         <Nav current="offers" />
         <ErrorText>{error}</ErrorText>
@@ -81,7 +81,7 @@ function OfferCard({ o, onChange }: { o: ProOffer; onChange: () => Promise<void>
   return (
     <Card>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
-        <Text style={{ ...sora(800), fontSize: 20 }}>{money(o.price)}</Text>
+        <Text style={{ ...serif(600), fontSize: 24, letterSpacing: -0.6 }}>{money(o.price)}</Text>
         <Text style={t.note}>asking {money(o.askingPrice)}</Text>
       </View>
       <Text style={sora(700)}>{o.address}, {o.city}</Text>

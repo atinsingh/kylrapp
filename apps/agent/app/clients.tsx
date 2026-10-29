@@ -25,7 +25,7 @@ export default function Clients() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: color.surfaceGrouped }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 48 }}
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 56 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
         <Nav current="clients" />
         <ErrorText>{error}</ErrorText>

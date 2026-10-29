@@ -68,3 +68,17 @@ export const SignBackResponse = z.discriminatedUnion('decision', [
   z.object({ decision: z.literal('decline'), note: z.string().trim().max(1000).optional() }),
 ]);
 export type SignBackResponse = z.infer<typeof SignBackResponse>;
+
+/** Form 123: the buyer waives a condition or confirms it's fulfilled. A signature. */
+export const ConditionNoticeRequest = z.object({
+  action: z.enum(['waive', 'fulfil']),
+  typedName: z.string().trim().min(2).max(200),
+  readConfirmed: z.literal(true),
+});
+export type ConditionNoticeRequest = z.infer<typeof ConditionNoticeRequest>;
+
+/** The agent's record of the phone call that confirmed the trust account details. */
+export const TrustVerifiedRequest = z.object({
+  note: z.string().trim().min(3, 'Say who you spoke to and the number you called').max(500),
+});
+export type TrustVerifiedRequest = z.infer<typeof TrustVerifiedRequest>;

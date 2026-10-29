@@ -74,7 +74,7 @@ export interface OfferTermsInput {
   financingDays: number | null; inspectionDays: number | null; statusCertificateDays: number | null;
   irrevocableAt: string; closingDate: string; inclusions: string; exclusions: string; noteToAgent: string;
 }
-export type OfferStatus = 'draft' | 'sent' | 'returned' | 'registered' | 'signed_back' | 'accepted' | 'rejected' | 'expired' | 'withdrawn';
+export type OfferStatus = 'draft' | 'sent' | 'returned' | 'registered' | 'signed_back' | 'accepted' | 'rejected' | 'expired' | 'withdrawn' | 'void';
 export interface Offer {
   id: string; dealId: string; listingId: string; address: string; city: string; listingBrokerage: string; askingPrice: number; form: '100' | '101';
   photo: { url: string; alt: string } | null;
@@ -87,12 +87,21 @@ export interface Offer {
 }
 export interface ProOffer extends Offer { clientId: string; clientName: string | null; clientEmail: string; depositStatus: Deal['deposit'] }
 export interface Deal {
-  dealId: string; stage: string; offerId: string; listingId: string; address: string; city: string; listingBrokerage: string;
+  dealId: string; stage: string; status: 'accepted' | 'void'; offerId: string; listingId: string; address: string; city: string; listingBrokerage: string;
   price: number; acceptedAt: string; closingDate: string;
-  deposit: { amount: number; holder: string; dueAt: string; receivedAt: string | null } | null;
-  conditions: { id: string; kind: 'financing' | 'inspection' | 'status_certificate' | 'sale_of_buyer_home' | 'other'; dueAt: string; waivedAt: string | null; fulfilledAt: string | null }[];
+  deposit: {
+    amount: number; holder: string; dueAt: string; receivedAt: string | null;
+    trustVerifiedAt: string | null; trustVerifiedBy: string | null; returnedAt: string | null;
+  } | null;
+  conditions: {
+    id: string; kind: 'financing' | 'inspection' | 'status_certificate' | 'sale_of_buyer_home' | 'other'; dueAt: string;
+    waivedAt: string | null; fulfilledAt: string | null; documentId: string | null; deliveredAt: string | null; lapsedAt: string | null;
+  }[];
+  /** Mutual release (Form 122) signed by the buyer after the agreement went void. */
+  release: { documentId: string; signedAt: string } | null;
   allIn: number; cashBack: number; landTransfer: number;
 }
+export interface ProDeal extends Deal { clientName: string | null; clientEmail: string }
 
 /** Klyr Pro (agents). */
 export interface ProMe { name: string; title: string; reco: string | null; brokerage: string }
@@ -231,12 +240,18 @@ export function createClient(opts: ClientOptions) {
     acceptSignBack: (id: string, typedName: string) => post<Offer>(`/offers/${encodeURIComponent(id)}/respond`, { decision: 'accept', typedName, readConfirmed: true }),
     declineSignBack: (id: string, note?: string) => post<Offer>(`/offers/${encodeURIComponent(id)}/respond`, { decision: 'decline', note }),
     deal: () => get<Deal>('/deal'),
+    conditionNotice: (id: string, action: 'waive' | 'fulfil', typedName: string) => post<Deal>(`/deal/conditions/${encodeURIComponent(id)}`, { action, typedName, readConfirmed: true }),
+    signRelease: (typedName: string) => post<Deal>('/deal/release', { typedName, readConfirmed: true }),
 
     pro: {
       offers: () => get<ProOffer[]>('/pro/offers'),
       reviewOffer: (id: string, r: { action: 'register'; note?: string } | { action: 'return'; note: string }) => post<{ id: string; status: OfferStatus }>(`/pro/offers/${encodeURIComponent(id)}/review`, r),
       offerResult: (id: string, r: { result: 'accepted'; note?: string } | { result: 'signed_back'; price: number; irrevocableAt: string; note?: string } | { result: 'rejected'; note?: string }) =>
         post<{ id: string; status: OfferStatus; signBackId?: string }>(`/pro/offers/${encodeURIComponent(id)}/result`, r),
+      deals: () => get<ProDeal[]>('/pro/deals'),
+      delivered: (conditionId: string) => post<{ id: string; firm: boolean }>(`/pro/conditions/${encodeURIComponent(conditionId)}/delivered`),
+      trustVerified: (dealId: string, note: string) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/trust-verified`, { note }),
+      depositReturned: (dealId: string) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/deposit-returned`),
       depositReceived: (dealId: string) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/deposit-received`),
       me: () => get<ProMe>('/pro/me'),
       showings: () => get<ProShowing[]>('/pro/showings'),

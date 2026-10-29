@@ -20,6 +20,7 @@ const STATUS: Record<Offer['status'], [string, string, string]> = {
   rejected: ['Not accepted', '#F2F2F7', '#5E5E63'],
   expired: ['Expired', '#F2F2F7', '#5E5E63'],
   withdrawn: ['Withdrawn', '#F2F2F7', '#5E5E63'],
+  void: ['Ended · condition not met', '#FDECEC', '#A11B1B'],
 };
 
 /** The steps of one offer, as in the design's Offer status. */
@@ -43,7 +44,7 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
   if (me.status === 401) redirect('/welcome');
   const list = res.data ?? [];
   const agent = buying.data?.agent?.name ?? 'Your agent';
-  const hasDeal = list.some(o => o.status === 'accepted' || o.signBack?.status === 'accepted');
+  const hasDeal = list.some(o => o.status === 'accepted' || o.status === 'void' || o.signBack?.status === 'accepted' || o.signBack?.status === 'void');
 
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px 48px' }}>
@@ -60,7 +61,7 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
           </section>
         )}
         {list.map(o => {
-          const [label, bg, fg] = STATUS[o.signBack?.status === 'accepted' ? 'accepted' : o.status];
+          const [label, bg, fg] = STATUS[o.signBack && ['accepted', 'void'].includes(o.signBack.status) ? o.signBack.status : o.status];
           return (
             <article key={o.id} className="k-card" aria-label={`Offer on ${o.address}`}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>

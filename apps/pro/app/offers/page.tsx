@@ -11,7 +11,7 @@ const GROUPS: [string, (o: ProOffer) => boolean][] = [
   ['SIGNED BACK · WAITING FOR YOUR CLIENT', o => o.signBack?.status === 'signed_back'],
   ['ACCEPTED', o => o.status === 'accepted' || o.signBack?.status === 'accepted'],
   ['SENT BACK TO YOUR CLIENT', o => o.status === 'returned'],
-  ['CLOSED', o => ['rejected', 'expired', 'withdrawn'].includes(o.status) || (o.status === 'signed_back' && !!o.signBack && ['rejected', 'expired'].includes(o.signBack.status))],
+  ['CLOSED', o => ['rejected', 'expired', 'withdrawn', 'void'].includes(o.status) || (o.status === 'signed_back' && !!o.signBack && ['rejected', 'expired'].includes(o.signBack.status))],
 ];
 
 export default async function OffersPage() {

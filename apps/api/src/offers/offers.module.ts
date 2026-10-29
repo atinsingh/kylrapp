@@ -1,12 +1,13 @@
 import { Body, Controller, Delete, Get, HttpCode, Inject, Module, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { OfferResultRequest, OfferTerms, ReviewOfferRequest, SignBackResponse, SignOfferRequest } from '@klyr/contracts';
+import { ConditionNoticeRequest, OfferResultRequest, OfferTerms, ReviewOfferRequest, SignBackResponse, SignOfferRequest, TrustVerifiedRequest } from '@klyr/contracts';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { DealsModule } from '../deals/deals.module.js';
 import { assertFreshMfa, Auth, AuthGuard, StepUp, type AuthContext } from '../identity/auth.guard.js';
 import { Roles, RolesGuard } from '../identity/roles.guard.js';
 import { ListingsModule } from '../listings/listings.module.js';
 import { OffersService } from './offers.service.js';
+import { DealProgressService } from './progress.service.js';
 
 const client = (req: Request) => ({ ip: req.ip, userAgent: req.headers['user-agent'] });
 
@@ -14,7 +15,7 @@ const client = (req: Request) => ({ ip: req.ip, userAgent: req.headers['user-age
 @UseGuards(AuthGuard)
 @Controller()
 class OffersController {
-  constructor(@Inject(OffersService) private readonly offers: OffersService) {}
+  constructor(@Inject(OffersService) private readonly offers: OffersService, @Inject(DealProgressService) private readonly progress: DealProgressService) {}
 
   @Get('offers')
   list(@Auth() a: AuthContext) { return this.offers.list(a.userId); }
@@ -46,9 +47,21 @@ class OffersController {
 
   @Get('deal')
   async deal(@Auth() a: AuthContext) {
-    const d = await this.offers.deal(a.userId);
+    const d = await this.progress.forBuyer(a.userId);
     if (!d) throw new NotFoundException({ code: 'no_deal', message: 'No accepted offer yet.' });
     return d;
+  }
+
+  /** Waive a condition or confirm it's fulfilled (Form 123). */
+  @Post('deal/conditions/:id') @HttpCode(200) @StepUp()
+  notice(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(ConditionNoticeRequest)) body: ConditionNoticeRequest, @Req() req: Request) {
+    return this.progress.notice(a.userId, id, body.action, body.typedName, client(req));
+  }
+
+  /** Mutual release (Form 122) after the agreement went void. */
+  @Post('deal/release') @HttpCode(200) @StepUp()
+  release(@Auth() a: AuthContext, @Body(new ZodPipe(SignOfferRequest)) body: SignOfferRequest, @Req() req: Request) {
+    return this.progress.release(a.userId, body.typedName, client(req));
   }
 }
 
@@ -57,7 +70,7 @@ class OffersController {
 @Roles('agent')
 @Controller('pro')
 class ProOffersController {
-  constructor(@Inject(OffersService) private readonly offers: OffersService) {}
+  constructor(@Inject(OffersService) private readonly offers: OffersService, @Inject(DealProgressService) private readonly progress: DealProgressService) {}
 
   @Get('offers')
   list(@Auth() a: AuthContext) { return this.offers.forAgent(a.userId); }
@@ -74,7 +87,22 @@ class ProOffersController {
 
   @Post('deals/:id/deposit-received') @HttpCode(200)
   deposit(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string) { return this.offers.depositReceived(a.userId, id); }
+
+  @Get('deals')
+  deals(@Auth() a: AuthContext) { return this.progress.forAgent(a.userId); }
+
+  /** The signed Form 123 reached the listing brokerage. */
+  @Post('conditions/:id/delivered') @HttpCode(200)
+  delivered(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string) { return this.progress.deliver(a.userId, id); }
+
+  @Post('deals/:id/trust-verified') @HttpCode(200)
+  trust(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(TrustVerifiedRequest)) body: TrustVerifiedRequest) {
+    return this.progress.trustVerified(a.userId, id, body.note);
+  }
+
+  @Post('deals/:id/deposit-returned') @HttpCode(200)
+  returned(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string) { return this.progress.depositReturned(a.userId, id); }
 }
 
-@Module({ imports: [DealsModule, ListingsModule], controllers: [OffersController, ProOffersController], providers: [OffersService] })
+@Module({ imports: [DealsModule, ListingsModule], controllers: [OffersController, ProOffersController], providers: [OffersService, DealProgressService] })
 export class OffersModule {}

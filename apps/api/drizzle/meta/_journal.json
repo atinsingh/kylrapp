@@ -57,6 +57,13 @@
       "when": 1793283237572,
       "tag": "0007_offers_workflow",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793287396932,
+      "tag": "0008_deal_progress",
+      "breakpoints": true
     }
   ]
 }

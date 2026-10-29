@@ -285,7 +285,7 @@ export const dealParties = pgTable('deal_parties', {
 
 /**
  * An offer on one home. draft → sent (buyer signed; with their agent) → registered (listing brokerage
- * confirmed receipt, Form 801) → accepted | signed_back | rejected. The agent can return a sent offer
+ * confirmed receipt, Form 801) → accepted | signed_back | rejected; an accepted offer whose condition lapses is void. The agent can return a sent offer
  * for changes; the buyer can withdraw before the seller decides; past irrevocableAt it expires.
  * A sign-back is its own row (kind 'sign_back', parentId → the buyer's offer).
  */
@@ -298,7 +298,7 @@ export const offers = pgTable('offers', {
   price: dollars('price').notNull(),
   deposit: dollars('deposit').notNull(),
   irrevocableAt: ts('irrevocable_at').notNull(),
-  status: text('status', { enum: ['draft', 'sent', 'returned', 'registered', 'signed_back', 'accepted', 'rejected', 'expired', 'withdrawn'] }).notNull(),
+  status: text('status', { enum: ['draft', 'sent', 'returned', 'registered', 'signed_back', 'accepted', 'rejected', 'expired', 'withdrawn', 'void'] }).notNull(),
   /** Conditions (days), closing date, inclusions, exclusions, note to agent. */
   terms: jsonb('terms').notNull(),
   /** The signed Form 100/101 record (buyer's offer) or the accepted sign-back. */
@@ -317,8 +317,15 @@ export const conditions = pgTable('conditions', {
   dealId: uuid('deal_id').notNull().references(() => deals.id),
   kind: text('kind', { enum: ['financing', 'inspection', 'status_certificate', 'sale_of_buyer_home', 'other'] }).notNull(),
   dueAt: ts('due_at').notNull(),
+  /** The buyer signed a waiver or notice of fulfillment (Form 123)… */
   waivedAt: ts('waived_at'),
   fulfilledAt: ts('fulfilled_at'),
+  documentId: uuid('document_id').references(() => documents.id),
+  /** …which only counts once the agent delivers it to the listing brokerage before the deadline. */
+  deliveredAt: ts('delivered_at'),
+  /** Passed its deadline without a delivered notice: the agreement is void. */
+  lapsedAt: ts('lapsed_at'),
+  reminderSentAt: ts('reminder_sent_at'),
 }, t => [index('conditions_open_due_ix').on(t.dueAt).where(sql`${t.waivedAt} is null and ${t.fulfilledAt} is null`)]);
 
 /** Visits a buyer books; the listing brokerage confirms. */
@@ -420,7 +427,10 @@ export const deposits = pgTable('deposits', {
   holder: text('holder').notNull(),
   /** 24 h after acceptance under Form 100. */
   dueAt: ts('due_at').notNull(),
+  /** Who confirmed the trust account details by phone, with whom, and when (wire-fraud check). */
   trustAccountVerifiedBy: text('trust_account_verified_by'),
+  trustVerifiedAt: ts('trust_verified_at'),
+  reminderSentAt: ts('reminder_sent_at'),
   receivedAt: ts('received_at'),
   inTrustAt: ts('in_trust_at'),
   receiptDocumentId: uuid('receipt_document_id').references(() => documents.id),

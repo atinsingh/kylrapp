@@ -15,6 +15,7 @@ const STATUS: Record<Offer['status'], [string, string, string]> = {
   draft: ['Draft · not sent', '#F2F2F7', '#5E5E63'], sent: ['With your agent', '#FBEBDD', '#A54B00'], returned: ['Sent back for changes', '#FBEBDD', '#A54B00'],
   registered: ['With the seller', '#FBEBDD', '#A54B00'], signed_back: ['Seller signed back', '#E8EEF9', '#2A4D8F'], accepted: ['Accepted', '#E3F2E8', '#2B7A4B'],
   rejected: ['Not accepted', '#F2F2F7', '#5E5E63'], expired: ['Expired', '#F2F2F7', '#5E5E63'], withdrawn: ['Withdrawn', '#F2F2F7', '#5E5E63'],
+  void: ['Ended · condition not met', '#FDECEC', '#A11B1B'],
 };
 
 export default function Offers() {
@@ -25,7 +26,7 @@ export default function Offers() {
     if (r.ok) { setList(r.data); setError(''); } else setError(errorText(r.error));
   }, []);
   useFocusEffect(useCallback(() => { void load(); }, [load]));
-  const hasDeal = list?.some(o => o.status === 'accepted' || o.signBack?.status === 'accepted');
+  const hasDeal = list?.some(o => o.status === 'accepted' || o.status === 'void' || o.signBack?.status === 'accepted' || o.signBack?.status === 'void');
 
   return (
     <Screen>
@@ -47,7 +48,7 @@ function OfferCard({ o, onChange }: { o: Offer; onChange: () => Promise<void> })
   const [stepUp, setStepUp] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [label, bg, fg] = STATUS[o.signBack?.status === 'accepted' ? 'accepted' : o.status];
+  const [label, bg, fg] = STATUS[o.signBack && ['accepted', 'void'].includes(o.signBack.status) ? o.signBack.status : o.status];
   const sb = o.signBack?.status === 'signed_back' ? o.signBack : null;
 
   const run = async (fn: () => Promise<{ ok: boolean; status: number; error?: { code?: string; message?: unknown } }>) => {

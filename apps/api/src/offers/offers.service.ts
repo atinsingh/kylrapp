@@ -20,7 +20,7 @@ const ymdPlus = (days: number) => { const [y, m, d] = torontoToday(); return new
 
 type Terms = Omit<OfferTerms, 'listingId' | 'price' | 'deposit' | 'irrevocableAt'>;
 type OfferRow = typeof offers.$inferSelect;
-type Home = { id: string; address: string; city: string; price: number; type: PropertyType; listingBrokerage: string; coop: number; annualTax: number; condoFee: number | null; active: boolean };
+export type Home = { id: string; address: string; city: string; price: number; type: PropertyType; listingBrokerage: string; coop: number; annualTax: number; condoFee: number | null; active: boolean };
 
 const CONDITION_TEXT: Record<'financing' | 'inspection' | 'status_certificate', (days: number) => string> = {
   financing: d => `This offer is conditional on the buyer arranging a new first mortgage satisfactory to the buyer, in the buyer's sole discretion. Unless the buyer gives written notice that this condition is fulfilled by 11:59 p.m. on the ${ordinal(d)} banking day after acceptance, this offer is null and void and the deposit is returned in full without deduction.`,
@@ -165,27 +165,6 @@ export class OffersService {
     await this.accept(row, userId);
     await this.notify.toUser(deal.agentId, 'agent', { title: 'Your client accepted the sign-back', body: `${home.address} · ${money(row.price)}. Deposit due within 24 hours.`, data: { screen: 'offers', offerId: row.parentId ?? row.id } });
     return this.get(userId, row.parentId ?? row.id);
-  }
-
-  /** The accepted deal: price, deposit and condition deadlines. */
-  async deal(userId: string) {
-    const deal = await this.deals.buyDeal(userId);
-    if (!deal) return null;
-    const [accepted] = await this.db.select().from(offers).where(and(eq(offers.dealId, deal.id), eq(offers.status, 'accepted'))).orderBy(desc(offers.decidedAt)).limit(1);
-    if (!accepted) return null;
-    const home = await this.home(accepted.listingId);
-    const [dep] = await this.db.select().from(deposits).where(eq(deposits.dealId, deal.id)).orderBy(desc(deposits.dueAt)).limit(1);
-    const conds = await this.db.select().from(conditions).where(eq(conditions.dealId, deal.id)).orderBy(asc(conditions.dueAt));
-    const est = buyerEstimate({ price: accepted.price, city: home.city, type: home.type, coop: home.coop, tax: home.annualTax, fee: home.condoFee ?? undefined }, { ...engineOptions(await this.assumptions.get(userId)), price: accepted.price });
-    const terms = accepted.terms as Terms;
-    return {
-      dealId: deal.id, stage: deal.stage, offerId: accepted.parentId ?? accepted.id,
-      listingId: home.id, address: home.address, city: home.city, listingBrokerage: home.listingBrokerage,
-      price: accepted.price, acceptedAt: accepted.decidedAt!.toISOString(), closingDate: terms.closingDate,
-      deposit: dep ? { amount: dep.amount, holder: dep.holder, dueAt: dep.dueAt.toISOString(), receivedAt: dep.receivedAt?.toISOString() ?? null } : null,
-      conditions: conds.map(c => ({ id: c.id, kind: c.kind, dueAt: c.dueAt.toISOString(), waivedAt: c.waivedAt?.toISOString() ?? null, fulfilledAt: c.fulfilledAt?.toISOString() ?? null })),
-      allIn: est.allIn, cashBack: est.cashBack, landTransfer: est.ltt.total,
-    };
   }
 
   // ── Agent (Klyr Pro) ─────────────────────────────────────────────────────
@@ -351,14 +330,7 @@ export class OffersService {
     };
   }
 
-  private async home(listingId: string): Promise<Home> {
-    const [h] = await this.db.select({
-      id: listings.id, address: ADDRESS, city: listings.city, price: listings.price, type: listings.propertyType, listingBrokerage: listings.listingBrokerage,
-      coop: listings.coop, annualTax: listings.annualTax, condoFee: listings.condoFee, status: listings.status, internetDisplay: listings.internetDisplay,
-    }).from(listings).where(eq(listings.id, listingId));
-    if (!h) throw new NotFoundException();
-    return { ...h, type: h.type as PropertyType, coop: Number(h.coop ?? 0.025), annualTax: h.annualTax ?? 0, active: h.status === 'active' && h.internetDisplay };
-  }
+  private home(listingId: string) { return loadHome(this.db, listingId); }
 
   private async ownOffer(userId: string, id: string) {
     const deal = await this.deals.buyDeal(userId);
@@ -417,4 +389,14 @@ export class OffersService {
 function torontoOffset(at: Date) {
   const name = new Intl.DateTimeFormat('en-US', { timeZone: TORONTO, timeZoneName: 'longOffset' }).formatToParts(at).find(p => p.type === 'timeZoneName')?.value ?? 'GMT-05:00';
   return name.replace('GMT', '') || '+00:00';
+}
+
+/** A listing as offers need it: address, asking price, type, listing brokerage and the inputs for the all-in. */
+export async function loadHome(db: Db, listingId: string): Promise<Home> {
+  const [h] = await db.select({
+    id: listings.id, address: ADDRESS, city: listings.city, price: listings.price, type: listings.propertyType, listingBrokerage: listings.listingBrokerage,
+    coop: listings.coop, annualTax: listings.annualTax, condoFee: listings.condoFee, status: listings.status, internetDisplay: listings.internetDisplay,
+  }).from(listings).where(eq(listings.id, listingId));
+  if (!h) throw new NotFoundException();
+  return { ...h, type: h.type as PropertyType, coop: Number(h.coop ?? 0.025), annualTax: h.annualTax ?? 0, active: h.status === 'active' && h.internetDisplay };
 }

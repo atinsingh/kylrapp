@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { and, count, desc, eq, gt, isNull, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import { LEGAL_VERSIONS, type Me, type SessionResponse, type SignupRequest } from '@klyr/contracts';
 import { config } from '../config.js';
 import { DB, type Db } from '../db/db.module.js';
@@ -66,8 +66,20 @@ export class IdentityService {
   }
 
   async verifyEmailCode(email: string, code: string, client: ClientInfo): Promise<SessionResponse> {
+    await this.consumeCode(email, code, ['signup', 'signin']);
+
+    const user = await this.findByEmail(email);
+    if (!user) throw badCode();
+    if (!user.emailVerifiedAt) {
+      await this.db.update(users).set({ emailVerifiedAt: new Date() }).where(eq(users.id, user.id));
+    }
+    return this.signIn(user.id, 'email_code', client);
+  }
+
+  /** Checks and uses up the newest unexpired code of the given purposes; a code works once. */
+  private async consumeCode(email: string, code: string, purposes: ('signup' | 'signin' | 'stepup')[]) {
     const [row] = await this.db.select().from(emailCodes)
-      .where(and(eq(emailCodes.email, email), isNull(emailCodes.consumedAt), gt(emailCodes.expiresAt, new Date())))
+      .where(and(eq(emailCodes.email, email), inArray(emailCodes.purpose, purposes), isNull(emailCodes.consumedAt), gt(emailCodes.expiresAt, new Date())))
       .orderBy(desc(emailCodes.createdAt)).limit(1);
     if (!row || row.attempts >= config.emailCode.maxAttempts) throw badCode();
 
@@ -79,13 +91,27 @@ export class IdentityService {
     const consumed = await this.db.update(emailCodes).set({ consumedAt: new Date() })
       .where(and(eq(emailCodes.id, row.id), isNull(emailCodes.consumedAt))).returning({ id: emailCodes.id });
     if (!consumed.length) throw badCode();
+  }
 
-    const user = await this.findByEmail(email);
-    if (!user) throw badCode();
-    if (!user.emailVerifiedAt) {
-      await this.db.update(users).set({ emailVerifiedAt: new Date() }).where(eq(users.id, user.id));
-    }
-    return this.signIn(user.id, 'email_code', client);
+  // ── Step-up by email (only for accounts with no passkey or authenticator) ─
+  /**
+   * Signing needs a fresh check. Buyers who only use email codes confirm with a new code; anyone with a
+   * passkey or authenticator must use that, so email can't be used to get around their stronger factor.
+   */
+  async startStepUpEmail(userId: string) {
+    const me = await this.me(userId);
+    if (me.passkeys > 0 || me.totpEnabled) throw new BadRequestException({ code: 'use_strong_factor', message: 'Confirm with your passkey or authenticator app.' });
+    await this.sendCode(me.email, 'stepup', 'Enter this code in Klyr to confirm it’s you before signing.');
+    return { sent: true };
+  }
+
+  async verifyStepUpEmail(userId: string, sessionId: string, code: string) {
+    const me = await this.me(userId);
+    if (me.passkeys > 0 || me.totpEnabled) throw new BadRequestException({ code: 'use_strong_factor', message: 'Confirm with your passkey or authenticator app.' });
+    await this.consumeCode(me.email, code, ['stepup']);
+    await this.sessions.completeMfa(sessionId);
+    await this.audit(userId, 'stepup', { method: 'email_code' });
+    return { ok: true };
   }
 
   // ── Passwords ──────────────────────────────────────────────────────────────
@@ -208,12 +234,15 @@ export class IdentityService {
     return this.db.insert(auditLog).values({ actorId, action, entity: 'user', entityId: actorId, data: data ?? null });
   }
 
-  private async sendCode(email: string, purpose: 'signup' | 'signin', intro: string) {
+  private async sendCode(email: string, purpose: 'signup' | 'signin' | 'stepup', intro: string) {
     const { cooldownSeconds, maxPerHour, ttlMinutes } = config.emailCode;
-    const recent = await this.db.select({ createdAt: emailCodes.createdAt }).from(emailCodes)
+    const recent = await this.db.select({ createdAt: emailCodes.createdAt, purpose: emailCodes.purpose }).from(emailCodes)
       .where(and(eq(emailCodes.email, email), gt(emailCodes.createdAt, new Date(Date.now() - 3_600_000))))
       .orderBy(desc(emailCodes.createdAt));
-    if (recent.length >= maxPerHour || (recent[0] && Date.now() - recent[0].createdAt.getTime() < cooldownSeconds * 1000)) {
+    // The hourly cap counts every code; the short wait is per purpose, so a sign-up code
+    // doesn't block the code for signing an agreement a few seconds later.
+    const lastSame = recent.find(r => r.purpose === purpose);
+    if (recent.length >= maxPerHour || (lastSame && Date.now() - lastSame.createdAt.getTime() < cooldownSeconds * 1000)) {
       throw new HttpException({ code: 'slow_down', message: 'A code was just sent. Check your email or try again shortly.' }, HttpStatus.TOO_MANY_REQUESTS);
     }
     const code = sixDigitCode();

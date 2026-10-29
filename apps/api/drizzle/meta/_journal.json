@@ -29,6 +29,13 @@
       "when": 1793243574509,
       "tag": "0003_buyer_assumptions",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793245907855,
+      "tag": "0004_showings_id_status",
+      "breakpoints": true
     }
   ]
 }

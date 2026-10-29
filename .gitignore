@@ -9,3 +9,4 @@ dist/
 coverage/
 infra/**/.terraform/
 infra/**/*.tfstate*
+apps/api/.data/

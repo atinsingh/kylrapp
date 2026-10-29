@@ -118,7 +118,7 @@ export const sessions = pgTable('sessions', {
 export const emailCodes = pgTable('email_codes', {
   id: id(),
   email: text('email').notNull(),
-  purpose: text('purpose', { enum: ['signup', 'signin'] }).notNull(),
+  purpose: text('purpose', { enum: ['signup', 'signin', 'stepup'] }).notNull(),
   codeHash: char('code_hash', { length: 64 }).notNull(),
   attempts: integer('attempts').notNull().default(0),
   expiresAt: ts('expires_at').notNull(),
@@ -305,6 +305,18 @@ export const conditions = pgTable('conditions', {
   fulfilledAt: ts('fulfilled_at'),
 }, t => [index('conditions_open_due_ix').on(t.dueAt).where(sql`${t.waivedAt} is null and ${t.fulfilledAt} is null`)]);
 
+/** Visits a buyer books; the listing brokerage confirms. */
+export const showings = pgTable('showings', {
+  id: id(),
+  dealId: uuid('deal_id').notNull().references(() => deals.id),
+  listingId: uuid('listing_id').notNull().references(() => listings.id),
+  at: ts('at').notNull(),
+  status: text('status', { enum: ['requested', 'confirmed', 'cancelled', 'completed'] }).notNull().default('requested'),
+  note: text('note'),
+  createdAt: created(),
+  cancelledAt: ts('cancelled_at'),
+}, t => [index('showings_deal_ix').on(t.dealId, t.at)]);
+
 // ── Documents and e-sign ────────────────────────────────────────────────────
 export const documents = pgTable('documents', {
   id: id(),
@@ -341,6 +353,9 @@ export const idVerifications = pgTable('id_verifications', {
   thirdPartyDetails: jsonb('third_party_details'),
   politicallyExposed: boolean('politically_exposed'),
   beneficialOwners: jsonb('beneficial_owners'),
+  /** Third-party or politically exposed cases wait for the compliance officer before visits and offers. */
+  status: text('status', { enum: ['verified', 'needs_review', 'rejected'] }).notNull().default('verified'),
+  buyingAs: text('buying_as', { enum: ['self', 'company'] }).notNull().default('self'),
   /** Pointer to the immutable record in the records bucket. */
   recordS3Key: text('record_s3_key').notNull(),
   verifiedAt: ts('verified_at').notNull(),

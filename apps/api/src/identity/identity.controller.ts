@@ -57,6 +57,16 @@ export class IdentityController {
     return this.identity.totpVerify(a.userId, a.session.id, body.code);
   }
 
+  @Post('stepup/email/start') @HttpCode(202) @UseGuards(AuthGuard)
+  stepUpEmailStart(@Auth() a: AuthContext) {
+    return this.identity.startStepUpEmail(a.userId);
+  }
+
+  @Post('stepup/email/verify') @HttpCode(200) @UseGuards(AuthGuard)
+  stepUpEmailVerify(@Auth() a: AuthContext, @Body(new ZodPipe(TotpCodeRequest)) body: TotpCodeRequest) {
+    return this.identity.verifyStepUpEmail(a.userId, a.session.id, body.code);
+  }
+
   @Post('logout') @HttpCode(200) @UseGuards(AuthGuard) @AllowMfaPending()
   async logout(@Auth() a: AuthContext) {
     await this.sessions.revoke(a.session.id);

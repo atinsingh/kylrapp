@@ -137,9 +137,10 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
             <div className="k-note">{e.allIn < 0 ? 'You get back' : 'All-in to close'}</div>
             <div style={{ fontWeight: 800, color: 'var(--brand)', fontSize: 18 }}>{money(Math.abs(e.allIn))}</div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <CompareToggle id={l.id} address={l.address} />
             <SaveButton id={l.id} saved={l.saved} address={l.address} large />
+            <Link href={`/visit/${l.id}`} className="k-btn" style={{ width: 'auto', display: 'grid', placeItems: 'center', textDecoration: 'none' }}>Book a visit</Link>
           </div>
         </div>
       </div>

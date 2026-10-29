@@ -59,9 +59,9 @@ One deployable, with each module owning its own tables (`apps/api/src/db/schema.
 | `identity` | users, roles, consents, sessions, email codes, passwords, passkeys, TOTP | **Yes**: sign-up, sign-in, step-up, devices |
 | `listings` | PropTx VOW replica, media, saved searches, views, 100-result cap, no-display flag | **Yes**: search, near-me, detail |
 | `estimates` | Wraps `@klyr/core`; records the estimate shown at each decision point | **Yes**: `POST /estimates` |
-| `deals` | Deals, parties, offers, conditions, timeline, sell + buy bundle | Schema only |
+| `deals` | Deals, parties, Form 300, documents, showings; offers, conditions and timeline next | **Yes**: agreement, documents, visits |
 | `documents` | OREA form rendering, e-sign envelopes, S3, hashes | Schema only |
-| `compliance` | FINTRAC ID, third-party and PEP checks, receipt of funds, retention | Schema only |
+| `compliance` | FINTRAC ID, third-party and PEP checks, receipt of funds, retention | **Yes**: ID check (sandbox verifier until the vendor is chosen) |
 | `money` | Deposits (24 h countdown, trust call-back), cash-back payouts | Schema only |
 | `marketplace` | Providers, quotes (typed in or imported), referral-fee disclosure | Schema only |
 | `messaging` / `notifications` | Threads, push, email, SMS inside 24 h, quiet hours | Schema only |
@@ -123,6 +123,7 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 * Security screen on web and phone: passkeys (add on web, remove), password set/change, authenticator app on/off (QR on web, open-in-app or copy key on phone), devices with "sign out" and "sign out all other devices". Sensitive changes ask "Confirm it’s you" (passkey on web, authenticator code on both).
 * `apps/mobile`: same onboarding as web with email code and password, then home with live all-in cards and the Security screen. Token in the iOS Keychain / Android Keystore (`expo-secure-store`); Sora font loaded. Screenshots `docs/screenshots/2*-phone-*.png`.
 * `packages/api-client`: typed calls shared by web (through its proxy) and mobile (bearer token).
+* First visit (web and phone): Form 300 as a plain-language summary signed by typed name after a fresh check (passkey, authenticator, or an emailed code for email-only accounts); the signed record is stored with its SHA-256 and shown under Documents. FINTRAC ID check with occupation, source of funds, third-party, PEP and company questions; third-party, PEP and company cases wait for the compliance officer. Visits booked in Toronto time once both are done, listed under Visits with cancel. New buyers are spread across agents by open deals.
 * Buyer tools: "How we estimate" (rate, down payment, first-time status, lawyer — stored per buyer and applied to every all-in, with the down payment raised to the legal minimum where needed), "What you can afford" (stress test plus down-payment caps, feeding search), Compare (up to 3 homes, lowest all-in and monthly marked), and a map view with all-in pins on web.
 * Buyer browsing on web and phone: search with swipeable photos, filters (cities, price, beds, type, sort; in the URL on web), "Viewed" badges, saved homes, and the listing page: gallery, all-in breakdown, monthly costs, open house, price history, sold nearby (same type, within 2 km, last 6 months, from a PostGIS query), schools, commute and details.
 * `apps/pro`, `apps/admin`: shells listing the role workspaces and admin modules.
@@ -131,7 +132,7 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 1. Saved searches with alerts (needs email via SES), the phone map (react-native-maps or MapLibre Native), then the deal flow below. Pull a shared component layer (money hero, breakdown row, task row, quote row, rule tag) into `packages/ui`.
 2. Deals: representation agreement gate (Form 300 before the first visit), offers, conditions, timeline, deadline jobs.
 3. Documents + e-sign, then compliance (ID check), then money (deposit, cash back).
-4. Phone passkeys (needs the klyr.ca associated domain and a native passkey module) and Sign in with Apple/Google.
+4. Saved searches with alerts (needs email via SES), the phone map, phone passkeys (needs the klyr.ca associated domain) and Sign in with Apple/Google.
 5. Klyr Pro agent workspace; provider quote builders; then the Admin modules in the order the Launch Checklist owners need them.
 
 ## 10. Open decisions

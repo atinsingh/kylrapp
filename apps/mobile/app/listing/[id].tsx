@@ -140,6 +140,10 @@ export default function Listing() {
             style={{ minHeight: 50, borderRadius: 14, paddingHorizontal: 20, justifyContent: 'center', backgroundColor: saved ? color.brand : color.brandTint }}>
             <Text style={{ ...sora(700), fontSize: 15, color: saved ? '#fff' : color.brand }}>{saved ? '♥ Saved' : '♡ Save'}</Text>
           </Pressable>
+          <Pressable accessibilityRole="button" onPress={() => router.push(`/visit/${l.id}`)}
+            style={{ minHeight: 50, borderRadius: 14, paddingHorizontal: 18, justifyContent: 'center', backgroundColor: color.brand }}>
+            <Text style={{ ...sora(700), fontSize: 15, color: '#fff' }}>Book a visit</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     </SafeAreaView>

@@ -5,7 +5,7 @@
  */
 import { inArray, sql } from 'drizzle-orm';
 import { createDb } from './client.js';
-import { listingEvents, listingInsights, listingMedia, listings } from './schema.js';
+import { agents, listingEvents, listingInsights, listingMedia, listings, organizations, userRoles, users } from './schema.js';
 
 type Kind = 'House' | 'Townhouse' | 'Condo';
 type Sample = {
@@ -130,5 +130,20 @@ for (const row of saved) {
     geom: { x: l.lng + 0.002 * (i + 1), y: l.lat - 0.0015 * (i + 1) },
   })));
 }
+// The brokerage and its agents. Names, titles and registration numbers are placeholders until the
+// broker of record confirms them (Launch Checklist action 2).
+let [brokerage] = await db.select().from(organizations).where(sql`${organizations.kind} = 'brokerage' and ${organizations.name} = 'Klyr Realty Inc., Brokerage'`);
+if (!brokerage) [brokerage] = await db.insert(organizations).values({ kind: 'brokerage', name: 'Klyr Realty Inc., Brokerage', registration: 'RECO registration pending' }).returning();
+const AGENTS = [
+  { email: 'maya.chen@klyr.example', name: 'Maya Chen', title: 'Salesperson' as const, reco: 'SAMPLE-0001' },
+  { email: 'daniel.okafor@klyr.example', name: 'Daniel Okafor', title: 'Salesperson' as const, reco: 'SAMPLE-0002' },
+];
+for (const a of AGENTS) {
+  let [u] = await db.select().from(users).where(sql`lower(${users.email}) = ${a.email}`);
+  if (!u) [u] = await db.insert(users).values({ email: a.email, legalName: a.name, emailVerifiedAt: new Date() }).returning();
+  await db.insert(userRoles).values({ userId: u!.id, role: 'agent', orgId: brokerage!.id }).onConflictDoNothing();
+  await db.insert(agents).values({ userId: u!.id, brokerageId: brokerage!.id, registeredName: a.name, title: a.title, recoNumber: a.reco })
+    .onConflictDoNothing();
+}
 await pool.end();
-console.log(`seeded ${SAMPLE.length} listings and ${sold} sold comparables`);
+console.log(`seeded ${SAMPLE.length} listings, ${sold} sold comparables and ${AGENTS.length} agents`);

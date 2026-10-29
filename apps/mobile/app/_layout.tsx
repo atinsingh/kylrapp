@@ -37,6 +37,10 @@ function Routes() {
         <Stack.Screen name="estimate" />
         <Stack.Screen name="afford" />
         <Stack.Screen name="compare" />
+        <Stack.Screen name="visit/[id]" />
+        <Stack.Screen name="sign-300" />
+        <Stack.Screen name="id-check" />
+        <Stack.Screen name="visits" />
         <Stack.Screen name="security" />
       </Stack.Protected>
     </Stack>

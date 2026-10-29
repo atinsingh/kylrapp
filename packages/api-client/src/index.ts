@@ -48,6 +48,26 @@ export interface SearchQuery {
   ids?: string;
 }
 
+export interface BuyingStatus {
+  agreement: { signed: true; documentId: string; signedAt: string; endsOn: string } | { signed: false };
+  idCheck: { status: 'not_started' | 'verified' | 'needs_review' | 'rejected'; verifiedAt?: string };
+  agent: { name: string; title: string; brokerage: string } | null;
+  canBookVisits: boolean;
+}
+export interface AgreementTerms {
+  form: '300'; title: string; version: string; buyer: string; brokerage: string;
+  startsOn: string; endsOn: string; area: string; cashBackPct: number; clauses: [string, string][];
+}
+export interface DocumentSummary { id: string; title: string; oreaForm: string | null; status: string; sha256: string; createdAt: string }
+export interface Showing {
+  id: string; at: string; status: 'requested' | 'confirmed' | 'cancelled' | 'completed'; note: string | null;
+  listingId: string; address: string; city: string; listingBrokerage: string; photo: { url: string; alt: string } | null;
+}
+export interface IdCheckAnswers {
+  occupation: string; sourceOfFunds: ('savings' | 'sale_of_property' | 'gift' | 'investments' | 'employment' | 'other')[];
+  actingForThirdParty: boolean; politicallyExposed: boolean; buyingAs: 'self' | 'company'; vendorRef: string;
+}
+
 export interface Assumptions { rate: number; downPct: number; firstTime: boolean; lawyerFee: number }
 /** Session as the client sees it; web never receives the token (the proxy keeps it). */
 export type SignedIn = Omit<SessionResponse, 'session'> & { session: { token?: string; expiresAt: string; mfaRequired: boolean } };
@@ -125,6 +145,18 @@ export function createClient(opts: ClientOptions) {
     assumptions: () => get<Assumptions & { custom: boolean }>('/me/assumptions'),
     setAssumptions: (a: Assumptions) => call<Assumptions & { custom: boolean }>('PUT', '/me/assumptions', a),
     resetAssumptions: () => del<Assumptions & { custom: boolean }>('/me/assumptions'),
+    stepUpEmailStart: () => post<{ sent: true }>('/auth/stepup/email/start'),
+    stepUpEmailVerify: (code: string) => post<{ ok: true }>('/auth/stepup/email/verify', { code }),
+    buying: () => get<BuyingStatus>('/buying'),
+    agreementTerms: () => get<AgreementTerms>('/agreements/300'),
+    signAgreement: (typedName: string) => post<{ documentId: string; sha256: string; signedAt: string }>('/agreements/300/sign', { typedName, readConfirmed: true }),
+    documents: () => get<DocumentSummary[]>('/documents'),
+    document: (id: string) => get<DocumentSummary & { record: Record<string, unknown> & { clauses?: [string, string][]; signer?: { typedName: string; signedAt: string } } }>(`/documents/${encodeURIComponent(id)}`),
+    idCheck: () => get<{ status: BuyingStatus['idCheck']['status']; verifiedAt?: string; vendor?: string }>('/id-check'),
+    submitIdCheck: (a: IdCheckAnswers) => post<{ status: BuyingStatus['idCheck']['status'] }>('/id-check', a),
+    showings: () => get<Showing[]>('/showings'),
+    bookShowing: (listingId: string, at: string, note?: string) => post<Showing>('/showings', { listingId, at, note }),
+    cancelShowing: (id: string) => del<{ ok: true }>(`/showings/${encodeURIComponent(id)}`),
     listing: (id: string) => get<ListingDetail>(`/listings/${encodeURIComponent(id)}`),
     save: (id: string) => call<{ saved: boolean }>('PUT', `/listings/${encodeURIComponent(id)}/save`),
     unsave: (id: string) => del<{ saved: boolean }>(`/listings/${encodeURIComponent(id)}/save`),

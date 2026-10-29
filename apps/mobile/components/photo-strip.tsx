@@ -44,17 +44,17 @@ export function PhotoStrip({ photos, address, sample, onPress }: { photos: Photo
           <View pointerEvents="none" style={{ position: 'absolute', bottom: 10, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 5 }}>
             {photos.map((_, i) => <View key={i} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: i === index ? '#fff' : 'rgba(255,255,255,.55)' }} />)}
           </View>
-          <Pill style={{ right: 10 }}>{`${index + 1} / ${photos.length}`}</Pill>
+          <Pill style={{ right: 10, bottom: 10 }}>{`${index + 1} / ${photos.length}`}</Pill>
         </>
       )}
-      {sample && <Pill style={{ left: 10 }}>Sample photos</Pill>}
+      {sample && <Pill style={{ left: 10, bottom: 10 }}>Sample photos</Pill>}
     </View>
   );
 }
 
-function Pill({ children, style }: { children: string; style: { left?: number; right?: number } }) {
+function Pill({ children, style }: { children: string; style: { left?: number; right?: number; bottom?: number } }) {
   return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 10, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3, backgroundColor: 'rgba(0,0,0,.55)', ...style }}>
+    <View pointerEvents="none" style={{ position: 'absolute', ...(style.bottom == null ? { top: 10 } : {}), borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3, backgroundColor: 'rgba(0,0,0,.55)', ...style }}>
       <Text style={{ ...sora(600), fontSize: 12, color: '#fff' }}>{children}</Text>
     </View>
   );

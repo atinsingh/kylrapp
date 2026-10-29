@@ -6,7 +6,7 @@ import type { ProOffer } from '@klyr/api-client';
 import { money, TORONTO, torontoInstant, torontoToday, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
-import { serif, Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
+import { display, Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
 import { errorText, klyr } from '../lib/klyr';
 
 const when = (iso: string) => torontoWhen(iso);
@@ -81,7 +81,7 @@ function OfferCard({ o, onChange }: { o: ProOffer; onChange: () => Promise<void>
   return (
     <Card>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
-        <Text style={{ ...serif(600), fontSize: 24, letterSpacing: -0.6 }}>{money(o.price)}</Text>
+        <Text style={{ ...display(600), fontSize: 24, letterSpacing: -0.6 }}>{money(o.price)}</Text>
         <Text style={t.note}>asking {money(o.askingPrice)}</Text>
       </View>
       <Text style={sora(700)}>{o.address}, {o.city}</Text>

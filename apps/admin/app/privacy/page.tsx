@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { AdminNav } from '@/components/admin-nav';
 import type { PrivacyRequest } from '@klyr/api-client';
 import { torontoWhen } from '@klyr/core';
 import { api, sessionToken } from '@klyr/web-kit/session';
@@ -16,7 +16,7 @@ export default async function PrivacyPage() {
   const list = res.data;
   return (
     <main className="a-wrap">
-      <Link href="/" className="k-note">‹ Klyr Admin</Link>
+      <AdminNav current="privacy" />
       <h1 className="k-h1">Privacy requests</h1>
       <p className="k-sub">Answer within 30 days (PIPEDA). Completing an access request lets the person download their copy. Completing a deletion closes the account and removes sign-in, contact and preference data; FINTRAC records (5 years), trade records (6 years) and the audit log stay.</p>
       {!list.length && <section className="k-card"><strong>No requests</strong></section>}

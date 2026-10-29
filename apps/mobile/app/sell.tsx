@@ -7,7 +7,7 @@ import { calendarDate, money, sellerNet, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
-import { serif, Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { display, Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 
@@ -112,7 +112,7 @@ function PlanSign({ s, legalName, idVerified, onDone }: { s: Selling; legalName:
   const hero = (
     <View style={{ backgroundColor: color.brandInk, borderRadius: 20, padding: 18, gap: 6 }} accessibilityLabel={`You keep about ${money(cur.net)}`}>
       <Text style={{ ...t.label, color: '#8CC2B1' }}>{s.property.address.toUpperCase()} · YOU KEEP ABOUT</Text>
-      <Text style={{ ...serif(600), fontSize: 38, letterSpacing: -0.6, color: '#fff' }}>{money(cur.net)}</Text>
+      <Text style={{ ...display(600), fontSize: 38, letterSpacing: -0.6, color: '#fff' }}>{money(cur.net)}</Text>
       <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>Fee {money(cur.fee)} · buyer’s brokerage {money(cur.coop)} · about {money(cur.vsTraditional)} more than 2.5%</Text>
     </View>
   );
@@ -187,7 +187,7 @@ function Prep({ s, legalName, onDone }: { s: Selling; legalName: string; onDone:
     <>
       <View style={{ backgroundColor: color.brandInk, borderRadius: 20, padding: 18, gap: 6 }}>
         <Text style={{ ...t.label, color: '#8CC2B1' }}>{s.property.address.toUpperCase()} · {money(s.listPrice)}</Text>
-        <Text accessibilityRole="header" style={{ ...serif(600), fontSize: 34, letterSpacing: -0.6, color: '#fff' }}>{s.sale ? (s.sale.closedAt ? 'Sold' : s.sale.stage === 'conditional' ? 'Conditional sale' : 'Sold firm') : live ? 'You’re live' : 'Getting ready'}</Text>
+        <Text accessibilityRole="header" style={{ ...display(600), fontSize: 34, letterSpacing: -0.6, color: '#fff' }}>{s.sale ? (s.sale.closedAt ? 'Sold' : s.sale.stage === 'conditional' ? 'Conditional sale' : 'Sold firm') : live ? 'You’re live' : 'Getting ready'}</Text>
         <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>{s.sale ? `Accepted at ${money(s.sale.price)} · closing ${s.sale.closingDate ? calendarDate(s.sale.closingDate) : 'to be set'} · you keep about ${money(s.sale.net)}` : live ? `Listed ${torontoWhen(s.publishedAt!)}. Showing requests and offers come here.` : `You keep about ${money(s.net.net)}.`}</Text>
       </View>
       {live && s.listingId && <Button title="See your listing" alt onPress={() => router.push(`/listing/${s.listingId}`)} />}
@@ -269,7 +269,7 @@ function Market({ s, legalName, onDone }: { s: Selling; legalName: string; onDon
       {s.offers.length > 0 && <Text style={t.label}>OFFERS · {s.offers.filter(o => o.status === 'registered').length} WAITING FOR YOU</Text>}
       {s.offers.map(o => (
         <Card key={o.id}>
-          <Text style={{ ...serif(600), fontSize: 26, letterSpacing: -0.6 }}>{money(o.price)}</Text>
+          <Text style={{ ...display(600), fontSize: 26, letterSpacing: -0.6 }}>{money(o.price)}</Text>
           <Text style={sora(700)}>You’d keep about {money(o.net)}</Text>
           <Text style={t.note}>{STATUS[o.status] ?? o.status} · deposit {money(o.deposit)} · {o.conditions.length ? o.conditions.join(' · ') : 'no conditions'} · closing {calendarDate(o.closingDate)}</Text>
           {o.signBack && <Text style={t.note}>Your sign-back: {money(o.signBack.price)} · {STATUS[o.signBack.status] ?? o.signBack.status}</Text>}

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { AdminNav } from '@/components/admin-nav';
 import { describeFieldEvent, type FieldDay } from '@klyr/api-client';
 import { TORONTO, torontoTime } from '@klyr/core';
 import { api, sessionToken } from '@klyr/web-kit/session';
@@ -23,7 +24,7 @@ export default async function FieldActivityPage({ searchParams }: { searchParams
 
   return (
     <main className="a-wrap">
-      <Link href="/" className="k-note">‹ Klyr Admin</Link>
+      <AdminNav current="field-activity" />
       <h1 className="k-h1">Field activity</h1>
       <p className="k-sub">
         Showings by agent, from the Klyr Pro phone app. Check-ins and completions are accepted only at the home (GPS, within 150 m);

@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { AdminNav } from '@/components/admin-nav';
 import type { StaffMember } from '@klyr/api-client';
 import { torontoWhen } from '@klyr/core';
 import { api, sessionToken } from '@klyr/web-kit/session';
@@ -14,7 +14,7 @@ export default async function UsersPage() {
   if (!staff.data) redirect('/signin');
   return (
     <main className="a-wrap">
-      <Link href="/" className="k-note">‹ Klyr Admin</Link>
+      <AdminNav current="users" />
       <h1 className="k-h1">Users and roles</h1>
       <p className="k-sub">Staff see clients’ personal information, so every role needs a second factor at sign-in. The brokerage always keeps a broker of record, and an agent with open deals is reassigned before the role is removed.</p>
       <section className="k-card" aria-label="Staff">

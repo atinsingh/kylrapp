@@ -6,7 +6,7 @@ import { money, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
-import { serif, Button, Card, Check, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { display, Button, Card, Check, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 
@@ -52,7 +52,7 @@ export default function Rent() {
           style={{ backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden' }}>
           {x.photo && <Image source={{ uri: x.photo.url }} accessibilityLabel={x.photo.alt} style={{ width: '100%', height: 160 }} />}
           <View style={{ padding: 14, gap: 4 }}>
-            <Text style={{ ...serif(600), fontSize: 24, letterSpacing: -0.6 }}>{money(x.rent)}<Text style={t.note}> /month</Text></Text>
+            <Text style={{ ...display(600), fontSize: 24, letterSpacing: -0.6 }}>{money(x.rent)}<Text style={t.note}> /month</Text></Text>
             <Text style={sora(600)}>{x.address}, {x.city}</Text>
             <Text style={t.note}>{x.beds} bd · {x.baths} ba · move-in {money(x.moveIn.total)} (first and last month)</Text>
             <Text style={{ ...sora(600), fontSize: 12, color: x.rentControlled ? '#2B7A4B' : '#A54B00' }}>{rentControl(x)}</Text>

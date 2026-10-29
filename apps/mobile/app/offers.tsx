@@ -6,7 +6,7 @@ import { money, TORONTO, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
-import { serif, Button, Card, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { display, Button, Card, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 
@@ -77,7 +77,7 @@ function OfferCard({ o, onChange }: { o: Offer; onChange: () => Promise<void> })
       {sb && (
         <View style={{ backgroundColor: '#E8EEF9', borderRadius: 12, padding: 12, gap: 6 }}>
           <Text style={{ ...t.label, color: '#2A4D8F' }}>SIGNED BACK</Text>
-          <Text style={{ ...serif(600), fontSize: 26, letterSpacing: -0.6 }}>{money(sb.price)}</Text>
+          <Text style={{ ...display(600), fontSize: 26, letterSpacing: -0.6 }}>{money(sb.price)}</Text>
           <Text style={t.body}>You offered {money(o.price)}. Other terms unchanged. Open until {when(sb.irrevocableAt)}.</Text>
           {stepUp ? (
             <StepUp reason="Accepting a sign-back is a signature and needs a fresh check." onCancel={() => setStepUp(false)} onDone={() => { setStepUp(false); void accept(); }} />

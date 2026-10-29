@@ -1,15 +1,16 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Fraunces_400Regular, Fraunces_600SemiBold, Fraunces_700Bold } from '@expo-google-fonts/fraunces';
 import { useFonts, Sora_400Regular, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold } from '@expo-google-fonts/sora';
 import { color } from '@klyr/tokens';
+import { View } from 'react-native';
+import { AgentTabs } from '../components/nav';
 import { AuthProvider, useAuth } from '../lib/auth';
 import { PushContext } from '../lib/push-context';
 import { usePush } from '../lib/push';
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ Sora_400Regular, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold, Fraunces_400Regular, Fraunces_600SemiBold, Fraunces_700Bold });
+  const [fontsLoaded] = useFonts({ Sora_400Regular, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold });
   if (!fontsLoaded) return null;
   return (
     <SafeAreaProvider>
@@ -29,6 +30,7 @@ function Routes() {
   const ready = status === 'ready';
   return (
     <PushContext.Provider value={push}>
+      <View style={{ flex: 1, backgroundColor: color.surface }}>
       <Stack screenOptions={{ headerShown: false, animation: 'none', contentStyle: { backgroundColor: color.surfaceGrouped } }}>
         <Stack.Screen name="index" />
         <Stack.Protected guard={!ready}>
@@ -42,6 +44,8 @@ function Routes() {
           <Stack.Screen name="clients" />
         </Stack.Protected>
       </Stack>
+      {ready && <AgentTabs />}
+      </View>
     </PushContext.Provider>
   );
 }

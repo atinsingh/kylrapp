@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { AdminNav } from '@/components/admin-nav';
 import type { MarketplaceAudit } from '@klyr/api-client';
 import { money, torontoWhen } from '@klyr/core';
 import { api, sessionToken } from '@klyr/web-kit/session';
@@ -17,7 +17,7 @@ export default async function MarketplacePage() {
   const total = m.chosen.reduce((t, c) => t + c.referralFee, 0);
   return (
     <main className="a-wrap">
-      <Link href="/" className="k-note">‹ Klyr Admin</Link>
+      <AdminNav current="marketplace" />
       <h1 className="k-h1">Marketplace</h1>
       <p className="k-sub">Providers, their quotes, and referral fees. Quotes are ranked by the client’s cost only; every fee is disclosed before the client chooses. {money(total)} in referral fees from chosen quotes.</p>
       <section className="k-card" aria-label="Checks">

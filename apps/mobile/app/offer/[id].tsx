@@ -7,7 +7,7 @@ import { buyerEstimate, money, nextBankingDate, type PropertyType, TORONTO, toro
 import { color } from '@klyr/tokens';
 import { Back } from '../../components/back';
 import { StepUp } from '../../components/step-up';
-import { serif, Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../../components/ui';
+import { display, Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../../components/ui';
 import { useAuth } from '../../lib/auth';
 import { errorText, klyr } from '../../lib/klyr';
 
@@ -88,7 +88,7 @@ export default function MakeOffer() {
   const hero = (
     <View style={{ backgroundColor: color.brandInk, borderRadius: 20, padding: 18, gap: 6 }} accessibilityLabel={`All-in at this offer: ${money(est.allIn)}`}>
       <Text style={{ ...t.label, color: '#8CC2B1' }}>ALL-IN AT THIS OFFER</Text>
-      <Text style={{ ...serif(600), fontSize: 38, letterSpacing: -0.6, color: '#fff' }}>{money(est.allIn)}</Text>
+      <Text style={{ ...display(600), fontSize: 38, letterSpacing: -0.6, color: '#fff' }}>{money(est.allIn)}</Text>
       <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>Cash back {money(est.cashBack)} · land transfer tax {money(est.ltt.total)}</Text>
     </View>
   );

@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { AdminNav } from '@/components/admin-nav';
 import type { FeedStatus } from '@klyr/api-client';
 import { money } from '@klyr/core';
 import { api, sessionToken } from '@klyr/web-kit/session';
@@ -14,7 +14,7 @@ export default async function FeedPage() {
   const s = res.data;
   return (
     <main className="a-wrap">
-      <Link href="/" className="k-note">‹ Klyr Admin</Link>
+      <AdminNav current="listings-feed" />
       <h1 className="k-h1">Listings feed</h1>
       <section className="k-card" style={{ background: s.feed.connected ? undefined : '#FBEBDD' }}>
         <strong>{s.feed.name} · {s.feed.connected ? 'Connected' : 'Not connected'}</strong>

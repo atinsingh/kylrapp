@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { AdminNav } from '@/components/admin-nav';
 import type { Payout } from '@klyr/api-client';
 import { money, torontoWhen } from '@klyr/core';
 import { api, sessionToken } from '@klyr/web-kit/session';
@@ -18,7 +18,7 @@ export default async function PayoutsPage() {
   const due = list.filter(p => p.status !== 'sent').reduce((t, p) => t + p.amount, 0);
   return (
     <main className="a-wrap">
-      <Link href="/" className="k-note">‹ Klyr Admin</Link>
+      <AdminNav current="payouts" />
       <h1 className="k-h1">Cash-back payouts</h1>
       <p className="k-sub">
         Each closed deal’s cash back is the buyer’s plan share of the commission Klyr actually receives. Record the commission when the listing

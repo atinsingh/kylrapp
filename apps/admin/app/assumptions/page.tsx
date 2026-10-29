@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { AdminNav } from '@/components/admin-nav';
 import type { AssumptionsAdmin } from '@klyr/api-client';
 import { money, torontoWhen } from '@klyr/core';
 import { api, sessionToken } from '@klyr/web-kit/session';
@@ -16,7 +16,7 @@ export default async function AssumptionsPage() {
   const { current: c, history } = res.data;
   return (
     <main className="a-wrap">
-      <Link href="/" className="k-note">‹ Klyr Admin</Link>
+      <AdminNav current="assumptions" />
       <h1 className="k-h1">Content and assumptions</h1>
       <p className="k-sub">The defaults behind every all-in estimate. A client who changes their own inputs keeps theirs. Review at least every 90 days so the “as of” date stays honest.</p>
       <section className="k-card" aria-label="In force" style={c.overdue ? { boxShadow: '0 0 0 2px #A11B1B' } : undefined}>

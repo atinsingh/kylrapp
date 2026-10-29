@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { affordFromIncome, DEFAULT_ASSUMPTIONS, money } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { klyr } from '../lib/klyr';
-import { serif, Button, Card, Chip, Field, Screen, sora, t, Title } from '../components/ui';
+import { display, Button, Card, Chip, Field, Screen, sora, t, Title } from '../components/ui';
 import { Back } from '../components/back';
 
 const DOWNS = [5, 10, 15, 20, 25];
@@ -32,7 +32,7 @@ export default function Afford() {
       <Title sub="An estimate from your income and down payment, using the federal stress test. Your lender decides.">What you can afford</Title>
       <Card>
         <Text style={t.label}>YOU COULD BUY UP TO</Text>
-        <Text accessibilityLiveRegion="polite" style={{ ...serif(600), fontSize: 38, letterSpacing: -0.6, color: color.brand }}>{money(r.maxPrice)}</Text>
+        <Text accessibilityLiveRegion="polite" style={{ ...display(600), fontSize: 38, letterSpacing: -0.6, color: color.brand }}>{money(r.maxPrice)}</Text>
         <Text style={t.note}>about {money(r.monthly)}/month · lenders test you at {(r.qualifyingRate * 100).toFixed(2)}%</Text>
       </Card>
       <Card>

@@ -7,7 +7,7 @@ import { GEOFENCE } from '@klyr/contracts';
 import { TORONTO, torontoTime, visitSlots } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
-import { serif, Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
+import { display, Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
 import { errorText, klyr } from '../lib/klyr';
 import { metres, metresBetween, readLocation, useLivePosition } from '../lib/location';
 import { usePushState } from '../lib/push-context';
@@ -132,7 +132,7 @@ function VisitCard({ v, pos, onChange }: { v: ProShowing; pos: { lat: number; ln
   return (
     <Card>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Text style={{ ...serif(600), fontSize: 24, letterSpacing: -0.6 }}>{time(v.at)}</Text>
+        <Text style={{ ...display(600), fontSize: 24, letterSpacing: -0.6 }}>{time(v.at)}</Text>
         {v.status === 'requested' && <Text style={t.note}>{dayLabel(v.at).toLowerCase()}</Text>}
         <Text style={{ ...sora(700), fontSize: 12, marginLeft: 'auto', backgroundColor: bg, color: fg, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 2, overflow: 'hidden' }}>{label}</Text>
       </View>

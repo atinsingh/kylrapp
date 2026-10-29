@@ -7,7 +7,7 @@ import type { Me } from '@klyr/contracts';
 import { color } from '@klyr/tokens';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
-import { Button, Card, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { Row as LinkRow, Button, Card, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
 
 type Pending = { label: string; run: () => Promise<Result<unknown>> };
 
@@ -70,9 +70,21 @@ export default function Security() {
 
   return (
     <Screen>
-      <Pressable accessibilityRole="button" onPress={() => router.back()} style={{ minHeight: 44, justifyContent: 'center' }}>
-        <Text style={{ ...sora(700), fontSize: 13, color: color.brand }}>‹ Back</Text>
-      </Pressable>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 4 }}>
+        <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: color.brandInk, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ ...sora(800), fontSize: 20, color: '#fff' }}>{(me.legalName ?? me.email).split(' ').slice(0, 2).map(w => w[0]!.toUpperCase()).join('')}</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text accessibilityRole="header" style={t.h1}>{me.legalName ?? 'Account'}</Text>
+          <Text style={t.note}>{me.email}</Text>
+        </View>
+      </View>
+      <View>
+        <LinkRow icon="pricetag-outline" title="Sell your home" sub="What you keep, your listing and offers" onPress={() => router.push('/sell')} />
+        <LinkRow icon="key-outline" title="Rent a home" sub="No fee to you" onPress={() => router.push('/rent')} />
+        <LinkRow icon="business-outline" title="Lease out a home" sub="Applicants on the same terms" onPress={() => router.push('/lease')} />
+        <LinkRow icon="calculator-outline" title="Quotes" sub="Lenders, lawyers, inspectors, insurers" onPress={() => router.push('/quotes')} />
+      </View>
       <Title sub="How you sign in, and the devices that are signed in now.">Security</Title>
       <ErrorText>{error}</ErrorText>
       {note ? <Card style={{ backgroundColor: color.brandTint }}><Text accessibilityLiveRegion="polite" style={{ ...sora(600), color: color.brand }}>{note}</Text></Card> : null}

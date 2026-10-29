@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { TORONTO } from '@klyr/core';
+import { AdminNav } from '@/components/admin-nav';
 import { requireOfficer } from '@/lib/session';
 import { ReviewForm } from './review-form';
 
@@ -13,7 +13,7 @@ export default async function IdReviewsPage() {
   const queue = await requireOfficer();
   return (
     <main className="a-wrap">
-      <Link href="/" className="k-note">‹ Klyr Admin</Link>
+      <AdminNav current="id-reviews" />
       <h1 className="k-h1">ID reviews</h1>
       <p className="k-sub">
         Identity checks that need a person: a politically exposed person, a third party, or a company buyer. The buyer can’t book visits

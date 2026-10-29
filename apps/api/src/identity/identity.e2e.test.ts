@@ -156,3 +156,37 @@ describe('sessions', () => {
     expect(login.body.challengeId).toMatch(/^[0-9a-f-]{36}$/);
   });
 });
+
+describe('security settings', () => {
+  it('protects an active authenticator: re-setup and turning it off need a fresh check', async () => {
+    const { token } = await signUpAndVerify();
+    const setup = await call('POST', '/auth/mfa/totp/setup', undefined, token);
+    const step = totpStep();
+    await call('POST', '/auth/mfa/totp/enable', { code: totpAt(setup.body.secret, step) }, token);
+    // This email-code session has never passed a second factor.
+    expect((await call('POST', '/auth/mfa/totp/setup', undefined, token)).body.code).toBe('step_up_required');
+    expect((await call('POST', '/auth/mfa/totp/disable', undefined, token)).status).toBe(403);
+    expect((await call('POST', '/auth/mfa/totp/verify', { code: totpAt(setup.body.secret, step + 1) }, token)).status).toBe(200);
+    expect((await call('POST', '/auth/mfa/totp/disable', undefined, token)).status).toBe(200);
+    expect((await call('GET', '/auth/me', undefined, token)).body.totpEnabled).toBe(false);
+  });
+
+  it('signs out every other device', async () => {
+    const { email: e, token } = await signUpAndVerify();
+    const others: string[] = [];
+    for (let i = 0; i < 2; i++) {
+      await call('POST', '/auth/email/start', { email: e });
+      others.push((await call('POST', '/auth/email/verify', { email: e, code: lastCode(e) })).body.session.token);
+    }
+    expect((await call('POST', '/auth/sessions/revoke-others', undefined, token)).body.signedOut).toBe(2);
+    for (const t of others) expect((await call('GET', '/auth/me', undefined, t)).status).toBe(401);
+    expect((await call('GET', '/auth/me', undefined, token)).status).toBe(200);
+  });
+
+  it('lists passkeys and refuses passkey step-up when there are none', async () => {
+    const { token } = await signUpAndVerify();
+    expect((await call('GET', '/auth/passkeys', undefined, token)).body).toEqual([]);
+    expect((await call('POST', '/auth/passkey/stepup/options', undefined, token)).body.code).toBe('no_passkeys');
+    expect((await call('DELETE', '/auth/passkeys/not-mine', undefined, token)).status).toBe(403);
+  });
+});

@@ -24,7 +24,9 @@ export default async function SearchPage() {
           <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-.02em' }}>klyr</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: 'var(--muted)' }}>
-          <span>{me.data?.legalName ?? me.data?.email}</span><SignOut />
+          <span>{me.data?.legalName ?? me.data?.email}</span>
+          <a href="/security" style={{ fontWeight: 700, fontSize: 13 }}>Security</a>
+          <SignOut />
         </div>
       </div>
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-.02em', margin: '0 0 4px' }}>Search</h1>

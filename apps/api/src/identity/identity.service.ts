@@ -121,6 +121,19 @@ export class IdentityService {
   }
 
   // ── TOTP ───────────────────────────────────────────────────────────────────
+  /** Starting over replaces a working authenticator, so the caller must check step-up first when one is on. */
+  async totpEnabled(userId: string) {
+    const [cred] = await this.db.select({ enabledAt: totpCredentials.enabledAt }).from(totpCredentials).where(eq(totpCredentials.userId, userId));
+    return !!cred?.enabledAt;
+  }
+
+  async totpDisable(userId: string) {
+    await this.db.delete(totpCredentials).where(eq(totpCredentials.userId, userId));
+    await this.db.update(users).set({ mfaEnrolledAt: null }).where(eq(users.id, userId));
+    await this.audit(userId, 'totp_disabled');
+    return { ok: true };
+  }
+
   async totpSetup(userId: string) {
     const user = await this.getUser(userId);
     const secret = newTotpSecret();

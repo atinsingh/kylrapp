@@ -93,8 +93,36 @@ export class IdentityController {
   }
 
   @Post('mfa/totp/setup') @HttpCode(200) @UseGuards(AuthGuard)
-  totpSetup(@Auth() a: AuthContext) {
+  async totpSetup(@Auth() a: AuthContext) {
+    if (await this.identity.totpEnabled(a.userId)) assertFreshMfa(a.session);
     return this.identity.totpSetup(a.userId);
+  }
+
+  @Post('mfa/totp/disable') @HttpCode(200) @UseGuards(AuthGuard) @StepUp()
+  totpDisable(@Auth() a: AuthContext) {
+    return this.identity.totpDisable(a.userId);
+  }
+
+  @Get('passkeys') @UseGuards(AuthGuard)
+  listPasskeys(@Auth() a: AuthContext) {
+    return this.passkeys.list(a.userId);
+  }
+
+  @Delete('passkeys/:id') @UseGuards(AuthGuard) @StepUp()
+  async removePasskey(@Auth() a: AuthContext, @Param('id') id: string) {
+    if (!(await this.passkeys.remove(a.userId, id))) throw new NotFoundException();
+    return { ok: true };
+  }
+
+  /** Step-up with a passkey: refreshes the window for password changes, signing and payouts. */
+  @Post('passkey/stepup/options') @HttpCode(200) @UseGuards(AuthGuard)
+  passkeyStepUpOptions(@Auth() a: AuthContext) {
+    return this.passkeys.authenticationOptions(a.userId);
+  }
+
+  @Post('passkey/stepup/verify') @HttpCode(200) @UseGuards(AuthGuard)
+  passkeyStepUpVerify(@Auth() a: AuthContext, @Body(new ZodPipe(PasskeyLoginVerifyRequest)) body: PasskeyLoginVerifyRequest) {
+    return this.passkeys.stepUpVerify(a.userId, a.session.id, body.challengeId, body.response);
   }
 
   @Post('mfa/totp/enable') @HttpCode(200) @UseGuards(AuthGuard)
@@ -106,6 +134,11 @@ export class IdentityController {
   async listSessions(@Auth() a: AuthContext) {
     const rows = await this.sessions.list(a.userId);
     return rows.map(s => ({ ...s, current: s.id === a.session.id }));
+  }
+
+  @Post('sessions/revoke-others') @HttpCode(200) @UseGuards(AuthGuard)
+  async revokeOthers(@Auth() a: AuthContext) {
+    return { signedOut: await this.sessions.revokeOthers(a.userId, a.session.id) };
   }
 
   @Delete('sessions/:id') @UseGuards(AuthGuard)

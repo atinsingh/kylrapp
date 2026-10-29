@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { call, errorText } from '@/lib/client';
+import type { SignedIn } from '@klyr/api-client';
+import { errorText, klyr } from '@/lib/client';
 
-type Session = { session: { mfaRequired: boolean } };
+type Session = Pick<SignedIn, 'session'>;
 
 /** "Enter the 6-digit code" — shared by sign-up and sign-in. */
 export function CodeStep({ email, purpose, onDone }: { email: string; purpose: 'signup' | 'signin'; onDone: (s: Session) => void }) {
@@ -14,16 +15,16 @@ export function CodeStep({ email, purpose, onDone }: { email: string; purpose: '
 
   async function verify() {
     setBusy(true); setError('');
-    const r = await call<Session>('/auth/email/verify', { email, code });
+    const r = await klyr.emailVerify(email, code);
     setBusy(false);
-    if (!r.ok) return setError(errorText(r.data));
+    if (!r.ok) return setError(errorText(r.error));
     onDone(r.data);
   }
 
   async function resend() {
     setError(''); setNote('');
-    const r = await call('/auth/email/start', { email });
-    if (!r.ok) return setError(errorText(r.data));
+    const r = await klyr.emailStart(email);
+    if (!r.ok) return setError(errorText(r.error));
     setNote('A new code is on its way.');
   }
 

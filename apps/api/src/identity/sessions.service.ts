@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, gt, isNull } from 'drizzle-orm';
+import { and, desc, eq, gt, isNull, ne } from 'drizzle-orm';
 import { config } from '../config.js';
 import { DB, type Db } from '../db/db.module.js';
 import { sessions } from '../db/schema.js';
@@ -50,6 +50,13 @@ export class SessionsService {
     const where = userId ? and(eq(sessions.id, id), eq(sessions.userId, userId)) : eq(sessions.id, id);
     const r = await this.db.update(sessions).set({ revokedAt: new Date() }).where(and(where, isNull(sessions.revokedAt))).returning({ id: sessions.id });
     return r.length > 0;
+  }
+
+  /** "Sign out other devices". */
+  async revokeOthers(userId: string, keepId: string) {
+    const r = await this.db.update(sessions).set({ revokedAt: new Date() })
+      .where(and(eq(sessions.userId, userId), ne(sessions.id, keepId), isNull(sessions.revokedAt))).returning({ id: sessions.id });
+    return r.length;
   }
 
   /** The device list on the Security screen. */

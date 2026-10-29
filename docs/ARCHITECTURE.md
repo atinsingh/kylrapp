@@ -120,14 +120,16 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 * `apps/api`: Postgres + PostGIS schema for all modules; the first migration; seed data; `GET /health`, `GET /listings` (filters, `near=lat,lng,metres`, 100 cap, brokerage label, all-in per card), `GET /listings/:id`, `POST /estimates`.
 * Identity: sign-up that records terms, VOW, privacy and RECO-guide acceptance by version; 6-digit email codes; passkeys; passwords with lockout; TOTP two-step; MFA-pending sessions; step-up for sensitive actions; device list and sign-out. Listings and estimates require sign-in. Covered by RFC test vectors and end-to-end tests on Postgres.
 * `apps/web`: welcome → plan → your move → RECO guide → account → email code → passkey or password → search, matching App Core. The session lives in an httpOnly cookie behind a same-origin proxy (`app/api/[...path]`). Screenshots in `docs/screenshots/`.
-* `apps/mobile`: Expo Router app with an all-in hero computed on-device; Metro bundles it in the monorepo.
+* Security screen on web and phone: passkeys (add on web, remove), password set/change, authenticator app on/off (QR on web, open-in-app or copy key on phone), devices with "sign out" and "sign out all other devices". Sensitive changes ask "Confirm it’s you" (passkey on web, authenticator code on both).
+* `apps/mobile`: same onboarding as web with email code and password, then home with live all-in cards and the Security screen. Token in the iOS Keychain / Android Keystore (`expo-secure-store`); Sora font loaded. Screenshots `docs/screenshots/2*-phone-*.png`.
+* `packages/api-client`: typed calls shared by web (through its proxy) and mobile (bearer token).
 * `apps/pro`, `apps/admin`: shells listing the role workspaces and admin modules.
 
 **Next, in order:**
-1. Phone app sign-up (email code + password now; native passkeys need a config plugin and an associated domain), and the Security screen (devices, TOTP set-up).
-2. Port the consumer screens from App Core, starting with onboarding and the buyer home, search, listing and afford flows. Pull a shared component layer (money hero, breakdown row, task row, quote row, rule tag) into `packages/ui`.
-3. Deals: representation agreement gate (Form 300 before the first visit), offers, conditions, timeline, deadline jobs.
-4. Documents + e-sign, then compliance (ID check), then money (deposit, cash back).
+1. Port the consumer screens from App Core: buyer home, search with map and filters, listing detail with the cost breakdown, saved, compare and afford. Pull a shared component layer (money hero, breakdown row, task row, quote row, rule tag) into `packages/ui`.
+2. Deals: representation agreement gate (Form 300 before the first visit), offers, conditions, timeline, deadline jobs.
+3. Documents + e-sign, then compliance (ID check), then money (deposit, cash back).
+4. Phone passkeys (needs the klyr.ca associated domain and a native passkey module) and Sign in with Apple/Google.
 5. Klyr Pro agent workspace; provider quote builders; then the Admin modules in the order the Launch Checklist owners need them.
 
 ## 10. Open decisions

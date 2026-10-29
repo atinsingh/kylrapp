@@ -16,6 +16,7 @@ apps/
 packages/
   core/       Ontario cost engine (LTT, CMHC, payments, all-in, seller net)
   contracts/  Roles, deal stages, OREA forms, zod request schemas
+  api-client/ Typed API calls shared by web and mobile
   tokens/     Design tokens from the prototype
 infra/      AWS ca-central-1 plan (Terraform)
 design/     Claude Design handoff: prototype HTML and chat transcripts
@@ -33,7 +34,7 @@ pnpm db:migrate && pnpm db:seed # schema + the six prototype listings
 pnpm build                      # builds the shared packages the apps import
 pnpm --filter @klyr/api dev     # http://localhost:4000/health (email codes print here)
 pnpm --filter @klyr/web dev     # http://localhost:3000 → sign up, then search
-pnpm --filter @klyr/mobile dev  # Expo dev server
+pnpm --filter @klyr/mobile dev  # Expo dev server; the app talks to port 4000 on the same machine
 ```
 
 `pnpm build`, `pnpm typecheck` and `pnpm test` run across the whole repo.

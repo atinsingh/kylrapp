@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { startRegistration } from '@simplewebauthn/browser';
 import type { ConsumerPlan } from '@klyr/contracts';
-import { call, errorText } from '@/lib/client';
+import { errorText, klyr } from '@/lib/client';
 import { CodeStep } from '../signin/code-step';
 
 const PLANS: [ConsumerPlan, string, string][] = [
@@ -46,12 +46,12 @@ export function Onboarding() {
     if (!terms || !privacy) return setError('Accept the terms and privacy notice to continue.');
     setBusy(true);
     const setup = buying ? { areas, maxPrice, firstTime, ...(selling ? move : {}) } : move;
-    const r = await call('/auth/signup', {
+    const r = await klyr.signup({
       ...acct, phone: acct.phone || undefined, plan, setup, dealUpdates, marketing,
       acceptTerms: true, acceptPrivacy: true, recoGuideRead: true,
     });
     setBusy(false);
-    if (!r.ok) return setError(errorText(r.data));
+    if (!r.ok) return setError(errorText(r.error));
     setMethod(m);
     setStep('code');
   }
@@ -59,11 +59,11 @@ export function Onboarding() {
   async function addPasskey() {
     setError(''); setBusy(true);
     try {
-      const o = await call<{ challengeId: string; options: Parameters<typeof startRegistration>[0]['optionsJSON'] }>('/auth/passkey/register/options');
-      if (!o.ok) throw new Error(errorText(o.data));
+      const o = await klyr.passkeyRegisterOptions<Parameters<typeof startRegistration>[0]['optionsJSON']>();
+      if (!o.ok) throw new Error(errorText(o.error));
       const response = await startRegistration({ optionsJSON: o.data.options });
-      const v = await call('/auth/passkey/register/verify', { challengeId: o.data.challengeId, response, name: 'This device' });
-      if (!v.ok) throw new Error(errorText(v.data));
+      const v = await klyr.passkeyRegisterVerify(o.data.challengeId, response, 'This device');
+      if (!v.ok) throw new Error(errorText(v.error));
       router.replace('/');
     } catch (e) {
       setError(e instanceof Error && e.name !== 'NotAllowedError' ? e.message : 'The passkey wasn’t saved. Try again, or use a password.');
@@ -72,9 +72,9 @@ export function Onboarding() {
 
   async function savePassword() {
     setError(''); setBusy(true);
-    const r = await call('/auth/password', { password });
+    const r = await klyr.setPassword(password);
     setBusy(false);
-    if (!r.ok) return setError(errorText(r.data));
+    if (!r.ok) return setError(errorText(r.error));
     router.replace('/');
   }
 

@@ -4,12 +4,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { startAuthentication } from '@simplewebauthn/browser';
-import { call, errorText } from '@/lib/client';
+import type { SignedIn } from '@klyr/api-client';
+import { errorText, klyr } from '@/lib/client';
 import { Field } from '../start/onboarding';
 import { CodeStep } from './code-step';
 
 type Step = 'choose' | 'code' | 'password' | 'totp';
-type Session = { session: { mfaRequired: boolean } };
+type Session = Pick<SignedIn, 'session'>;
 
 export function SignIn() {
   const router = useRouter();
@@ -25,11 +26,11 @@ export function SignIn() {
 
   const passkey = () => run(async () => {
     try {
-      const o = await call<{ challengeId: string; options: Parameters<typeof startAuthentication>[0]['optionsJSON'] }>('/auth/passkey/login/options');
-      if (!o.ok) throw new Error(errorText(o.data));
+      const o = await klyr.passkeyLoginOptions<Parameters<typeof startAuthentication>[0]['optionsJSON']>();
+      if (!o.ok) throw new Error(errorText(o.error));
       const response = await startAuthentication({ optionsJSON: o.data.options });
-      const v = await call<Session>('/auth/passkey/login/verify', { challengeId: o.data.challengeId, response });
-      if (!v.ok) throw new Error(errorText(v.data));
+      const v = await klyr.passkeyLoginVerify(o.data.challengeId, response);
+      if (!v.ok) throw new Error(errorText(v.error));
       finish(v.data);
     } catch (e) {
       setError(e instanceof Error && e.name !== 'NotAllowedError' ? e.message : 'No passkey was used. Try again, or get an email code.');
@@ -37,20 +38,20 @@ export function SignIn() {
   });
 
   const emailCode = () => run(async () => {
-    const r = await call('/auth/email/start', { email });
-    if (!r.ok) return setError(errorText(r.data));
+    const r = await klyr.emailStart(email);
+    if (!r.ok) return setError(errorText(r.error));
     setStep('code');
   });
 
   const passwordLogin = () => run(async () => {
-    const r = await call<Session>('/auth/password/login', { email, password });
-    if (!r.ok) return setError(errorText(r.data));
+    const r = await klyr.passwordLogin(email, password);
+    if (!r.ok) return setError(errorText(r.error));
     finish(r.data);
   });
 
   const verifyTotp = () => run(async () => {
-    const r = await call('/auth/mfa/totp/verify', { code: totp });
-    if (!r.ok) return setError(errorText(r.data));
+    const r = await klyr.totpVerify(totp);
+    if (!r.ok) return setError(errorText(r.error));
     router.replace('/');
   });
 

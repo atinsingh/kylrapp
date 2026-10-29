@@ -34,6 +34,9 @@ function Routes() {
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="home" />
         <Stack.Screen name="listing/[id]" />
+        <Stack.Screen name="estimate" />
+        <Stack.Screen name="afford" />
+        <Stack.Screen name="compare" />
         <Stack.Screen name="security" />
       </Stack.Protected>
     </Stack>

@@ -7,6 +7,7 @@ import type { ListingDetail } from '@klyr/api-client';
 import { AppHeader } from '@/components/app-header';
 import { PhotoStrip } from '@/components/photo-strip';
 import { SaveButton } from '@/components/save-button';
+import { CompareToggle } from '@/components/compare-controls';
 import { BROKERAGE_LINE, LISTING_DATA_LINE } from '@/lib/brand';
 import { api, sessionToken } from '@/lib/session';
 
@@ -52,7 +53,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
             <div id="allin" className="k-label">{e.allIn < 0 ? 'YOU GET BACK AT CLOSING' : 'ALL-IN COST TO CLOSE'} · AT ASKING</div>
             <div style={{ fontSize: 34, fontWeight: 800, color: 'var(--brand)', letterSpacing: '-.02em' }}>{money(Math.abs(e.allIn))}</div>
             <div className="k-note">after {money(e.cashBack)} cash back · {pct(l.coop)} offered to the buyer’s brokerage</div>
-            <div className="k-note">Estimate as of {day(e.asOf)}</div>
+            <div className="k-note">Estimate as of {day(e.asOf)} · <Link href="/estimate">How we estimate</Link>{e.customAssumptions ? ' · using your inputs' : ''}</div>
             <Rows rows={[
               ['Ontario land transfer tax', money(e.ltt.on)],
               ...(e.ltt.onR ? [['First-time buyer refund', '−' + money(e.ltt.onR)] as [string, string]] : []),
@@ -68,11 +69,13 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
 
           <Section title="MONTHLY AND DOWN PAYMENT">
             <Rows rows={[
-              [`Down payment · ${Math.round(e.downPct * 100)}%`, money(e.down)],
+              [`Down payment · ${+(e.downPct * 100).toFixed(1)}%`, money(e.down)],
+              ...(e.cmhc ? [['CMHC insurance, added to the mortgage', money(e.cmhc)] as [string, string]] : []),
               [`Mortgage · ${pct(e.rate)}, 25 yr`, money(e.monthly) + '/mo'],
               ['Property tax', money(e.monthlyTax) + '/mo'],
               ...(l.condoFee ? [['Condo fee', money(l.condoFee) + '/mo'] as [string, string]] : []),
             ]} />
+            {e.downRaised && <p className="k-note" style={{ margin: 0, color: '#A54B00' }}>Your usual down payment is below the minimum for this price, so this uses the minimum, {money(e.down)}.</p>}
           </Section>
 
           {(l.openHouse || l.offerDate) && (
@@ -134,7 +137,10 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
             <div className="k-note">{e.allIn < 0 ? 'You get back' : 'All-in to close'}</div>
             <div style={{ fontWeight: 800, color: 'var(--brand)', fontSize: 18 }}>{money(Math.abs(e.allIn))}</div>
           </div>
-          <SaveButton id={l.id} saved={l.saved} address={l.address} large />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <CompareToggle id={l.id} address={l.address} />
+            <SaveButton id={l.id} saved={l.saved} address={l.address} large />
+          </div>
         </div>
       </div>
     </main>

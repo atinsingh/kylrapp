@@ -22,6 +22,13 @@
       "when": 1793239928423,
       "tag": "0002_listing_details",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793243574509,
+      "tag": "0003_buyer_assumptions",
+      "breakpoints": true
     }
   ]
 }

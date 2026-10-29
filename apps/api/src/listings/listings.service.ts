@@ -1,8 +1,9 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, gte, inArray, isNotNull, lte, ne, sql, type SQL } from 'drizzle-orm';
 import { buyerEstimate, DEFAULT_ASSUMPTIONS, type PropertyType } from '@klyr/core';
-import type { ListingSearch } from '@klyr/contracts';
+import type { Assumptions, ListingSearch } from '@klyr/contracts';
 import { DB, type Db } from '../db/db.module.js';
+import { AssumptionsService, engineOptions } from './assumptions.service.js';
 import { config } from '../config.js';
 import { listingEvents, listingInsights, listingMedia, listings, listingViews } from '../db/schema.js';
 
@@ -16,7 +17,10 @@ type Row = typeof listings.$inferSelect;
 
 @Injectable()
 export class ListingsService {
-  constructor(@Inject(DB) private readonly db: Db) {}
+  constructor(
+    @Inject(DB) private readonly db: Db,
+    @Inject(AssumptionsService) private readonly assumptions: AssumptionsService,
+  ) {}
 
   async search(userId: string, q: ListingSearch) {
     const where: SQL[] = [eq(listings.status, 'active'), eq(listings.kind, q.kind), eq(listings.internetDisplay, true)];
@@ -28,14 +32,15 @@ export class ListingsService {
     if (q.near) {
       where.push(sql`ST_DWithin(${listings.geom}::geography, ST_SetSRID(ST_MakePoint(${q.near.lng}, ${q.near.lat}), 4326)::geography, ${q.near.radiusM})`);
     }
+    if (q.ids) where.push(inArray(listings.id, q.ids));
     if (q.saved) where.push(sql`exists (select 1 from ${listingViews} v where v.listing_id = ${listings.id} and v.user_id = ${userId} and v.saved)`);
     const order = { price_asc: [asc(listings.price)], price_desc: [desc(listings.price)], newest: [desc(listings.listedAt), asc(listings.price)] }[q.sort];
     const rows = await this.db.select().from(listings).where(and(...where)).orderBy(...order).limit(VOW_RESULT_CAP + 1);
     const shown = rows.slice(0, VOW_RESULT_CAP);
     const ids = shown.map(r => r.id);
-    const [photos, views] = await Promise.all([this.photos(ids, 10), this.views(userId, ids)]);
+    const [photos, views, mine] = await Promise.all([this.photos(ids, 10), this.views(userId, ids), this.assumptions.get(userId)]);
     return {
-      results: shown.map(r => this.card(r, photos.get(r.id) ?? [], views.get(r.id))),
+      results: shown.map(r => this.card(r, photos.get(r.id) ?? [], mine, views.get(r.id))),
       /** Client shows "Refine your search" when true. */
       capped: rows.length > VOW_RESULT_CAP,
     };
@@ -52,24 +57,25 @@ export class ListingsService {
   /** Everything the listing page shows. Opening it records the view for the "Viewed" badge. */
   async detail(userId: string, id: string) {
     const r = await this.get(id);
-    const [photos, history, [insights], comparables] = await Promise.all([
+    const [photos, history, [insights], comparables, mine] = await Promise.all([
       this.photos([id], 50),
       this.db.select({ at: listingEvents.at, event: listingEvents.event, price: listingEvents.price })
         .from(listingEvents).where(eq(listingEvents.listingId, id)).orderBy(desc(listingEvents.at)),
       this.db.select().from(listingInsights).where(eq(listingInsights.listingId, id)),
       this.comparables(r),
+      this.assumptions.get(userId),
     ]);
     const [view] = await this.db.insert(listingViews).values({ userId, listingId: id })
       .onConflictDoUpdate({ target: [listingViews.userId, listingViews.listingId], set: { lastViewedAt: new Date() } })
       .returning();
-    const estimate = buyerEstimate(toEstimateInput(r));
+    const estimate = buyerEstimate(toEstimateInput(r), engineOptions(mine));
     return {
-      ...this.card(r, photos.get(id) ?? [], view),
+      ...this.card(r, photos.get(id) ?? [], mine, view),
       style: r.style, yearBuilt: r.yearBuilt, lot: r.lot, parking: r.parking, heating: r.heating,
       annualTax: r.annualTax, condoFee: r.condoFee, coop: Number(r.coop ?? 0),
       openHouse: r.openHouse, offerDate: r.offerDate,
       daysOnMarket: r.listedAt ? Math.max(0, Math.round((Date.now() - Date.parse(r.listedAt)) / 86_400_000)) : null,
-      estimate: { ...estimate, asOf: DEFAULT_ASSUMPTIONS.asOf, downPct: DEFAULT_ASSUMPTIONS.downPct },
+      estimate: { ...estimate, asOf: DEFAULT_ASSUMPTIONS.asOf, customAssumptions: mine.custom },
       history,
       comparables,
       insights: insights ? { schools: insights.schools, commute: insights.commute, nearby: insights.nearby } : null,
@@ -119,13 +125,16 @@ export class ListingsService {
   }
 
   /** Search card: every card carries the listing brokerage, the all-in hero and its photos. */
-  private card(r: Row, photos: Photo[], view?: View) {
-    const est = buyerEstimate(toEstimateInput(r));
+  private card(r: Row, photos: Photo[], mine: Assumptions, view?: View) {
+    const est = buyerEstimate(toEstimateInput(r), engineOptions(mine));
     return {
       id: r.id, mlsNumber: r.mlsNumber, address: r.unit ? `${r.address} #${r.unit}` : r.address, city: r.city,
       neighbourhood: r.neighbourhood, type: r.propertyType, beds: r.beds, baths: r.baths, sqft: r.sqft,
       price: r.price, lat: r.geom.y, lng: r.geom.x, listingBrokerage: r.listingBrokerage,
       allIn: est.allIn, cashBack: est.cashBack, monthly: Math.round(est.monthly),
+      /** Mortgage + property tax + condo fee, as on Compare. */
+      monthlyTotal: Math.round(est.monthly) + est.monthlyTax + est.condoFee,
+      landTransfer: est.ltt.total, style: r.style, yearBuilt: r.yearBuilt, offerDate: r.offerDate,
       photos,
       /** Seed data uses stand-in photos; the app labels them so nobody mistakes them for the real home. */
       samplePhotos: r.source === 'seed',

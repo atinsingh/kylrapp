@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buyerEstimate, cmhcPremium, landTransferTax, minimumDown, money, moneyShort, sellerNet } from './index.js';
+import { affordFromIncome, buyerEstimate, cmhcPremium, landTransferTax, minimumDown, money, moneyShort, sellerNet } from './index.js';
 
 // Reference values computed with design/prototype/klyr-app.js, the source this engine was ported from.
 const maple = { price: 1_150_000, city: 'Mississauga', type: 'House', coop: 0.022, tax: 6960 } as const;
@@ -37,8 +37,29 @@ describe('buyer all-in', () => {
     expect(e.statusCertificate).toBe(100);
     expect(e.condoFee).toBe(712);
   });
+  it('raises a down payment below the legal minimum', () => {
+    const e = buyerEstimate(maple, { downPct: 0.05 }); // $1.15M needs $25k + 10% over $500k
+    expect(e.down).toBe(90_000);
+    expect(e.downRaised).toBe(true);
+    expect(e.cmhc).toBeGreaterThan(0);
+    expect(buyerEstimate({ ...maple, price: 1_600_000 }, { downPct: 0.1 }).downPct).toBe(0.2);
+    expect(buyerEstimate(maple, { downPct: 0.2 }).downRaised).toBe(false);
+  });
   it('responds to assumption changes', () => {
     expect(buyerEstimate(maple, { plan: 80 }).allIn).toBeLessThan(buyerEstimate(maple).allIn);
+  });
+});
+
+describe('what you can afford', () => {
+  it('matches the prototype at 20% down', () => {
+    expect(affordFromIncome({ income: 150_000, debts: 450, downPct: 0.2, rate: 0.0449 }).maxPrice).toBe(800_000);
+  });
+  it('caps by the down payment rules', () => {
+    const five = affordFromIncome({ income: 300_000, debts: 450, downPct: 0.05, rate: 0.0449 });
+    expect(five.maxPrice).toBe(500_000);
+    expect(five.limitedByDown).toBe(true);
+    expect(affordFromIncome({ income: 600_000, debts: 0, downPct: 0.15, rate: 0.0449 }).maxPrice).toBe(1_495_000);
+    expect(affordFromIncome({ income: 600_000, debts: 0, downPct: 0.25, rate: 0.0449 }).limitedByDown).toBe(false);
   });
 });
 

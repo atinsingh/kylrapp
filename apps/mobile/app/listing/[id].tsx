@@ -63,7 +63,8 @@ export default function Listing() {
           <Card>
             <Text style={t.label}>{e.allIn < 0 ? 'YOU GET BACK AT CLOSING' : 'ALL-IN COST TO CLOSE'} · AT ASKING</Text>
             <Text style={{ ...sora(800), fontSize: 32, color: color.brand }}>{money(Math.abs(e.allIn))}</Text>
-            <Text style={t.note}>after {money(e.cashBack)} cash back · {pct(l.coop)} offered to the buyer’s brokerage · estimate as of {day(e.asOf)}</Text>
+            <Text style={t.note}>after {money(e.cashBack)} cash back · {pct(l.coop)} offered to the buyer’s brokerage · estimate as of {day(e.asOf)}{e.customAssumptions ? ' · using your inputs' : ''}</Text>
+            <Text accessibilityRole="link" onPress={() => router.push('/estimate')} style={{ ...sora(700), fontSize: 13, color: color.brand }}>How we estimate ›</Text>
             <Rows rows={[
               ['Ontario land transfer tax', money(e.ltt.on)],
               ...(e.ltt.onR ? [['First-time buyer refund', '−' + money(e.ltt.onR)] as Row] : []),
@@ -79,11 +80,13 @@ export default function Listing() {
 
           <Section title="MONTHLY AND DOWN PAYMENT">
             <Rows rows={[
-              [`Down payment · ${Math.round(e.downPct * 100)}%`, money(e.down)],
+              [`Down payment · ${+(e.downPct * 100).toFixed(1)}%`, money(e.down)],
+              ...(e.cmhc ? [['CMHC insurance, added to the mortgage', money(e.cmhc)] as Row] : []),
               [`Mortgage · ${pct(e.rate)}, 25 yr`, money(e.monthly) + '/mo'],
               ['Property tax', money(e.monthlyTax) + '/mo'],
               ...(l.condoFee ? [['Condo fee', money(l.condoFee) + '/mo'] as Row] : []),
             ]} />
+            {e.downRaised && <Text style={{ ...t.note, color: '#A54B00' }}>Your usual down payment is below the minimum for this price, so this uses the minimum, {money(e.down)}.</Text>}
           </Section>
 
           {(l.openHouse || l.offerDate) && <Section title="OPEN HOUSE AND OFFERS"><Rows rows={[['Open house', l.openHouse ?? '—'], ['Offers', l.offerDate ?? '—']]} /></Section>}

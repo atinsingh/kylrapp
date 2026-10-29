@@ -41,6 +41,11 @@ button{cursor:pointer}
 .k-strip-dots span{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55)}.k-strip-dots span.on{background:#fff}
 .k-strip-count,.k-strip-tag{position:absolute;top:10px;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:600;color:#fff;background:rgba(0,0,0,.55)}
 .k-strip-count{right:10px}.k-strip-tag{left:10px}
+.k-pin{background:none;border:0}
+.k-pin span{display:inline-block;transform:translate(-50%,-100%);white-space:nowrap;border-radius:999px;padding:5px 10px;color:#fff;background:var(--brand);font:800 12px ${font.family},${font.fallback};box-shadow:0 4px 10px rgba(0,0,0,.25);cursor:pointer}
+.k-view{display:inline-flex;background:rgba(118,118,128,.12);border-radius:10px;padding:2px}
+.k-view a{padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px;color:var(--text);text-decoration:none;min-height:36px;display:grid;place-items:center}
+.k-view a[aria-current=page]{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.1)}
 `;
 
 export default function RootLayout({ children }: { children: ReactNode }) {

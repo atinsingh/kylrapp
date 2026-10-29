@@ -85,6 +85,17 @@ export const moveProfiles = pgTable('move_profiles', {
   updatedAt: ts('updated_at').notNull().defaultNow(),
 }, t => [primaryKey({ columns: [t.userId, t.plan] })]);
 
+/** "How we estimate": the buyer's own inputs. Every all-in shown to them uses these. */
+export const buyerAssumptions = pgTable('buyer_assumptions', {
+  userId: uuid('user_id').primaryKey().references(() => users.id),
+  rate: numeric('rate', { precision: 6, scale: 4, mode: 'number' }).notNull(),
+  downPct: numeric('down_pct', { precision: 5, scale: 4, mode: 'number' }).notNull(),
+  firstTime: boolean('first_time').notNull(),
+  /** Lawyer's quoted fee before HST and disbursements. */
+  lawyerFee: integer('lawyer_fee').notNull(),
+  updatedAt: ts('updated_at').notNull().defaultNow(),
+});
+
 // ── Authentication ──────────────────────────────────────────────────────────
 /** Opaque bearer sessions. Only a SHA-256 of the token is stored. */
 export const sessions = pgTable('sessions', {

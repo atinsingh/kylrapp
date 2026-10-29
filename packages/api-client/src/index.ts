@@ -15,14 +15,22 @@ export interface ListingCard {
   saved: boolean;
   /** When this user last opened the listing, for the "Viewed" badge. */
   viewedAt: string | null;
+  /** Mortgage + property tax + condo fee. */
+  monthlyTotal: number;
+  landTransfer: number;
+  style: string | null; yearBuilt: number | null; offerDate: string | null;
 }
 
 export interface ListingDetail extends ListingCard {
-  style: string | null; yearBuilt: number | null; lot: string | null; parking: string | null; heating: string | null;
-  annualTax: number | null; condoFee: number | null; coop: number; openHouse: string | null; offerDate: string | null;
+  lot: string | null; parking: string | null; heating: string | null;
+  annualTax: number | null; condoFee: number | null; coop: number; openHouse: string | null;
   daysOnMarket: number | null;
   estimate: {
     asOf: string; downPct: number; price: number; plan: number;
+    /** The buyer's down payment was below the legal minimum here and was raised to it. */
+    downRaised: boolean;
+    /** True when the buyer changed "How we estimate"; false when published defaults apply. */
+    customAssumptions: boolean;
     ltt: { on: number; onR: number; to: number; toR: number; total: number };
     lawyer: number; inspection: number; statusCertificate: number; title: number; adjustments: number;
     commission: number; cashBack: number; down: number; cmhc: number; cmhcPst: number; loan: number; rate: number;
@@ -36,7 +44,11 @@ export interface ListingDetail extends ListingCard {
 export interface SearchQuery {
   city?: string; minPrice?: number; maxPrice?: number; minBeds?: number; type?: 'House' | 'Townhouse' | 'Condo';
   sort?: 'price_asc' | 'price_desc' | 'newest'; saved?: boolean;
+  /** Specific homes, for Compare. */
+  ids?: string;
 }
+
+export interface Assumptions { rate: number; downPct: number; firstTime: boolean; lawyerFee: number }
 /** Session as the client sees it; web never receives the token (the proxy keeps it). */
 export type SignedIn = Omit<SessionResponse, 'session'> & { session: { token?: string; expiresAt: string; mfaRequired: boolean } };
 // WebAuthn JSON is passed through untouched; each platform's WebAuthn library types it.
@@ -110,6 +122,9 @@ export function createClient(opts: ClientOptions) {
     passkeyStepUpVerify: (challengeId: string, response: unknown) => post<{ ok: true }>('/auth/passkey/stepup/verify', { challengeId, response }),
 
     listings: (q: SearchQuery = {}) => get<{ results: ListingCard[]; capped: boolean }>(`/listings${searchParams(q)}`),
+    assumptions: () => get<Assumptions & { custom: boolean }>('/me/assumptions'),
+    setAssumptions: (a: Assumptions) => call<Assumptions & { custom: boolean }>('PUT', '/me/assumptions', a),
+    resetAssumptions: () => del<Assumptions & { custom: boolean }>('/me/assumptions'),
     listing: (id: string) => get<ListingDetail>(`/listings/${encodeURIComponent(id)}`),
     save: (id: string) => call<{ saved: boolean }>('PUT', `/listings/${encodeURIComponent(id)}/save`),
     unsave: (id: string) => del<{ saved: boolean }>(`/listings/${encodeURIComponent(id)}/save`),

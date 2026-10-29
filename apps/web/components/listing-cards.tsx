@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { money } from '@klyr/core';
 import type { ListingCard } from '@klyr/api-client';
+import { CompareToggle } from './compare-controls';
 import { PhotoStrip } from './photo-strip';
 import { SaveButton } from './save-button';
 
@@ -25,7 +26,10 @@ export function ListingCards({ homes }: { homes: ListingCard[] }) {
           </Link>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px 6px 16px', gap: 8 }}>
             <span style={{ fontSize: 12, color: 'var(--muted)' }}>Listing brokerage: {l.listingBrokerage}</span>
-            <SaveButton id={l.id} saved={l.saved} address={l.address} />
+            <span style={{ display: 'flex', flex: 'none' }}>
+              <CompareToggle id={l.id} address={l.address} />
+              <SaveButton id={l.id} saved={l.saved} address={l.address} />
+            </span>
           </div>
         </li>
       ))}

@@ -1,6 +1,6 @@
 import { HST } from './money.js';
 import { landTransferTax, type LandTransferTax } from './tax.js';
-import { cmhcPremium, monthlyPayment } from './mortgage.js';
+import { cmhcPremium, minimumDown, monthlyPayment } from './mortgage.js';
 
 export type PropertyType = 'House' | 'Townhouse' | 'Condo';
 
@@ -51,7 +51,10 @@ export interface BuyerEstimate {
   price: number; plan: number; ltt: LandTransferTax;
   lawyer: number; inspection: number; statusCertificate: number; title: number; adjustments: number;
   commission: number; cashBack: number;
-  down: number; cmhc: number; cmhcPst: number; loan: number; rate: number; monthly: number;
+  down: number; downPct: number;
+  /** True when the buyer's down payment was below the minimum for this price and was raised to it. */
+  downRaised: boolean;
+  cmhc: number; cmhcPst: number; loan: number; rate: number; monthly: number;
   monthlyTax: number; condoFee: number;
   /** Closing costs before cash back. */ costs: number;
   /** The hero number: closing costs minus cash back. */ allIn: number;
@@ -65,13 +68,15 @@ export function buyerEstimate(l: ListingForEstimate, o: BuyerAssumptions = {}): 
   const inspection = condo ? 0 : d.inspection, statusCertificate = condo ? d.statusCertificate : 0;
   const title = d.titleInsurance, adjustments = condo ? d.adjustmentsCondo : d.adjustmentsHouse;
   const commission = price * l.coop, cashBack = Math.round((commission * plan) / 100);
-  const downPct = o.downPct ?? d.downPct, down = Math.round(price * downPct);
+  // A chosen down payment below the legal minimum for this price is raised to the minimum.
+  const wanted = o.downPct ?? d.downPct, minPct = minimumDown(price) / price;
+  const downPct = Math.max(wanted, minPct), down = Math.round(price * downPct);
   const cmhc = cmhcPremium(price, downPct), cmhcPst = Math.round(cmhc * 0.08);
   const loan = price - down + cmhc, rate = o.rate ?? d.rate;
   const costs = ltt.total + lawyer + inspection + statusCertificate + title + adjustments + cmhcPst;
   return {
     price, plan, ltt, lawyer, inspection, statusCertificate, title, adjustments, commission, cashBack,
-    down, cmhc, cmhcPst, loan, rate, monthly: monthlyPayment(loan, rate, d.amortizationYears),
+    down, downPct, downRaised: downPct > wanted, cmhc, cmhcPst, loan, rate, monthly: monthlyPayment(loan, rate, d.amortizationYears),
     monthlyTax: Math.round(l.tax / 12), condoFee: l.fee ?? 0, costs, allIn: costs - cashBack,
   };
 }

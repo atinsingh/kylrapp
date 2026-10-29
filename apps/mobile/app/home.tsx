@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ListingCard, SearchQuery } from '@klyr/api-client';
 import { DEFAULT_ASSUMPTIONS, money } from '@klyr/core';
@@ -9,6 +9,7 @@ import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 import { Card, Chip, ErrorText, sora, t } from '../components/ui';
 import { PhotoStrip } from '../components/photo-strip';
+import { useCompare } from '../lib/compare';
 
 const CITIES = ['Mississauga', 'Toronto', 'Oakville', 'Brampton', 'Burlington'];
 const MAX = [900_000, 1_100_000, 1_300_000, 1_600_000];
@@ -18,11 +19,15 @@ const viewed = (iso: string) => 'Viewed ' + new Date(iso).toLocaleDateString('en
 /** Buyer home: every home with its all-in cost to close as the hero number. */
 export default function Home() {
   const { me } = useAuth();
+  const compare = useCompare();
+  const params = useLocalSearchParams<{ maxPrice?: string }>();
   const [homes, setHomes] = useState<ListingCard[] | null>(null);
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState<number | undefined>();
+  // "Search homes up to $X" from What you can afford.
+  useEffect(() => { if (params.maxPrice) setMaxPrice(Number(params.maxPrice)); }, [params.maxPrice]);
   const [savedOnly, setSavedOnly] = useState(false);
 
   const load = useCallback(async () => {
@@ -59,11 +64,20 @@ export default function Home() {
           <Text style={t.sub}>All-in cost to close after your cash back. Estimate as of {new Date(DEFAULT_ASSUMPTIONS.asOf + 'T12:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })}.</Text>
         </View>
 
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+          {([['What you can afford', '/afford'], ['How we estimate', '/estimate'], ...(compare.ids.length >= 2 ? [[`Compare ${compare.ids.length}`, '/compare']] : [])] as [string, '/afford' | '/estimate' | '/compare'][])
+            .map(([label, href]) => (
+              <Pressable key={href} accessibilityRole="link" onPress={() => router.push(href)} style={{ minHeight: 44, justifyContent: 'center' }}>
+                <Text style={{ ...sora(700), fontSize: 13, color: color.brand }}>{label} ›</Text>
+              </Pressable>
+            ))}
+        </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
           <Chip label={savedOnly ? '♥ Saved' : '♡ Saved'} on={savedOnly} onPress={() => setSavedOnly(!savedOnly)} />
           {CITIES.map(c => <Chip key={c} label={c} on={cities.includes(c)} onPress={() => setCities(x => (x.includes(c) ? x.filter(y => y !== c) : [...x, c]))} />)}
         </ScrollView>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+          {maxPrice && !MAX.includes(maxPrice) ? <Chip label={`Up to ${short(maxPrice)}`} on onPress={() => setMaxPrice(undefined)} /> : null}
           {MAX.map(v => <Chip key={v} label={`Up to ${short(v)}`} on={maxPrice === v} onPress={() => setMaxPrice(maxPrice === v ? undefined : v)} />)}
         </ScrollView>
 
@@ -91,6 +105,10 @@ export default function Home() {
             </Pressable>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingLeft: 14, paddingRight: 6 }}>
               <Text style={{ ...t.note, flex: 1 }}>Listing brokerage: {h.listingBrokerage}</Text>
+              <Pressable accessibilityRole="button" accessibilityState={{ selected: compare.has(h.id) }} accessibilityLabel={`${compare.has(h.id) ? 'Remove' : 'Add'} ${h.address} ${compare.has(h.id) ? 'from' : 'to'} compare`}
+                onPress={() => compare.toggle(h.id)} style={{ minHeight: 44, minWidth: 64, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ ...sora(700), fontSize: 13, color: compare.has(h.id) ? color.brand : color.textSecondary }}>{compare.has(h.id) ? '✓ Compare' : '+ Compare'}</Text>
+              </Pressable>
               <Pressable accessibilityRole="button" accessibilityState={{ selected: h.saved }} accessibilityLabel={`${h.saved ? 'Saved' : 'Save'} ${h.address}`}
                 onPress={() => toggleSave(h)} style={{ minHeight: 44, minWidth: 64, alignItems: 'center', justifyContent: 'center' }}>
                 <Text style={{ ...sora(700), fontSize: 13, color: h.saved ? color.brand : color.textSecondary }}>{h.saved ? '♥ Saved' : '♡ Save'}</Text>

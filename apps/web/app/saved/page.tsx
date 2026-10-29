@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import type { Me } from '@klyr/contracts';
 import type { ListingCard } from '@klyr/api-client';
 import { AppHeader } from '@/components/app-header';
+import { CompareBar } from '@/components/compare-controls';
 import { ListingCards } from '@/components/listing-cards';
 import { BROKERAGE_LINE, LISTING_DATA_LINE } from '@/lib/brand';
 import { api, sessionToken } from '@/lib/session';
@@ -25,6 +26,7 @@ export default async function SavedPage() {
           <Link href="/" className="k-btn" style={{ display: 'grid', placeItems: 'center', textDecoration: 'none', width: 'auto', padding: '0 24px' }}>Search homes</Link>
         </div>
       ) : <ListingCards homes={homes} />}
+      <CompareBar />
       <footer style={{ fontSize: 12, color: 'var(--muted)', marginTop: 32 }}>{BROKERAGE_LINE} · {LISTING_DATA_LINE}</footer>
     </main>
   );

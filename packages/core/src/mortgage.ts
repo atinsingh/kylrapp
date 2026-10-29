@@ -26,3 +26,32 @@ export function affordability(o: AffordInput) {
   const loan = (room * (1 - Math.pow(1 + r, -n))) / r;
   return { max: Math.round((loan + o.down) / 1000) * 1000, loan: Math.round(loan), qualifyingRate: q };
 }
+
+export interface AffordFromIncomeInput {
+  /** Gross household income per year. */ income: number;
+  /** Other monthly debt payments. */ debts: number;
+  downPct: number;
+  rate: number;
+  /** Monthly property tax used in the test; $500 by default, as in App Core. */ monthlyTax?: number;
+}
+
+/**
+ * "What you can afford": the stress-test limit from income, then capped by the down-payment rules
+ * (5% only up to $500K, 10% on the part above, no insured mortgage at $1.5M and up).
+ */
+export function affordFromIncome(o: AffordFromIncomeInput) {
+  const a = affordability({ income: o.income, rate: o.rate, down: 0, tax: o.monthlyTax ?? 500, debts: o.debts });
+  const byIncome = Math.max(0, Math.round(a.loan / (1 - o.downPct) / 5000) * 5000);
+  let byDown = Infinity;
+  if (o.downPct < 0.1) byDown = Math.floor(25_000 / (0.1 - o.downPct) / 5000) * 5000;
+  if (o.downPct < 0.2) byDown = Math.min(byDown, 1_495_000);
+  const maxPrice = Math.min(byIncome, byDown);
+  const down = Math.round(maxPrice * o.downPct), cmhc = cmhcPremium(maxPrice, o.downPct);
+  return {
+    maxPrice, down, minDown: Math.round(minimumDown(maxPrice)), cmhc, cmhcPst: Math.round(cmhc * 0.08),
+    monthly: Math.round(monthlyPayment(maxPrice - down + cmhc, o.rate, 25)),
+    qualifyingRate: a.qualifyingRate,
+    /** True when the down payment, not income, sets the limit. */
+    limitedByDown: byDown < byIncome,
+  };
+}

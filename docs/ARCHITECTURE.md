@@ -129,11 +129,11 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 * `apps/pro`, `apps/admin`: shells listing the role workspaces and admin modules.
 
 **Next, in order:**
-1. Saved searches with alerts (needs email via SES), the phone map (react-native-maps or MapLibre Native), then the deal flow below. Pull a shared component layer (money hero, breakdown row, task row, quote row, rule tag) into `packages/ui`.
-2. Deals: representation agreement gate (Form 300 before the first visit), offers, conditions, timeline, deadline jobs.
-3. Documents + e-sign, then compliance (ID check), then money (deposit, cash back).
-4. Saved searches with alerts (needs email via SES), the phone map, phone passkeys (needs the klyr.ca associated domain) and Sign in with Apple/Google.
-5. Klyr Pro agent workspace; provider quote builders; then the Admin modules in the order the Launch Checklist owners need them.
+1. Klyr Pro agent view: confirm or move requested visits, see each client's agreement and ID status; compliance officer review queue in Admin.
+2. Offers: build an offer (Form 100/101), conditions and their day-by-day timeline, deadline reminders, deposit with trust-account call-back.
+3. Real integrations as vendors are chosen: OREA forms + e-sign, ID verification, S3 file store with Object Lock, SES email.
+4. Saved searches with alerts, the phone map, phone passkeys (needs the klyr.ca associated domain) and Sign in with Apple/Google. Pull a shared component layer into `packages/ui`.
+5. Provider quote builders in Klyr Pro, then the Admin modules in the order the Launch Checklist owners need them.
 
 ## 10. Open decisions
 

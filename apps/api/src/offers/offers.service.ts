@@ -1,10 +1,10 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNull, lt, ne, or, sql } from 'drizzle-orm';
-import { OFFER_RULES, OREA_FORMS, type OfferResultRequest, type OfferTerms, type ReviewOfferRequest, type SignBackResponse } from '@klyr/contracts';
+import { OFFER_RULES, OREA_FORMS, type BuyerConsentRequest, type OfferResultRequest, type OfferTerms, type ReviewOfferRequest, type SignBackResponse } from '@klyr/contracts';
 import { bankingDayDeadline, buyerEstimate, nextBankingDate, type PropertyType, TORONTO, torontoToday, torontoWhen } from '@klyr/core';
 import { config } from '../config.js';
 import { DB, type Db } from '../db/db.module.js';
-import { auditLog, conditions, dealParties, deals, deposits, listingMedia, listings, offers, users } from '../db/schema.js';
+import { auditLog, conditions, dealParties, deals, deposits, listingMedia, listings, offers, representationConsents, sellProfiles, users } from '../db/schema.js';
 import { DealsService } from '../deals/deals.service.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 import { AssumptionsService, engineOptions } from '../listings/assumptions.service.js';
@@ -19,7 +19,7 @@ const longDate = (ymd: string) => new Date(ymd + 'T12:00:00Z').toLocaleDateStrin
 const ymdPlus = (days: number) => { const [y, m, d] = torontoToday(); return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10); };
 
 type Terms = Omit<OfferTerms, 'listingId' | 'price' | 'deposit' | 'irrevocableAt'>;
-type OfferRow = typeof offers.$inferSelect;
+export type OfferRow = typeof offers.$inferSelect;
 export type Home = { id: string; address: string; city: string; price: number; type: PropertyType; listingBrokerage: string; coop: number; annualTax: number; condoFee: number | null; active: boolean; source: string };
 
 const CONDITION_TEXT: Record<'financing' | 'inspection' | 'status_certificate', (days: number) => string> = {
@@ -68,13 +68,14 @@ export class OffersService {
       const [draft] = await this.db.select().from(offers)
         .where(and(eq(offers.dealId, deal.id), eq(offers.listingId, listingId), inArray(offers.status, ['draft', 'returned']), ne(offers.kind, 'sign_back')))
         .orderBy(desc(offers.updatedAt)).limit(1);
-      if (draft) return { draft: (await this.present(userId, [draft]))[0]!, defaults: null };
+      if (draft) return { draft: (await this.present(userId, [draft]))[0]!, defaults: null, consent: await this.consentFor(userId, home) };
     }
     const condo = home.type === 'Condo';
     const irrevocable = new Date(Date.now() + DAY); // tomorrow, 11:59 pm Toronto
     const [y, m, d] = torontoToday(irrevocable);
     return {
       draft: null,
+      consent: await this.consentFor(userId, home),
       defaults: {
         listingId, price: home.price, deposit: Math.round((home.price * OFFER_RULES.defaultDepositPct) / 100 / 1000) * 1000,
         financingDays: OFFER_RULES.defaultConditionDays, inspectionDays: condo ? null : OFFER_RULES.defaultConditionDays,
@@ -92,8 +93,7 @@ export class OffersService {
     const deal = (await this.deals.buyDeal(userId))!;
     const home = await this.home(t.listingId);
     if (!home.active) throw new ConflictException({ code: 'not_available', message: 'This home is no longer for sale.' });
-    // Klyr represents this seller too: both sides consent in writing (Form 326) before any offer.
-    if (home.source === 'klyr_exclusive') throw new ConflictException({ code: 'multiple_representation', message: 'Klyr Realty represents the seller of this home. Before an offer, you and the seller both consent in writing to multiple representation (Form 326). Ask your agent.' });
+    await this.assertConsent(userId, home);
     const terms = this.check(t, home);
     const live = await this.db.select({ id: offers.id }).from(offers)
       .where(and(eq(offers.dealId, deal.id), eq(offers.listingId, t.listingId), inArray(offers.status, [...LIVE, 'accepted'])));
@@ -116,6 +116,7 @@ export class OffersService {
     this.deals.assertTypedName(typedName, buyer!.legalName ?? '');
     const home = await this.home(row.listingId);
     if (!home.active) throw new ConflictException({ code: 'not_available', message: 'This home is no longer for sale.' });
+    await this.assertConsent(userId, home);
     const terms = this.check({ ...(row.terms as Terms), listingId: row.listingId, price: row.price, deposit: row.deposit, irrevocableAt: row.irrevocableAt.toISOString() }, home);
 
     const form = home.type === 'Condo' ? '101' : '100';
@@ -129,6 +130,35 @@ export class OffersService {
     await this.notify.toUser(deal.agentId, 'agent', { title: 'Offer to review', body: `${home.address} · open until ${when(row.irrevocableAt)}`, data: { screen: 'offers', offerId: id } });
     if (agent) await this.mail.send({ to: agent.email, subject: `Offer to review · ${home.address}`, text: `${buyer!.legalName} signed an offer of ${money(row.price)} on ${home.address}, ${home.city}.\nIrrevocable until ${when(row.irrevocableAt)}.\n\nReview it in Klyr Pro, then register it with ${home.listingBrokerage}.` });
     return this.get(userId, id);
+  }
+
+  /**
+   * Multiple representation (Form 326): Klyr represents this seller, so the buyer consents in writing first.
+   * The seller is asked to consent too; offers open once both have signed.
+   */
+  async consent(userId: string, req: BuyerConsentRequest, client: { ip?: string; userAgent?: string }) {
+    const status = await this.deals.buying(userId);
+    if (!status.canBookVisits) throw new ConflictException({ code: 'not_ready', message: 'Sign your buyer agreement and verify your ID first.' });
+    const home = await this.home(req.listingId);
+    if (home.source !== 'klyr_exclusive') throw new ConflictException({ code: 'not_needed', message: 'Klyr doesn’t represent this seller, so no consent is needed.' });
+    const existing = await this.consentFor(userId, home);
+    if (existing?.buyerSignedAt) throw new ConflictException({ code: 'already_signed', message: 'You’ve already signed this consent.' });
+    const deal = (await this.deals.buyDeal(userId))!;
+    const [buyer] = await this.db.select({ legalName: users.legalName }).from(users).where(eq(users.id, userId));
+    this.deals.assertTypedName(req.typedName, buyer!.legalName ?? '');
+    const record = consentRecord('buyer', buyer!.legalName ?? '', home);
+    const signed = await this.deals.signRecord({ dealId: deal.id, userId, form: '326', title: `${record.title} · ${home.address}`, record, typedName: req.typedName, client });
+    const at = new Date();
+    await this.db.insert(representationConsents).values({ listingId: home.id, buyerId: userId, buyerDocumentId: signed.documentId, buyerSignedAt: at })
+      .onConflictDoUpdate({ target: [representationConsents.listingId, representationConsents.buyerId], set: { buyerDocumentId: signed.documentId, buyerSignedAt: at } });
+    await this.db.insert(auditLog).values({ actorId: userId, action: 'consent_326_buyer', entity: 'listing', entityId: home.id, data: { documentId: signed.documentId } });
+    const seller = await sellerOf(this.db, home.id);
+    if (seller) {
+      await this.mail.send({ to: seller.email, subject: `A Klyr buyer wants to make an offer · ${home.address}`, text: `A buyer who is also a Klyr Realty client wants to make an offer on ${home.address}.\nBefore they can, you both consent in writing to Klyr representing both of you (Form 326). Neither side’s agent can share the other’s confidential information, such as the most they would pay or the least they would take.\n\nReview and sign in Klyr under Sell.\n\nKlyr Realty Inc., Brokerage` });
+      await this.notify.toUser(seller.id, 'consumer', { title: 'Consent needed for an offer', body: home.address, data: { screen: 'sell' } });
+      await this.notify.toUser(seller.agentId, 'agent', { title: 'Form 326 needed', body: home.address, data: { screen: 'deals' } });
+    }
+    return this.consentFor(userId, home);
   }
 
   /** Withdraw before the seller decides. */
@@ -211,6 +241,11 @@ export class OffersService {
       await this.db.insert(auditLog).values({ actorId: agentId, action: 'offer_register', entity: 'offer', entityId: id, data: { note: r.note ?? null } });
       await this.mail.send({ to: buyer.email, subject: `Your offer is with the seller · ${home.address}`, text: `Your offer of ${money(row.price)} on ${home.address} was registered with ${home.listingBrokerage}, which confirmed receipt (Form 801).\nIt is open until ${when(row.irrevocableAt)}.${r.note ? `\n\nYour agent says: ${r.note}` : ''}\n\nKlyr Realty Inc., Brokerage` });
       await this.notify.toUser(buyer.id, 'consumer', { title: 'Your offer is with the seller', body: home.address, data: { screen: 'offers' } });
+      const seller = home.source === 'klyr_exclusive' ? await sellerOf(this.db, home.id) : null;
+      if (seller) {
+        await this.mail.send({ to: seller.email, subject: `New offer · ${home.address}`, text: `You have an offer of ${money(row.price)} on ${home.address}, open until ${when(row.irrevocableAt)}.\nSee what you’d keep and answer it in Klyr under Sell.\n\nKlyr Realty Inc., Brokerage` });
+        await this.notify.toUser(seller.id, 'consumer', { title: 'You have an offer', body: `${home.address} · open until ${when(row.irrevocableAt)}`, data: { screen: 'sell' } });
+      }
     }
     return { id, status: r.action === 'return' ? 'returned' : 'registered' };
   }
@@ -220,13 +255,20 @@ export class OffersService {
     await this.expireDue();
     const { row, buyer, home } = await this.agentOffer(agentId, id);
     if (row.status !== 'registered') throw new ConflictException({ code: 'not_registered', message: 'Register the offer with the listing brokerage first.' });
+    if (home.source === 'klyr_exclusive') throw new ConflictException({ code: 'seller_decides', message: 'This is a Klyr listing: the seller answers in Klyr.' });
+    return this.decide(row, buyer, home, r, agentId);
+  }
+
+  /** Accepted, signed back or not accepted: the seller's answer, recorded by the buyer's agent or by a Klyr seller. */
+  async decide(row: OfferRow, buyer: { id: string; email: string }, home: Home, r: OfferResultRequest, actorId: string) {
+    const id = row.id;
     if (r.result === 'accepted') {
-      await this.accept(row, agentId);
+      await this.accept(row, actorId);
       return { id, status: 'accepted' };
     }
     if (r.result === 'rejected') {
       await this.db.update(offers).set({ status: 'rejected', decidedAt: new Date(), agentNote: r.note ?? row.agentNote, updatedAt: new Date() }).where(eq(offers.id, id));
-      await this.db.insert(auditLog).values({ actorId: agentId, action: 'offer_rejected', entity: 'offer', entityId: id, data: { note: r.note ?? null } });
+      await this.db.insert(auditLog).values({ actorId, action: 'offer_rejected', entity: 'offer', entityId: id, data: { note: r.note ?? null } });
       await this.mail.send({ to: buyer.email, subject: `The seller didn’t accept your offer · ${home.address}`, text: `The seller of ${home.address} didn’t accept your offer of ${money(row.price)}. Your deposit was never cashed.${r.note ? `\n\nYour agent says: ${r.note}` : ''}\n\nYour offer details are saved, so your next offer starts from them.\n\nKlyr Realty Inc., Brokerage` });
       await this.notify.toUser(buyer.id, 'consumer', { title: 'The seller didn’t accept your offer', body: home.address, data: { screen: 'offers' } });
       return { id, status: 'rejected' };
@@ -240,7 +282,7 @@ export class OffersService {
       irrevocableAt: until, status: 'signed_back', terms: row.terms, agentNote: r.note ?? null,
     }).returning();
     await this.db.update(offers).set({ status: 'signed_back', decidedAt: new Date(), updatedAt: new Date() }).where(eq(offers.id, id));
-    await this.db.insert(auditLog).values({ actorId: agentId, action: 'offer_signed_back', entity: 'offer', entityId: id, data: { signBackId: child!.id, price: r.price, irrevocableAt: r.irrevocableAt } });
+    await this.db.insert(auditLog).values({ actorId, action: 'offer_signed_back', entity: 'offer', entityId: id, data: { signBackId: child!.id, price: r.price, irrevocableAt: r.irrevocableAt } });
     await this.mail.send({ to: buyer.email, subject: `The seller signed back · ${home.address}`, text: `The seller of ${home.address} signed your offer back at ${money(r.price)} (you offered ${money(row.price)}). Other terms are unchanged.\nIt is open until ${when(until)}.${r.note ? `\n\nYour agent says: ${r.note}` : ''}\n\nAccept or decline in Klyr.\n\nKlyr Realty Inc., Brokerage` });
     await this.notify.toUser(buyer.id, 'consumer', { title: 'The seller signed back', body: `${home.address} · reply before ${when(until)}`, data: { screen: 'offers' } });
     return { id, status: 'signed_back', signBackId: child!.id };
@@ -276,6 +318,11 @@ export class OffersService {
     const dueAt = new Date(at.getTime() + OFFER_RULES.depositDueHours * HOUR);
     if (row.deposit > 0) await this.db.insert(deposits).values({ dealId: row.dealId, amount: row.deposit, holder: home.listingBrokerage, dueAt });
     await this.db.update(deals).set({ stage: conds.length ? 'conditional' : 'firm', listingId: row.listingId, closingDate: terms.closingDate }).where(eq(deals.id, row.dealId));
+    const seller = home.source === 'klyr_exclusive' ? await sellerOf(this.db, home.id) : null;
+    if (seller) {
+      await this.db.update(deals).set({ stage: conds.length ? 'conditional' : 'firm', closingDate: terms.closingDate }).where(eq(deals.id, seller.dealId));
+      await this.notify.toUser(seller.id, 'consumer', { title: conds.length ? 'You have a conditional sale' : 'You sold your home', body: home.address, data: { screen: 'sell' } });
+    }
     await this.db.insert(auditLog).values({ actorId, action: 'offer_accepted', entity: 'offer', entityId: row.id, data: { price: row.price, conditions: conds, depositDueAt: dueAt.toISOString() } });
 
     const [client] = await this.db.select({ id: users.id, email: users.email }).from(dealParties).innerJoin(users, eq(users.id, dealParties.userId)).where(and(eq(dealParties.dealId, row.dealId), eq(dealParties.role, 'client')));
@@ -340,6 +387,23 @@ export class OffersService {
 
   private home(listingId: string) { return loadHome(this.db, listingId); }
 
+  /** Form 326 status for a Klyr listing; null when Klyr doesn't represent the seller. */
+  private async consentFor(userId: string, home: Home) {
+    if (home.source !== 'klyr_exclusive') return null;
+    const [c] = await this.db.select().from(representationConsents).where(and(eq(representationConsents.listingId, home.id), eq(representationConsents.buyerId, userId)));
+    return { buyerSignedAt: c?.buyerSignedAt?.toISOString() ?? null, sellerSignedAt: c?.sellerSignedAt?.toISOString() ?? null };
+  }
+  private async assertConsent(userId: string, home: Home) {
+    const c = await this.consentFor(userId, home);
+    if (!c || (c.buyerSignedAt && c.sellerSignedAt)) return;
+    throw new ConflictException({
+      code: 'multiple_representation',
+      message: c.buyerSignedAt
+        ? 'Waiting for the seller to consent to multiple representation (Form 326). You can make your offer once they sign.'
+        : 'Klyr Realty represents the seller of this home. Before an offer, you and the seller both consent in writing to multiple representation (Form 326).',
+    });
+  }
+
   private async ownOffer(userId: string, id: string) {
     const deal = await this.deals.buyDeal(userId);
     if (!deal) throw new NotFoundException();
@@ -400,6 +464,31 @@ function torontoOffset(at: Date) {
 }
 
 /** A listing as offers need it: address, asking price, type, listing brokerage and the inputs for the all-in. */
+/** The Klyr seller of a published listing, with their sell deal and agent. */
+export async function sellerOf(db: Db, listingId: string) {
+  const [r] = await db.select({ id: users.id, email: users.email, name: users.legalName, dealId: deals.id, agentId: deals.agentId }).from(sellProfiles)
+    .innerJoin(deals, eq(deals.id, sellProfiles.dealId))
+    .innerJoin(dealParties, and(eq(dealParties.dealId, deals.id), eq(dealParties.role, 'client')))
+    .innerJoin(users, eq(users.id, dealParties.userId))
+    .where(eq(sellProfiles.listingId, listingId)).limit(1);
+  return r ?? null;
+}
+
+/** Plain-language summary of OREA Form 326, for either side. */
+export function consentRecord(side: 'buyer' | 'seller', name: string, home: Pick<Home, 'address' | 'city'>) {
+  return {
+    form: '326', title: 'Consent to Multiple Representation', version: '2026-10-29', side, name, brokerage: 'Klyr Realty Inc., Brokerage',
+    property: `${home.address}, ${home.city}, Ontario`,
+    clauses: [
+      ['What it means', 'Klyr Realty represents both the buyer and the seller of this home. Each side has its own salesperson at Klyr.'],
+      ['What stays private', 'Klyr will not tell the seller the most the buyer would pay, or tell the buyer the least the seller would take, or share either side’s reasons, without written permission.'],
+      ['What Klyr still does', 'Treats both sides fairly, shares facts that affect the home’s value or condition, and helps each side with offers and paperwork.'],
+      ['Your choice', 'You don’t have to consent. If either side says no, this buyer can’t offer through Klyr on this home.'],
+    ] as [string, string][],
+    note: 'Klyr’s plain-language summary of OREA Form 326. The standard OREA terms apply in full.',
+  };
+}
+
 export async function loadHome(db: Db, listingId: string): Promise<Home> {
   const [h] = await db.select({
     id: listings.id, address: ADDRESS, city: listings.city, price: listings.price, type: listings.propertyType, listingBrokerage: listings.listingBrokerage,

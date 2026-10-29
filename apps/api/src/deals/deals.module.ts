@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Inject, Module, Param, ParseUUIDPipe, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { BookShowingRequest, SignAgreementRequest } from '@klyr/contracts';
+import { BookShowingRequest, VisitFeedbackRequest, SignAgreementRequest } from '@klyr/contracts';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { Auth, AuthGuard, StepUp, type AuthContext } from '../identity/auth.guard.js';
 import { DealsService } from './deals.service.js';
@@ -45,6 +45,11 @@ class DealsController {
   @Post('showings') @HttpCode(201)
   book(@Auth() a: AuthContext, @Body(new ZodPipe(BookShowingRequest)) body: BookShowingRequest) {
     return this.deals.bookShowing(a.userId, body);
+  }
+
+  @Post('showings/:id/feedback') @HttpCode(200)
+  feedback(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(VisitFeedbackRequest)) body: VisitFeedbackRequest) {
+    return this.deals.visitFeedback(a.userId, id, body);
   }
 
   @Delete('showings/:id')

@@ -1,12 +1,13 @@
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, inArray } from 'drizzle-orm';
-import { SELL_TASKS, type PublishListingRequest, type SellPlanRequest, type SellStartRequest, type SellTaskRequest } from '@klyr/contracts';
+import { and, asc, desc, eq, inArray, isNotNull, ne } from 'drizzle-orm';
+import { SELL_TASKS, type PublishListingRequest, type SellerOfferDecision, type VisitFeedbackRequest, type SellPlanRequest, type SellStartRequest, type SellTaskRequest } from '@klyr/contracts';
 import { sellerNet, SELLER_FLAT_FEE, SELLER_PERCENT_FEE, torontoToday } from '@klyr/core';
 import { DB, type Db } from '../db/db.module.js';
-import { agents, auditLog, dealParties, deals, dealTasks, documents, listingMedia, listings, organizations, sellProfiles, users } from '../db/schema.js';
+import { agents, auditLog, dealParties, deals, dealTasks, documents, listingMedia, listings, offers, organizations, representationConsents, sellProfiles, showings, users } from '../db/schema.js';
 import { DealsService } from '../deals/deals.service.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 import { NotifyService } from '../notify/notify.service.js';
+import { consentRecord, loadHome, OffersService } from '../offers/offers.service.js';
 
 const SIGN = 'Klyr Realty Inc., Brokerage';
 /** Form 200 summary terms. */
@@ -16,6 +17,7 @@ const ymd = (d: Date) => d.toISOString().slice(0, 10);
 type Property = Omit<SellStartRequest, 'listPrice' | 'mortgageBalance'>;
 type Profile = typeof sellProfiles.$inferSelect;
 const OPEN = ['preparing', 'listed', 'offer', 'conditional', 'firm', 'closing'] as const;
+
 
 /**
  * Selling with Klyr Realty: the seller's net, plan and co-op (their decision), the listing agreement
@@ -28,6 +30,7 @@ export class SellingService {
     @Inject(DealsService) private readonly deals: DealsService,
     @Inject(NotifyService) private readonly notify: NotifyService,
     @Inject(MAILER) private readonly mail: Mailer,
+    @Inject(OffersService) private readonly offers: OffersService,
   ) {}
 
   async start(userId: string, req: SellStartRequest) {
@@ -77,6 +80,61 @@ export class SellingService {
     if (deal.stage !== 'preparing') throw new ConflictException({ code: 'already_listed', message: 'Your home is already listed.' });
     await this.saveTask(deal.id, userId, req);
     if (req.key === 'payout') await this.db.update(sellProfiles).set({ mortgageBalance: req.balance }).where(eq(sellProfiles.dealId, deal.id));
+    return this.present(deal.id);
+  }
+
+  /** The seller's side of Form 326 for one Klyr buyer who asked to make an offer. */
+  async signConsent(userId: string, consentId: string, typedName: string, client: { ip?: string; userAgent?: string }) {
+    const deal = await this.requireDeal(userId);
+    const p = await this.profile(deal.id);
+    const [c] = p.listingId ? await this.db.select().from(representationConsents).where(and(eq(representationConsents.id, consentId), eq(representationConsents.listingId, p.listingId))) : [];
+    if (!c) throw new NotFoundException();
+    if (c.sellerSignedAt) throw new ConflictException({ code: 'already_signed', message: 'You’ve already signed this consent.' });
+    const [u] = await this.db.select({ legalName: users.legalName }).from(users).where(eq(users.id, userId));
+    this.deals.assertTypedName(typedName, u!.legalName ?? '');
+    const prop = p.property as Property;
+    const record = consentRecord('seller', u!.legalName ?? '', prop);
+    const signed = await this.deals.signRecord({ dealId: deal.id, userId, form: '326', title: `${record.title} · ${prop.address}`, record, typedName, client });
+    await this.db.update(representationConsents).set({ sellerDocumentId: signed.documentId, sellerSignedAt: new Date() }).where(eq(representationConsents.id, c.id));
+    await this.db.insert(auditLog).values({ actorId: userId, action: 'consent_326_seller', entity: 'listing', entityId: p.listingId!, data: { consentId: c.id, documentId: signed.documentId } });
+    const [buyer] = await this.db.select({ email: users.email }).from(users).where(eq(users.id, c.buyerId));
+    if (buyer && c.buyerSignedAt) {
+      await this.mail.send({ to: buyer.email, subject: `You can make your offer · ${prop.address}`, text: `The seller of ${prop.address} consented to multiple representation (Form 326). You can make your offer in Klyr now.\n\n${SIGN}` });
+      await this.notify.toUser(c.buyerId, 'consumer', { title: 'You can make your offer', body: prop.address, data: { screen: 'offers' } });
+    }
+    return this.present(deal.id);
+  }
+
+  /** The seller answers an offer on their Klyr listing. Accepting and signing back are signatures. */
+  async decideOffer(userId: string, offerId: string, req: SellerOfferDecision, client: { ip?: string; userAgent?: string }) {
+    const deal = await this.requireDeal(userId);
+    const p = await this.profile(deal.id);
+    const [row] = p.listingId ? await this.db.select().from(offers).where(and(eq(offers.id, offerId), eq(offers.listingId, p.listingId), ne(offers.kind, 'sign_back'))) : [];
+    if (!row) throw new NotFoundException();
+    if (row.status !== 'registered' || row.irrevocableAt.getTime() <= Date.now()) throw new ConflictException({ code: 'not_open', message: 'This offer is no longer open.' });
+    if (req.result === 'accepted' && (await this.db.select({ id: offers.id }).from(offers).where(and(eq(offers.listingId, p.listingId!), eq(offers.status, 'accepted')))).length) {
+      throw new ConflictException({ code: 'already_sold', message: 'You’ve already accepted an offer.' });
+    }
+    const buyer = await this.client(row.dealId);
+    const home = await loadHome(this.db, p.listingId!);
+    if (req.result !== 'rejected') {
+      const [u] = await this.db.select({ legalName: users.legalName }).from(users).where(eq(users.id, userId));
+      this.deals.assertTypedName(req.typedName, u!.legalName ?? '');
+      const form = home.type === 'Condo' ? '101' : '100';
+      const price = req.result === 'accepted' ? row.price : req.price;
+      const record = {
+        form, title: req.result === 'accepted' ? 'Seller’s acceptance' : 'Seller’s sign-back', version: FORM_200.version, seller: u!.legalName ?? '',
+        property: `${home.address}, ${home.city}, Ontario`,
+        clauses: [
+          ['Price', `${money(price)}${req.result === 'signed_back' ? ` (offered ${money(row.price)}); open until ${req.irrevocableAt}` : ''}.`],
+          ['Other terms', 'As in the buyer’s signed offer: deposit, conditions, closing date and inclusions.'],
+        ] as [string, string][],
+        note: 'Klyr’s plain-language summary. The standard OREA terms apply in full.',
+      };
+      await this.deals.signRecord({ dealId: deal.id, userId, form, title: `${record.title} · ${home.address}`, record, typedName: req.typedName, client });
+    }
+    await this.offers.decide(row, buyer!, home, req.result === 'signed_back' ? { result: 'signed_back', price: req.price, irrevocableAt: req.irrevocableAt } : { result: req.result }, userId);
+    await this.notify.toUser(deal.agentId, 'agent', { title: req.result === 'accepted' ? 'Your seller accepted an offer' : req.result === 'signed_back' ? 'Your seller signed back' : 'Your seller declined an offer', body: home.address, data: { screen: 'deals' } });
     return this.present(deal.id);
   }
 
@@ -137,6 +195,7 @@ export class SellingService {
     const doc = await this.agreement(dealId);
     const tasks = await this.db.select().from(dealTasks).where(eq(dealTasks.dealId, dealId));
     const [a] = await this.db.select({ name: agents.registeredName, title: agents.title }).from(agents).where(eq(agents.userId, deal!.agentId));
+    const market = p.listingId ? await this.market(p.listingId, (price: number) => sellerNet({ price, plan: p.plan, coop, mortgageBalance: p.mortgageBalance }).net) : { visits: [], consents: [], offers: [], sale: null };
     return {
       dealId, stage: deal!.stage, property: p.property as Property, plan: p.plan, coop, listPrice: p.listPrice, mortgageBalance: p.mortgageBalance,
       net: net(p.plan), nets: { flat: net('flat').net, percent: net('percent').net },
@@ -145,6 +204,41 @@ export class SellingService {
       tasks: SELL_TASKS.map(key => { const t = tasks.find(x => x.key === key); return { key, doneAt: t?.doneAt.toISOString() ?? null, details: (t?.details ?? {}) as Record<string, string> }; }),
       listingId: p.listingId, publishedAt: p.publishedAt?.toISOString() ?? null,
       agent: a ?? null,
+      ...market,
+    };
+  }
+
+  /** On the market: visits with anonymous feedback, Form 326 requests, offers with the net at each price, and the sale. */
+  private async market(listingId: string, net: (price: number) => number) {
+    const visits = await this.db.select({ id: showings.id, at: showings.at, status: showings.status, feedback: showings.feedback }).from(showings)
+      .where(and(eq(showings.listingId, listingId), inArray(showings.status, ['requested', 'confirmed', 'completed']))).orderBy(asc(showings.at));
+    const consents = await this.db.select().from(representationConsents).where(eq(representationConsents.listingId, listingId)).orderBy(asc(representationConsents.createdAt));
+    const rows = await this.db.select().from(offers).where(and(eq(offers.listingId, listingId), isNotNull(offers.registeredAt))).orderBy(desc(offers.registeredAt));
+    const kids = await this.db.select().from(offers).where(and(eq(offers.listingId, listingId), eq(offers.kind, 'sign_back')));
+    const now = Date.now();
+    const list = rows.filter(r => r.kind !== 'sign_back').map(r => {
+      const t = r.terms as { closingDate: string; financingDays: number | null; inspectionDays: number | null; statusCertificateDays: number | null; inclusions: string };
+      const sb = kids.find(k => k.parentId === r.id);
+      const status = r.status === 'registered' && r.irrevocableAt.getTime() <= now ? 'expired' : r.status;
+      return {
+        id: r.id, status, price: r.price, deposit: r.deposit, irrevocableAt: r.irrevocableAt.toISOString(), registeredAt: r.registeredAt!.toISOString(),
+        closingDate: t.closingDate, inclusions: t.inclusions,
+        conditions: ([['Financing', t.financingDays], ['Inspection', t.inspectionDays], ['Status certificate', t.statusCertificateDays]] as [string, number | null][])
+          .filter(([, d]) => d).map(([k, d]) => `${k}, ${d} banking days`),
+        net: net(r.price),
+        signBack: sb ? { price: sb.price, status: sb.status, irrevocableAt: sb.irrevocableAt.toISOString(), net: net(sb.price) } : null,
+      };
+    });
+    const won = rows.find(r => r.status === 'accepted') ?? kids.find(k => k.status === 'accepted');
+    let sale = null;
+    if (won) {
+      const [d] = await this.db.select({ stage: deals.stage, closingDate: deals.closingDate, closedAt: deals.closedAt }).from(deals).where(eq(deals.id, won.dealId));
+      sale = { price: won.price, net: net(won.price), stage: d!.stage, closingDate: d!.closingDate, closedAt: d!.closedAt?.toISOString() ?? null, acceptedAt: won.decidedAt?.toISOString() ?? null };
+    }
+    return {
+      visits: visits.map(v => ({ id: v.id, at: v.at.toISOString(), status: v.status, feedback: v.feedback as VisitFeedbackRequest | null })),
+      consents: consents.map((c, i) => ({ id: c.id, buyer: `Buyer ${i + 1}`, buyerSignedAt: c.buyerSignedAt?.toISOString() ?? null, sellerSignedAt: c.sellerSignedAt?.toISOString() ?? null })),
+      offers: list, sale,
     };
   }
 

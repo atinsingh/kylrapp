@@ -62,7 +62,11 @@ export interface DocumentSummary { id: string; title: string; oreaForm: string |
 export interface Showing {
   id: string; at: string; status: 'requested' | 'confirmed' | 'declined' | 'cancelled' | 'completed'; note: string | null; agentNote: string | null;
   listingId: string; address: string; city: string; listingBrokerage: string; photo: { url: string; alt: string } | null;
+  feedback: VisitFeedback | null; feedbackAt: string | null;
 }
+export interface VisitFeedback { interest: 'yes' | 'maybe' | 'no'; price: 'low' | 'fair' | 'high'; comment?: string }
+/** Form 326 status for a Klyr listing; null when Klyr doesn't represent the seller. */
+export interface Consent { buyerSignedAt: string | null; sellerSignedAt: string | null }
 export interface IdCheckAnswers {
   occupation: string; sourceOfFunds: ('savings' | 'sale_of_property' | 'gift' | 'investments' | 'employment' | 'other')[];
   actingForThirdParty: boolean; politicallyExposed: boolean; buyingAs: 'self' | 'company'; vendorRef: string;
@@ -177,7 +181,19 @@ export interface Selling {
   agreement: { documentId: string; signedAt: string } | null;
   tasks: { key: SellTaskKey; doneAt: string | null; details: Record<string, string> }[];
   listingId: string | null; publishedAt: string | null; agent: { name: string; title: string } | null;
+  visits: { id: string; at: string; status: 'requested' | 'confirmed' | 'completed'; feedback: VisitFeedback | null }[];
+  consents: ({ id: string; buyer: string } & Consent)[];
+  offers: SellerOffer[];
+  sale: { price: number; net: number; stage: string; closingDate: string | null; closedAt: string | null; acceptedAt: string | null } | null;
 }
+export interface SellerOffer {
+  id: string; status: OfferStatus; price: number; deposit: number; irrevocableAt: string; registeredAt: string; closingDate: string; inclusions: string;
+  conditions: string[]; net: number; signBack: { price: number; status: OfferStatus; irrevocableAt: string; net: number } | null;
+}
+export type SellerDecision =
+  | { result: 'accepted'; typedName: string; readConfirmed: true }
+  | { result: 'signed_back'; price: number; irrevocableAt: string; typedName: string; readConfirmed: true }
+  | { result: 'rejected' };
 export interface ProListing extends Selling { clientName: string | null; clientEmail: string }
 
 export interface Assumptions { rate: number; downPct: number; firstTime: boolean; lawyerFee: number }
@@ -269,11 +285,14 @@ export function createClient(opts: ClientOptions) {
     showings: () => get<Showing[]>('/showings'),
     bookShowing: (listingId: string, at: string, note?: string) => post<Showing>('/showings', { listingId, at, note }),
     cancelShowing: (id: string) => del<{ ok: true }>(`/showings/${encodeURIComponent(id)}`),
+    visitFeedback: (id: string, f: VisitFeedback) => post<{ ok: true }>(`/showings/${encodeURIComponent(id)}/feedback`, f),
+    /** Form 326, the buyer's side, for a Klyr listing. */
+    consentToOffer: (listingId: string, typedName: string) => post<Consent>('/offers/consent', { listingId, typedName, readConfirmed: true }),
     listing: (id: string) => get<ListingDetail>(`/listings/${encodeURIComponent(id)}`),
     save: (id: string) => call<{ saved: boolean }>('PUT', `/listings/${encodeURIComponent(id)}/save`),
     unsave: (id: string) => del<{ saved: boolean }>(`/listings/${encodeURIComponent(id)}/save`),
 
-    offerStart: (listingId: string) => get<{ draft: Offer | null; defaults: OfferTermsInput | null }>(`/offers/start?listingId=${encodeURIComponent(listingId)}`),
+    offerStart: (listingId: string) => get<{ draft: Offer | null; defaults: OfferTermsInput | null; consent: Consent | null }>(`/offers/start?listingId=${encodeURIComponent(listingId)}`),
     saveOffer: (t: OfferTermsInput) => call<Offer>('PUT', '/offers/draft', t),
     signOffer: (id: string, typedName: string) => post<Offer>(`/offers/${encodeURIComponent(id)}/sign`, { typedName, readConfirmed: true }),
     offers: () => get<Offer[]>('/offers'),
@@ -292,6 +311,8 @@ export function createClient(opts: ClientOptions) {
     setSellPlan: (p: { plan: Selling['plan']; coop: number; listPrice: number; mortgageBalance: number }) => call<Selling>('PUT', '/selling/plan', p),
     signListing: (typedName: string) => post<Selling>('/selling/agreement/sign', { typedName, readConfirmed: true }),
     sellTask: (t: SellTaskInput) => post<Selling>('/selling/tasks', t),
+    signSellerConsent: (id: string, typedName: string) => post<Selling>(`/selling/consents/${encodeURIComponent(id)}/sign`, { typedName, readConfirmed: true }),
+    decideOffer: (id: string, d: SellerDecision) => post<Selling>(`/selling/offers/${encodeURIComponent(id)}`, d),
     searches: () => get<SavedSearch[]>('/me/searches'),
     saveSearch: (name: string, filters: SearchFilters, alert: SavedSearch['alert'] = 'daily') => post<{ id: string; matches: number }>('/me/searches', { name, filters, alert }),
     setSearchAlert: (id: string, alert: SavedSearch['alert']) => call<{ id: string; alert: string }>('PATCH', `/me/searches/${encodeURIComponent(id)}`, { alert }),

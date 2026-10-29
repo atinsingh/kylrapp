@@ -5,6 +5,7 @@ import type { Showing } from '@klyr/api-client';
 import { AppHeader } from '@/components/app-header';
 import { api, sessionToken } from '@/lib/session';
 import { CancelVisit } from './cancel-visit';
+import { VisitFeedbackForm } from './visit-feedback';
 
 export const metadata = { title: 'Your visits · Klyr' };
 
@@ -52,6 +53,7 @@ export default async function VisitsPage({ searchParams }: { searchParams: Promi
                     <div className="k-note">{when(v.at)}{v.note ? ` · “${v.note}”` : ''}</div>
                     {v.agentNote && <div className="k-note" style={{ color: 'var(--text)' }}>Your agent: “{v.agentNote}”</div>}
                     <span style={{ display: 'inline-block', marginTop: 4, borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 600, background: bg, color: fg }}>{text}</span>
+                    {v.status === 'completed' && <div style={{ marginTop: 8 }}><VisitFeedbackForm id={v.id} feedback={v.feedback} /></div>}
                   </div>
                   {upcoming.includes(v) && <CancelVisit id={v.id} address={v.address} />}
                 </div>

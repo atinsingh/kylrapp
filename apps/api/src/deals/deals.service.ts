@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, gt, inArray, sql } from 'drizzle-orm';
-import type { BookShowingRequest } from '@klyr/contracts';
+import type { BookShowingRequest, VisitFeedbackRequest } from '@klyr/contracts';
 import { DB, type Db } from '../db/db.module.js';
 import {
   agents, auditLog, dealParties, deals, documents, idVerifications, listingMedia, listings, moveProfiles, organizations, showings, signatures, users,
@@ -140,6 +140,7 @@ export class DealsService {
     if (!deal) return [];
     const rows = await this.db.select({
       id: showings.id, at: showings.at, status: showings.status, note: showings.note, agentNote: showings.agentNote, listingId: listings.id,
+      feedback: showings.feedback, feedbackAt: showings.feedbackAt,
       address: ADDRESS,
       city: listings.city, listingBrokerage: listings.listingBrokerage,
     }).from(showings).innerJoin(listings, eq(listings.id, showings.listingId))
@@ -148,8 +149,19 @@ export class DealsService {
       .from(listingMedia).where(and(inArray(listingMedia.listingId, rows.map(r => r.listingId)), eq(listingMedia.position, 0))) : [];
     return rows.map(r => {
       const p = photos.find(x => x.listingId === r.listingId);
-      return { ...r, at: r.at.toISOString(), photo: p ? { url: p.url.startsWith('/') ? config.mediaBaseUrl + p.url : p.url, alt: p.alt ?? '' } : null };
+      return { ...r, at: r.at.toISOString(), feedback: r.feedback as VisitFeedbackRequest | null, feedbackAt: r.feedbackAt?.toISOString() ?? null, photo: p ? { url: p.url.startsWith('/') ? config.mediaBaseUrl + p.url : p.url, alt: p.alt ?? '' } : null };
     });
+  }
+
+  /** After a completed visit: the buyer's feedback, shared with a Klyr seller without the buyer's name. */
+  async visitFeedback(userId: string, id: string, req: VisitFeedbackRequest) {
+    const deal = await this.buyDeal(userId);
+    if (!deal) throw new NotFoundException();
+    const r = await this.db.update(showings).set({ feedback: req, feedbackAt: new Date() })
+      .where(and(eq(showings.id, id), eq(showings.dealId, deal.id), eq(showings.status, 'completed'))).returning({ listingId: showings.listingId });
+    if (!r.length) throw new ConflictException({ code: 'not_completed', message: 'You can leave feedback after the visit.' });
+    await this.db.insert(auditLog).values({ actorId: userId, action: 'visit_feedback', entity: 'showing', entityId: id, data: req });
+    return { ok: true };
   }
 
   async cancelShowing(userId: string, id: string) {

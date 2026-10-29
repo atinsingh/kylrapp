@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDb } from '../db/client.js';
-import { listings } from '../db/schema.js';
+import { listings, showings } from '../db/schema.js';
 import { startApp } from '../test/harness.js';
 import { ID, people, resetStaff } from '../test/people.js';
 
@@ -70,10 +70,56 @@ describe('selling with Klyr', () => {
     const found = (await h.call('GET', '/listings?city=Oakville', undefined, b.t)).body.results.find((l: { id: string }) => l.id === listingId);
     expect(found).toMatchObject({ address: '18 Birch Ave', price: 999_000, listingBrokerage: 'Klyr Realty Inc., Brokerage' });
     expect(found.photos[0].url).toBe('https://media.example/18-birch/1.jpg');
-    const offer = await h.call('PUT', '/offers/draft', {
+    const terms = {
       listingId, price: 990_000, deposit: 40_000, financingDays: 5, inspectionDays: 5, statusCertificateDays: null,
       irrevocableAt: new Date(Date.now() + 86_400_000).toISOString(), closingDate: '2027-01-15', inclusions: 'Appliances', exclusions: '', noteToAgent: '',
-    }, b.t);
+    };
+    const offer = await h.call('PUT', '/offers/draft', terms, b.t);
     expect(offer.body.code).toBe('multiple_representation');
+    const start = (await h.call('GET', `/offers/start?listingId=${listingId}`, undefined, b.t)).body;
+    expect(start.consent).toEqual({ buyerSignedAt: null, sellerSignedAt: null });
+
+    // A visit, then the buyer's feedback reaches the seller without their name.
+    const day = new Date(Date.now() + 2 * 86_400_000);
+    const at = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 16, 0)).toISOString();
+    const visit = (await h.call('POST', '/showings', { listingId, at }, b.t)).body;
+    expect(visit.id).toBeTruthy();
+    expect((await h.call('POST', `/showings/${visit.id}/feedback`, { interest: 'yes', price: 'fair' }, b.t)).body.code).toBe('not_completed');
+    await db.update(showings).set({ status: 'completed' }).where(eq(showings.id, visit.id));
+    await h.call('POST', `/showings/${visit.id}/feedback`, { interest: 'yes', price: 'high', comment: 'Loved the kitchen.' }, b.t);
+    const seen = (await h.call('GET', '/selling', undefined, t)).body;
+    expect(seen.visits).toEqual([{ id: visit.id, at, status: 'completed', feedback: { interest: 'yes', price: 'high', comment: 'Loved the kitchen.' } }]);
+
+    // Form 326: the buyer consents, then the seller; only then can the buyer offer.
+    expect((await h.call('POST', '/offers/consent', { listingId, typedName: 'Test Buyer', readConfirmed: true }, b.t)).body.buyerSignedAt).toBeTruthy();
+    expect(mail(email).subject).toBe('A Klyr buyer wants to make an offer · 18 Birch Ave');
+    expect((await h.call('PUT', '/offers/draft', { ...terms, price: 990_000 }, b.t)).body.message).toMatch(/Waiting for the seller/);
+    const consent = (await h.call('GET', '/selling', undefined, t)).body.consents[0];
+    expect(consent).toMatchObject({ buyer: 'Buyer 1', sellerSignedAt: null });
+    expect((await h.call('POST', `/selling/consents/${consent.id}/sign`, { typedName: 'Someone Else', readConfirmed: true }, t)).body.code).toBe('name_mismatch');
+    await h.call('POST', `/selling/consents/${consent.id}/sign`, { typedName: 'Test Buyer', readConfirmed: true }, t);
+    expect(mail(b.email).subject).toBe('You can make your offer · 18 Birch Ave');
+
+    // The buyer offers; their agent registers it; the seller sees the net at that price and signs back.
+    const draft = (await h.call('PUT', '/offers/draft', { ...terms, price: 960_000 }, b.t)).body;
+    await h.call('POST', `/offers/${draft.id}/sign`, { typedName: 'Test Buyer', readConfirmed: true }, b.t);
+    const buyerAgent = await p.staff(b.agentEmail);
+    await h.call('POST', `/pro/offers/${draft.id}/review`, { action: 'register' }, buyerAgent);
+    expect((await h.call('POST', `/pro/offers/${draft.id}/result`, { result: 'accepted' }, buyerAgent)).body.code).toBe('seller_decides');
+    expect(mail(email).subject).toBe('New offer · 18 Birch Ave');
+    const withOffer = (await h.call('GET', '/selling', undefined, t)).body;
+    expect(withOffer.offers[0]).toMatchObject({ id: draft.id, status: 'registered', price: 960_000, conditions: ['Financing, 5 banking days', 'Inspection, 5 banking days'] });
+    expect(withOffer.offers[0].net).toBe(960_000 - Math.round(960_000 * 0.01 * 1.13) - Math.round(960_000 * 0.02 * 1.13) - 1656 - 305_000);
+    const until = new Date(Date.now() + 6 * 3_600_000).toISOString();
+    const back = (await h.call('POST', `/selling/offers/${draft.id}`, { result: 'signed_back', price: 980_000, irrevocableAt: until, typedName: 'Test Buyer', readConfirmed: true }, t)).body;
+    expect(back.offers[0]).toMatchObject({ status: 'signed_back', signBack: { price: 980_000, status: 'signed_back' } });
+    expect(mail(b.email).subject).toBe('The seller signed back · 18 Birch Ave');
+
+    // The buyer accepts the sign-back: both sides see the conditional sale.
+    const sbId = (await h.call('GET', `/offers/${draft.id}`, undefined, b.t)).body.signBack.id;
+    await h.call('POST', `/offers/${sbId}/respond`, { decision: 'accept', typedName: 'Test Buyer', readConfirmed: true }, b.t);
+    const sold = (await h.call('GET', '/selling', undefined, t)).body;
+    expect(sold).toMatchObject({ stage: 'conditional', sale: { price: 980_000, stage: 'conditional', closingDate: '2027-01-15' } });
+    expect((await h.call('GET', '/deal', undefined, b.t)).body).toMatchObject({ stage: 'conditional', price: 980_000 });
   });
 });

@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { SellProperty, Selling, SellTaskInput, SellTaskKey } from '@klyr/api-client';
 import { COOP_CHOICES } from '@klyr/contracts';
-import { money, sellerNet, torontoWhen } from '@klyr/core';
+import { calendarDate, money, sellerNet, torontoWhen } from '@klyr/core';
 import { StepUp } from '@/components/step-up';
 import { errorText, klyr } from '@/lib/client';
+import { Market } from './market';
 
 const TYPES = ['House', 'Townhouse', 'Condo'] as const;
 const n = (v: string) => Number(v.replace(/\D/g, '')) || 0;
@@ -32,7 +33,7 @@ const done = (k: SellTaskKey, d: Record<string, string>) =>
 export function SellFlow({ selling, legalName, idVerified }: { selling: Selling | null; legalName: string; idVerified: boolean }) {
   if (!selling) return <StartSelling />;
   if (!selling.agreement) return <PlanAndSign s={selling} legalName={legalName} idVerified={idVerified} />;
-  return <Prep s={selling} />;
+  return <Prep s={selling} legalName={legalName} />;
 }
 
 function StartSelling() {
@@ -197,13 +198,14 @@ function PlanAndSign({ s, legalName, idVerified }: { s: Selling; legalName: stri
   );
 }
 
-function Prep({ s }: { s: Selling }) {
+function Prep({ s, legalName }: { s: Selling; legalName: string }) {
   const router = useRouter();
   const [open, setOpen] = useState<SellTaskKey | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const live = s.stage !== 'preparing';
+  const sale = s.sale;
   const agent = s.agent?.name ?? 'Your agent';
   const finished = s.tasks.filter(t => t.doneAt).length;
 
@@ -225,13 +227,15 @@ function Prep({ s }: { s: Selling }) {
     <>
       <section className="k-card" style={{ background: 'var(--ink)', color: '#fff', borderRadius: 20, padding: 18 }}>
         <div className="k-label" style={{ color: '#8CC2B1' }}>{s.property.address.toUpperCase()}, {s.property.city.toUpperCase()} · {money(s.listPrice)}</div>
-        <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>{live ? 'You’re live' : 'Getting ready'}</div>
+        <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>{sale ? (sale.closedAt ? 'Sold' : sale.stage === 'conditional' ? 'Conditional sale' : 'Sold firm') : live ? 'You’re live' : 'Getting ready'}</div>
         <div style={{ fontSize: 13, color: '#C9DDD6' }}>
-          {live ? `Listed ${torontoWhen(s.publishedAt!)} as a Klyr listing. Showing requests and offers come here.`
+          {sale ? `Accepted at ${money(sale.price)}${sale.acceptedAt ? ` on ${torontoWhen(sale.acceptedAt)}` : ''} · closing ${sale.closingDate ? calendarDate(sale.closingDate) : 'to be set'} · you keep about ${money(sale.net)}${sale.stage === 'conditional' ? '. The buyer’s conditions are still open; we’ll tell you as each is removed.' : ''}`
+            : live ? `Listed ${torontoWhen(s.publishedAt!)} as a Klyr listing. Showing requests and offers come here.`
             : `Agreement signed ${torontoWhen(s.agreement!.signedAt)} · ${s.plan === 'flat' ? 'Self-directed' : 'Assisted'} · ${pct(s.coop)} to the buyer’s brokerage · you keep about ${money(s.net.net)}`}
         </div>
       </section>
       {live && s.listingId && <Link href={`/listings/${s.listingId}`} className="k-btn k-alt" style={{ display: 'grid', placeItems: 'center', textDecoration: 'none' }}>See your listing</Link>}
+      {live && <Market s={s} legalName={legalName} />}
       <section className="k-card" aria-label="Prep checklist">
         <div className="k-label">{live ? 'PREP' : 'BEFORE YOU GO LIVE'} · {finished} OF {s.tasks.length} DONE</div>
         {s.tasks.map((t, i) => {

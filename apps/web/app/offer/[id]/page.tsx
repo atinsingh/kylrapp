@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import type { Me } from '@klyr/contracts';
-import type { Assumptions, BuyingStatus, ListingDetail, Offer, OfferTermsInput } from '@klyr/api-client';
+import type { Assumptions, BuyingStatus, Consent, ListingDetail, Offer, OfferTermsInput } from '@klyr/api-client';
 import { AppHeader } from '@/components/app-header';
 import { api, sessionToken } from '@/lib/session';
+import { ConsentCard } from './consent';
 import { OfferBuilder } from './offer-builder';
 
 export const metadata = { title: 'Make an offer · Klyr' };
@@ -13,7 +14,7 @@ export default async function OfferPage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
   const [me, listing, buying, start, mine] = await Promise.all([
     api<Me>('/auth/me'), api<ListingDetail>(`/listings/${encodeURIComponent(id)}`), api<BuyingStatus>('/buying'),
-    api<{ draft: Offer | null; defaults: OfferTermsInput | null }>(`/offers/start?listingId=${encodeURIComponent(id)}`),
+    api<{ draft: Offer | null; defaults: OfferTermsInput | null; consent: Consent | null }>(`/offers/start?listingId=${encodeURIComponent(id)}`),
     api<Assumptions>('/me/assumptions'),
   ]);
   if (me.status === 401) redirect('/welcome');
@@ -49,10 +50,12 @@ export default async function OfferPage({ params }: { params: Promise<{ id: stri
             <span style={{ color: '#A54B00', fontSize: 14 }}>“{d.agentNote}”</span>
           </section>
         )}
-        <OfferBuilder
+        {b.canBookVisits && start.data.consent && !(start.data.consent.buyerSignedAt && start.data.consent.sellerSignedAt)
+          ? <ConsentCard listingId={l.id} consent={start.data.consent} legalName={me.data?.legalName ?? ''} />
+          : <OfferBuilder
           listing={{ id: l.id, price: l.price, city: l.city, type: l.type as 'House' | 'Townhouse' | 'Condo', coop: l.coop, tax: l.annualTax ?? 0, fee: l.condoFee ?? undefined, brokerage: l.listingBrokerage }}
           assumptions={mine.data} initial={initial} enabled={b.canBookVisits}
-          agent={b.agent ? b.agent.name : 'your agent'} legalName={me.data?.legalName ?? ''} />
+          agent={b.agent ? b.agent.name : 'your agent'} legalName={me.data?.legalName ?? ''} />}
       </div>
     </main>
   );

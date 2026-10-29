@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Inject, Module, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { AmendmentRequest, AmendmentResultRequest, ConditionNoticeRequest, DealTaskRequest, OfferResultRequest, OfferTerms, ReviewOfferRequest, SignBackResponse, SignOfferRequest, TrustVerifiedRequest } from '@klyr/contracts';
+import { AmendmentRequest, BuyerConsentRequest, AmendmentResultRequest, ConditionNoticeRequest, DealTaskRequest, OfferResultRequest, OfferTerms, ReviewOfferRequest, SignBackResponse, SignOfferRequest, TrustVerifiedRequest } from '@klyr/contracts';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { DealsModule } from '../deals/deals.module.js';
 import { assertFreshMfa, Auth, AuthGuard, StepUp, type AuthContext } from '../identity/auth.guard.js';
@@ -33,6 +33,12 @@ class OffersController {
   @Post('offers/:id/sign') @HttpCode(200) @StepUp()
   sign(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(SignOfferRequest)) body: SignOfferRequest, @Req() req: Request) {
     return this.offers.sign(a.userId, id, body.typedName, client(req));
+  }
+
+  /** Form 326 on a Klyr listing: the buyer's consent to multiple representation. */
+  @Post('offers/consent') @HttpCode(200) @StepUp()
+  consent(@Auth() a: AuthContext, @Body(new ZodPipe(BuyerConsentRequest)) body: BuyerConsentRequest, @Req() req: Request) {
+    return this.offers.consent(a.userId, body, client(req));
   }
 
   @Delete('offers/:id')
@@ -131,5 +137,5 @@ class ProOffersController {
   returned(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string) { return this.progress.depositReturned(a.userId, id); }
 }
 
-@Module({ imports: [DealsModule, ListingsModule], controllers: [OffersController, ProOffersController], providers: [OffersService, DealProgressService] })
+@Module({ imports: [DealsModule, ListingsModule], controllers: [OffersController, ProOffersController], providers: [OffersService, DealProgressService], exports: [OffersService] })
 export class OffersModule {}

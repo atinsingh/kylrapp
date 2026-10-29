@@ -41,3 +41,30 @@ export const PublishListingRequest = z.object({
   photos: z.array(z.string().url()).max(40).default([]),
 });
 export type PublishListingRequest = z.infer<typeof PublishListingRequest>;
+
+/** The buyer's side of multiple representation (Form 326) for one Klyr listing. */
+export const BuyerConsentRequest = z.object({
+  listingId: z.string().uuid(),
+  typedName: t(),
+  readConfirmed: z.literal(true),
+});
+export type BuyerConsentRequest = z.infer<typeof BuyerConsentRequest>;
+
+/** After a completed visit: what the buyer thought. A Klyr seller sees it without the buyer's name. */
+export const VisitFeedbackRequest = z.object({
+  interest: z.enum(['yes', 'maybe', 'no']),
+  price: z.enum(['low', 'fair', 'high']),
+  comment: z.string().trim().max(500).optional(),
+});
+export type VisitFeedbackRequest = z.infer<typeof VisitFeedbackRequest>;
+
+/** A Klyr seller answers an offer on their home. Accepting and signing back are signatures. */
+export const SellerOfferDecision = z.discriminatedUnion('result', [
+  z.object({ result: z.literal('accepted'), typedName: t(), readConfirmed: z.literal(true) }),
+  z.object({
+    result: z.literal('signed_back'), price: z.number().int().positive(), irrevocableAt: z.string().datetime({ offset: true }),
+    typedName: t(), readConfirmed: z.literal(true),
+  }),
+  z.object({ result: z.literal('rejected') }),
+]);
+export type SellerOfferDecision = z.infer<typeof SellerOfferDecision>;

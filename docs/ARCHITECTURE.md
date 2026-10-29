@@ -192,11 +192,16 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * The agent publishes from the Klyr Pro Listings tab with coordinates and photo URLs (no geocoder or media vendor yet). The home goes live as a `klyr_exclusive` listing in search, and the seller gets an email and a push.
   * A Klyr buyer offering on it is stopped until multiple representation is consented to (Form 326).
 
+* Selling, part 2 (web, phone and Klyr Pro web; screenshots `109`–`116`):
+  * Buyers leave a few taps of feedback after a completed visit (interest, price, optional comment). A Klyr seller sees it without the buyer's name.
+  * Form 326 before a Klyr buyer offers on a Klyr listing. The buyer signs first, the seller is emailed and pushed, and the seller signs from Sell. Each signature is a document on that person's own deal. The offer builder stays closed until both have signed.
+  * Offers on a Klyr listing reach the seller once the buyer's agent registers them. The seller sees what they'd keep at that price (and at a sign-back price as they type), then accepts or signs back (both signatures, with a fresh check) or declines. The buyer's agent can't record the answer for a Klyr seller (`seller_decides`).
+  * Acceptance runs the same deal flow (deposit, conditions, closing) and moves the seller's deal to conditional or firm; the seller sees "Conditional sale" and the agent sees it on the Listings tab.
+
 **Next, in order:**
-1. Selling, part 2: showing requests and feedback, Form 326 consent for Klyr buyers, offers received with the net for each, and accepting through the same deal flow.
-2. Renting and leasing out (`t_*`, `l_*`): tenant profile and Form 400 offers to lease (with Form 346), and landlord listing and applicants.
-3. Provider marketplace: lawyer, lender, inspector and insurer quotes in Klyr Pro, with referral fees shown to the buyer before they choose.
-4. Remaining Admin modules in the order the Launch Checklist owners need them: listings feed status, Klyr AI review, privacy requests, content and assumptions, users and roles.
+1. Renting and leasing out (`t_*`, `l_*`): tenant profile and Form 400 offers to lease (with Form 346), and landlord listing and applicants.
+2. Provider marketplace: lawyer, lender, inspector and insurer quotes in Klyr Pro, with referral fees shown to the buyer before they choose.
+3. Remaining Admin modules in the order the Launch Checklist owners need them: listings feed status, Klyr AI review, privacy requests, content and assumptions, users and roles.
 
 **Blocked on outside parties** (built as interfaces with development stand-ins, refused in production):
 * OREA forms licence and an e-sign provider: signed records are plain-language summaries until then.

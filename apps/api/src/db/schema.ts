@@ -384,6 +384,21 @@ export const sellProfiles = pgTable('sell_profiles', {
   createdAt: created(),
 });
 
+/**
+ * Multiple representation (OREA Form 326): Klyr represents the seller and the buyer of the same home.
+ * Both sign before the buyer can make an offer; each signature is a document on that party's own deal.
+ */
+export const representationConsents = pgTable('representation_consents', {
+  id: id(),
+  listingId: uuid('listing_id').notNull().references(() => listings.id),
+  buyerId: uuid('buyer_id').notNull().references(() => users.id),
+  buyerDocumentId: uuid('buyer_document_id').references(() => documents.id),
+  buyerSignedAt: ts('buyer_signed_at'),
+  sellerDocumentId: uuid('seller_document_id').references(() => documents.id),
+  sellerSignedAt: ts('seller_signed_at'),
+  createdAt: created(),
+}, t => [uniqueIndex('representation_consents_uq').on(t.listingId, t.buyerId)]);
+
 /** Visits a buyer books; the listing brokerage confirms. */
 export const showings = pgTable('showings', {
   id: id(),
@@ -406,6 +421,9 @@ export const showings = pgTable('showings', {
   checkOutDistanceM: integer('check_out_distance_m'),
   /** When the agent's "visit soon" push went out, so the worker sends it once. */
   reminderSentAt: ts('reminder_sent_at'),
+  /** The buyer's feedback after the visit; a Klyr seller sees it without the buyer's name. */
+  feedback: jsonb('feedback'),
+  feedbackAt: ts('feedback_at'),
   createdAt: created(),
   cancelledAt: ts('cancelled_at'),
 }, t => [index('showings_deal_ix').on(t.dealId, t.at)]);

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
-import type { BuyingStatus, SellProperty, Selling, SellTaskInput, SellTaskKey } from '@klyr/api-client';
+import type { BuyingStatus, SellerDecision, SellProperty, Selling, SellTaskInput, SellTaskKey } from '@klyr/api-client';
 import { COOP_CHOICES } from '@klyr/contracts';
-import { money, sellerNet, torontoWhen } from '@klyr/core';
+import { calendarDate, money, sellerNet, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
@@ -40,7 +40,7 @@ export default function Sell() {
       <Back />
       {!s ? <Start onDone={setS} /> : !s.agreement
         ? <PlanSign s={s} legalName={me?.legalName ?? ''} idVerified={b?.idCheck.status === 'verified'} onDone={setS} />
-        : <Prep s={s} onDone={setS} />}
+        : <Prep s={s} legalName={me?.legalName ?? ''} onDone={setS} />}
     </Screen>
   );
 }
@@ -169,7 +169,7 @@ function PlanSign({ s, legalName, idVerified, onDone }: { s: Selling; legalName:
   );
 }
 
-function Prep({ s, onDone }: { s: Selling; onDone: (s: Selling) => void }) {
+function Prep({ s, legalName, onDone }: { s: Selling; legalName: string; onDone: (s: Selling) => void }) {
   const [open, setOpen] = useState<SellTaskKey | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -187,10 +187,11 @@ function Prep({ s, onDone }: { s: Selling; onDone: (s: Selling) => void }) {
     <>
       <View style={{ backgroundColor: color.brandInk, borderRadius: 20, padding: 18, gap: 6 }}>
         <Text style={{ ...t.label, color: '#8CC2B1' }}>{s.property.address.toUpperCase()} · {money(s.listPrice)}</Text>
-        <Text accessibilityRole="header" style={{ ...sora(800), fontSize: 30, color: '#fff' }}>{live ? 'You’re live' : 'Getting ready'}</Text>
-        <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>{live ? `Listed ${torontoWhen(s.publishedAt!)}. Showing requests and offers come here.` : `You keep about ${money(s.net.net)}.`}</Text>
+        <Text accessibilityRole="header" style={{ ...sora(800), fontSize: 30, color: '#fff' }}>{s.sale ? (s.sale.closedAt ? 'Sold' : s.sale.stage === 'conditional' ? 'Conditional sale' : 'Sold firm') : live ? 'You’re live' : 'Getting ready'}</Text>
+        <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>{s.sale ? `Accepted at ${money(s.sale.price)} · closing ${s.sale.closingDate ? calendarDate(s.sale.closingDate) : 'to be set'} · you keep about ${money(s.sale.net)}` : live ? `Listed ${torontoWhen(s.publishedAt!)}. Showing requests and offers come here.` : `You keep about ${money(s.net.net)}.`}</Text>
       </View>
       {live && s.listingId && <Button title="See your listing" alt onPress={() => router.push(`/listing/${s.listingId}`)} />}
+      {live && <Market s={s} legalName={legalName} onDone={onDone} />}
       <Card>
         <Text style={t.label}>{live ? 'PREP' : 'BEFORE YOU GO LIVE'} · {s.tasks.filter(x => x.doneAt).length} OF {s.tasks.length} DONE</Text>
         {s.tasks.map((x, i) => {
@@ -216,6 +217,85 @@ function Prep({ s, onDone }: { s: Selling; onDone: (s: Selling) => void }) {
           );
         })}
       </Card>
+    </>
+  );
+}
+
+const STATUS: Record<string, string> = { registered: 'Waiting for your answer', signed_back: 'You signed back', accepted: 'Accepted', rejected: 'Declined', expired: 'Expired', withdrawn: 'Withdrawn', void: 'Ended' };
+
+/** Consents to sign and offers with what you'd keep at each price. */
+function Market({ s, legalName, onDone }: { s: Selling; legalName: string; onDone: (s: Selling) => void }) {
+  const [open, setOpen] = useState<{ id: string; action: 'consent' | 'accept' | 'sign_back' | 'decline' } | null>(null);
+  const [read, setRead] = useState(false);
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState(0);
+  const [stepUp, setStepUp] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  async function run(id: string, action: 'consent' | 'accept' | 'sign_back' | 'decline') {
+    setBusy(true); setError('');
+    const d: SellerDecision = action === 'accept' ? { result: 'accepted', typedName: name, readConfirmed: true }
+      : action === 'sign_back' ? { result: 'signed_back', price, irrevocableAt: new Date(Date.now() + 6 * 3_600_000).toISOString(), typedName: name, readConfirmed: true }
+      : { result: 'rejected' };
+    const r = action === 'consent' ? await klyr.signSellerConsent(id, name) : await klyr.decideOffer(id, d);
+    setBusy(false);
+    if (r.status === 403 && r.error?.code === 'step_up_required') return setStepUp(true);
+    if (!r.ok) return setError(errorText(r.error));
+    setOpen(null); setName(''); setRead(false); onDone(r.data);
+  }
+  const signBox = (title: string) => stepUp
+    ? <StepUp reason="Signing needs a fresh check." onCancel={() => setStepUp(false)} onDone={() => { setStepUp(false); void run(open!.id, open!.action); }} />
+    : (
+      <>
+        <Check on={read} onPress={() => setRead(!read)}>I’ve read this. Once signed, it’s binding.</Check>
+        <Field label={`Type your full name to sign (${legalName})`} value={name} onChangeText={setName} autoComplete="name" />
+        <ErrorText>{error}</ErrorText>
+        <Button title={title} busy={busy} disabled={!read || name.trim().length < 2 || (open?.action === 'sign_back' && price <= 0)} onPress={() => run(open!.id, open!.action)} />
+        <Button title="Back" alt onPress={() => setOpen(null)} />
+      </>
+    );
+
+  return (
+    <>
+      {s.consents.filter(c => !c.sellerSignedAt).map(c => (
+        <Card key={c.id}>
+          <Text style={t.label}>● ACTION · OREA FORM 326</Text>
+          <Text style={sora(700)}>A Klyr buyer wants to make an offer</Text>
+          <Text style={t.note}>{c.buyer} is also a Klyr client. They can offer once you consent to Klyr representing both of you. Klyr won’t tell the buyer the least you’d take.</Text>
+          {open?.id === c.id ? signBox('Sign consent') : <Button title="Review and sign" onPress={() => { setOpen({ id: c.id, action: 'consent' }); setRead(false); setName(''); }} />}
+        </Card>
+      ))}
+      {s.offers.length > 0 && <Text style={t.label}>OFFERS · {s.offers.filter(o => o.status === 'registered').length} WAITING FOR YOU</Text>}
+      {s.offers.map(o => (
+        <Card key={o.id}>
+          <Text style={{ ...sora(800), fontSize: 22 }}>{money(o.price)}</Text>
+          <Text style={sora(700)}>You’d keep about {money(o.net)}</Text>
+          <Text style={t.note}>{STATUS[o.status] ?? o.status} · deposit {money(o.deposit)} · {o.conditions.length ? o.conditions.join(' · ') : 'no conditions'} · closing {calendarDate(o.closingDate)}</Text>
+          {o.signBack && <Text style={t.note}>Your sign-back: {money(o.signBack.price)} · {STATUS[o.signBack.status] ?? o.signBack.status}</Text>}
+          {o.status === 'registered' && (open?.id === o.id ? (
+            <>
+              {open.action === 'sign_back' && <Field label="Your price" value={price ? price.toLocaleString('en-CA') : ''} onChangeText={v => setPrice(n(v))} keyboardType="number-pad" />}
+              {open.action === 'sign_back' && price > 0 && <Text style={t.note}>You’d keep about {money(sellerNet({ price, plan: s.plan, coop: s.coop, mortgageBalance: s.mortgageBalance }).net)}. The buyer has 6 hours to answer.</Text>}
+              {open.action === 'decline'
+                ? <><Button title="Decline this offer" busy={busy} onPress={() => run(o.id, 'decline')} /><Button title="Back" alt onPress={() => setOpen(null)} /></>
+                : signBox(open.action === 'accept' ? `Accept ${money(o.price)}` : 'Sign back')}
+            </>
+          ) : (
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              <Chip flex label="Accept" on={false} onPress={() => { setOpen({ id: o.id, action: 'accept' }); setRead(false); setName(''); }} />
+              <Chip flex label="Sign back" on={false} onPress={() => { setOpen({ id: o.id, action: 'sign_back' }); setPrice(Math.max(o.price, s.listPrice)); setRead(false); setName(''); }} />
+              <Chip flex label="Decline" on={false} onPress={() => setOpen({ id: o.id, action: 'decline' })} />
+            </View>
+          ))}
+        </Card>
+      ))}
+      {s.visits.length > 0 && (
+        <Card>
+          <Text style={t.label}>VISITS · {s.visits.filter(v => v.status === 'completed').length} DONE</Text>
+          {s.visits.map(v => <Text key={v.id} style={t.note}>{torontoWhen(v.at)} · {v.status === 'completed' ? 'visited' : v.status}{v.feedback ? ` · ${v.feedback.interest === 'yes' ? 'would consider an offer' : v.feedback.interest === 'maybe' ? 'maybe' : 'not for them'}, priced ${v.feedback.price}` : ''}</Text>)}
+        </Card>
+      )}
     </>
   );
 }

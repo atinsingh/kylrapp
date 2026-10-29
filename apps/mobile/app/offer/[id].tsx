@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import type { Assumptions, BuyingStatus, ListingDetail, OfferTermsInput } from '@klyr/api-client';
+import type { Assumptions, BuyingStatus, Consent, ListingDetail, OfferTermsInput } from '@klyr/api-client';
 import { OFFER_RULES } from '@klyr/contracts';
 import { buyerEstimate, money, nextBankingDate, type PropertyType, TORONTO, torontoInstant, torontoToday, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
@@ -27,6 +27,7 @@ export default function MakeOffer() {
   const [b, setB] = useState<BuyingStatus | null>(null);
   const [o, setO] = useState<OfferTermsInput | null>(null);
   const [returned, setReturned] = useState<string | null>(null);
+  const [consent, setConsent] = useState<Consent | null>(null);
   const [step, setStep] = useState<'build' | 'review'>('build');
   const [offerId, setOfferId] = useState<string | null>(null);
   const [read, setRead] = useState(false);
@@ -43,6 +44,7 @@ export default function MakeOffer() {
       const d = sr.data.draft;
       setO(d ? { listingId: id, price: d.price, deposit: d.deposit, irrevocableAt: d.irrevocableAt, ...d.terms } : sr.data.defaults);
       if (d?.status === 'returned') setReturned(d.agentNote);
+      setConsent(sr.data.consent);
     })();
   }, [id]);
 
@@ -65,6 +67,14 @@ export default function MakeOffer() {
     setOfferId(r.data.id);
     return true;
   }
+  async function signConsent() {
+    setBusy(true); setError('');
+    const r = await klyr.consentToOffer(id, name);
+    setBusy(false);
+    if (r.status === 403 && r.error?.code === 'step_up_required') return setStepUp(true);
+    if (!r.ok) return setError(errorText(r.error));
+    setConsent(r.data); setName(''); setRead(false);
+  }
   async function sign() {
     if (!offerId) return;
     setBusy(true); setError('');
@@ -82,6 +92,28 @@ export default function MakeOffer() {
       <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>Cash back {money(est.cashBack)} · land transfer tax {money(est.ltt.total)}</Text>
     </View>
   );
+
+  if (b.canBookVisits && consent && !(consent.buyerSignedAt && consent.sellerSignedAt)) {
+    return (
+      <Screen>
+        <Back />
+        <Title sub={`${l.address}, ${l.city} · OREA Form 326`}>{consent.buyerSignedAt ? 'Waiting for the seller' : 'Klyr represents this seller too'}</Title>
+        {consent.buyerSignedAt ? (
+          <Card><Text style={t.body}>You consented {when(consent.buyerSignedAt)}. You can make your offer as soon as the seller signs; we’ll let you know.</Text></Card>
+        ) : stepUp ? (
+          <StepUp reason="Signing a consent needs a fresh check." onCancel={() => setStepUp(false)} onDone={() => { setStepUp(false); void signConsent(); }} />
+        ) : (
+          <Card>
+            <Text style={t.body}>Before an offer, you and the seller both consent in writing to multiple representation. Klyr won’t tell the seller the most you’d pay, or tell you the least they’d take.</Text>
+            <Check on={read} onPress={() => setRead(!read)}>I’ve read this. The standard OREA terms apply in full.</Check>
+            <Field label={`Type your full name to consent (${me?.legalName ?? ''})`} value={name} onChangeText={setName} autoComplete="name" />
+            <ErrorText>{error}</ErrorText>
+            <Button title="Sign consent" busy={busy} disabled={!read || name.trim().length < 2} onPress={signConsent} />
+          </Card>
+        )}
+      </Screen>
+    );
+  }
 
   if (step === 'review') {
     const rows: [string, string][] = [

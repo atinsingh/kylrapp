@@ -41,6 +41,13 @@ export function ListingCard({ l }: { l: ProListing }) {
         {l.agreement ? ` · Form 200 signed ${torontoWhen(l.agreement.signedAt)}` : ' · Form 200 not signed yet'}
         {live && l.publishedAt ? ` · live ${torontoWhen(l.publishedAt)}` : ''}
       </div>
+      {live && (
+        <div className="k-note" style={{ color: 'var(--text)' }} aria-label="On the market">
+          {l.sale ? `Accepted at ${money(l.sale.price)} · ${l.sale.stage}` : `${l.offers.filter(o => o.status === 'registered').length} offer(s) waiting for the seller`}
+          {' · '}{l.visits.filter(v => v.status === 'completed').length} visit(s) done
+          {l.consents.some(c => !c.sellerSignedAt) ? ` · Form 326: ${l.consents.filter(c => !c.sellerSignedAt).length} waiting for the seller` : ''}
+        </div>
+      )}
       <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4 }} aria-label="Prep">
         {l.tasks.map(t => (
           <li key={t.key}>

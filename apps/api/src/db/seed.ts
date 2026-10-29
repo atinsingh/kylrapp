@@ -145,5 +145,13 @@ for (const a of AGENTS) {
   await db.insert(agents).values({ userId: u!.id, brokerageId: brokerage!.id, registeredName: a.name, title: a.title, recoNumber: a.reco })
     .onConflictDoNothing();
 }
+// Broker of record and compliance officer (placeholder until confirmed).
+const OFFICER = { email: 'priya.nair@klyr.example', name: 'Priya Nair' };
+let [officer] = await db.select().from(users).where(sql`lower(${users.email}) = ${OFFICER.email}`);
+if (!officer) [officer] = await db.insert(users).values({ email: OFFICER.email, legalName: OFFICER.name, emailVerifiedAt: new Date() }).returning();
+await db.insert(userRoles).values([
+  { userId: officer!.id, role: 'compliance_officer', orgId: brokerage!.id },
+  { userId: officer!.id, role: 'broker_of_record', orgId: brokerage!.id },
+]).onConflictDoNothing();
 await pool.end();
-console.log(`seeded ${SAMPLE.length} listings, ${sold} sold comparables and ${AGENTS.length} agents`);
+console.log(`seeded ${SAMPLE.length} listings, ${sold} sold comparables, ${AGENTS.length} agents and a compliance officer`);

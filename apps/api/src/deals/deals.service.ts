@@ -121,7 +121,7 @@ export class DealsService {
     const deal = await this.buyDeal(userId);
     if (!deal) return [];
     const rows = await this.db.select({
-      id: showings.id, at: showings.at, status: showings.status, note: showings.note, listingId: listings.id,
+      id: showings.id, at: showings.at, status: showings.status, note: showings.note, agentNote: showings.agentNote, listingId: listings.id,
       address: sql<string>`case when ${listings.unit} is null then ${listings.address} else ${listings.address} || ' #' || ${listings.unit} end`,
       city: listings.city, listingBrokerage: listings.listingBrokerage,
     }).from(showings).innerJoin(listings, eq(listings.id, showings.listingId))

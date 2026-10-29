@@ -36,6 +36,13 @@
       "when": 1793245907855,
       "tag": "0004_showings_id_status",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793279112239,
+      "tag": "0005_staff_and_geofence",
+      "breakpoints": true
     }
   ]
 }

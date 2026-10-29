@@ -7,7 +7,7 @@ import { errorText, klyr } from '@/lib/client';
 
 const TIMES: [number, number][] = [[10, 0], [13, 0], [16, 0], [18, 30]];
 
-/** The next five days with a few times each, in Toronto time; the listing brokerage confirms the one picked. */
+/** The next five days with a few times each, in Toronto time; your agent arranges it with the listing brokerage and confirms. */
 function slots() {
   return visitSlots(5, TIMES).map(at => ({
     at,
@@ -37,7 +37,7 @@ export function BookVisit({ listingId, enabled, openHouse, agent }: { listingId:
 
   return (
     <section className="k-card" aria-label="Pick a time" style={enabled ? undefined : { opacity: 0.6 }}>
-      <div className="k-label">PICK A TIME · LISTING BROKERAGE CONFIRMS</div>
+      <div className="k-label">PICK A TIME · YOUR AGENT CONFIRMS</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }} role="group" aria-label="Day">
         {days.map(d => <button key={d} className="k-chip" disabled={!enabled} aria-pressed={d === day} onClick={() => { setDay(d); setPick(null); }}>{d}</button>)}
       </div>

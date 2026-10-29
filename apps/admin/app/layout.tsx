@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react';
-import { color, font, layout } from '@klyr/tokens';
+import { baseCss, fontLinks } from '@klyr/web-kit/styles';
 
-const css = `
-:root{--brand:${color.brand};--ink:${color.brandInk};--tint:${color.brandTint};--text:${color.text};--muted:${color.textSecondary};--bg:${color.surfaceGrouped};--sep:${color.separator}}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font:${font.body}px/1.45 ${font.family},${font.fallback};-webkit-font-smoothing:antialiased}
-a{color:var(--brand)}
-:focus-visible{outline:${layout.focusRing.width}px solid ${color.focus};outline-offset:${layout.focusRing.offset}px}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+export const metadata = { title: 'Klyr Admin' };
+
+const css = `${baseCss}
+.a-wrap{max-width:960px;margin:0 auto;padding:16px 16px 48px;display:flex;flex-direction:column;gap:12px}
+.a-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 16px;font-size:14px}
+.a-grid>span{min-width:0;overflow-wrap:anywhere}
+.a-flag{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;background:#FBEBDD;color:#A54B00}
+.a-field textarea{border-radius:12px;border:0;background:#fff;box-shadow:0 0 0 .5px var(--sep);padding:10px 14px;font:inherit;min-height:72px;color:var(--text)}
 `;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -15,7 +16,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en-CA">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link href={fontLinks} rel="stylesheet" />
         <style>{css}</style>
       </head>
       <body>{children}</body>

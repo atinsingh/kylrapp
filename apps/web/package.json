@@ -13,6 +13,7 @@
     "@klyr/contracts": "workspace:*",
     "@klyr/core": "workspace:*",
     "@klyr/tokens": "workspace:*",
+    "@klyr/web-kit": "workspace:*",
     "@simplewebauthn/browser": "14.0.0",
     "leaflet": "1.9.4",
     "next": "16.4.3",

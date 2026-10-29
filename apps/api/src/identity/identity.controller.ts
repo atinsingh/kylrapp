@@ -137,7 +137,7 @@ export class IdentityController {
 
   @Post('mfa/totp/enable') @HttpCode(200) @UseGuards(AuthGuard)
   totpEnable(@Auth() a: AuthContext, @Body(new ZodPipe(TotpCodeRequest)) body: TotpCodeRequest) {
-    return this.identity.totpEnable(a.userId, body.code);
+    return this.identity.totpEnable(a.userId, a.session.id, body.code);
   }
 
   @Get('sessions') @UseGuards(AuthGuard)

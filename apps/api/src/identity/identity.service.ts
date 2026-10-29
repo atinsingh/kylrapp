@@ -168,8 +168,10 @@ export class IdentityService {
     return { secret, otpauthUrl: otpauthUrl(secret, user.email) };
   }
 
-  async totpEnable(userId: string, code: string) {
+  /** Turning it on proves the second factor, so this session counts as verified. */
+  async totpEnable(userId: string, sessionId: string, code: string) {
     await this.checkTotp(userId, code, { requireEnabled: false });
+    await this.sessions.completeMfa(sessionId);
     await this.db.update(totpCredentials).set({ enabledAt: new Date() }).where(eq(totpCredentials.userId, userId));
     await this.db.update(users).set({ mfaEnrolledAt: new Date() }).where(eq(users.id, userId));
     await this.audit(userId, 'totp_enabled');

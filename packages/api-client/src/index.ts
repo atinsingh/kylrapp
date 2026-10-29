@@ -60,12 +60,37 @@ export interface AgreementTerms {
 }
 export interface DocumentSummary { id: string; title: string; oreaForm: string | null; status: string; sha256: string; createdAt: string }
 export interface Showing {
-  id: string; at: string; status: 'requested' | 'confirmed' | 'cancelled' | 'completed'; note: string | null;
+  id: string; at: string; status: 'requested' | 'confirmed' | 'declined' | 'cancelled' | 'completed'; note: string | null; agentNote: string | null;
   listingId: string; address: string; city: string; listingBrokerage: string; photo: { url: string; alt: string } | null;
 }
 export interface IdCheckAnswers {
   occupation: string; sourceOfFunds: ('savings' | 'sale_of_property' | 'gift' | 'investments' | 'employment' | 'other')[];
   actingForThirdParty: boolean; politicallyExposed: boolean; buyingAs: 'self' | 'company'; vendorRef: string;
+}
+
+/** Klyr Pro (agents). */
+export interface ProMe { name: string; title: string; reco: string | null; brokerage: string }
+export interface ProShowing {
+  id: string; at: string; status: Showing['status']; note: string | null; agentNote: string | null;
+  checkInAt: string | null; checkInDistanceM: number | null; checkOutAt: string | null; checkOutDistanceM: number | null;
+  listingId: string; address: string; city: string; listingBrokerage: string; lat: number; lng: number;
+  clientId: string; clientName: string | null; clientPhone: string | null;
+}
+export type Decision = { action: 'confirm'; note?: string } | { action: 'move'; at: string; note: string } | { action: 'decline'; note: string };
+export interface GeoReading { lat: number; lng: number; accuracyM: number; mocked?: boolean }
+export interface ClientProgress { agreementSignedAt: string | null; idStatus: BuyingStatus['idCheck']['status']; openVisits: number }
+export interface ProClient extends ClientProgress { dealId: string; stage: string; userId: string; name: string | null; email: string; phone: string | null; since: string }
+export interface ProClientDetail extends ClientProgress {
+  dealId: string; stage: string; name: string | null; email: string; phone: string | null;
+  profile: { plan: string; data: Record<string, unknown> }[];
+  saved: { id: string; address: string; city: string; price: number }[];
+  documents: { id: string; title: string; createdAt: string }[];
+  visits: { id: string; at: string; status: Showing['status']; address: string }[];
+}
+/** Klyr Admin: an ID check waiting for the compliance officer. */
+export interface IdReview {
+  id: string; verifiedAt: string; name: string | null; email: string; occupation: string; sourceOfFunds: string[];
+  actingForThirdParty: boolean; politicallyExposed: boolean; buyingAs: 'self' | 'company'; vendor: string; method: string;
 }
 
 export interface Assumptions { rate: number; downPct: number; firstTime: boolean; lawyerFee: number }
@@ -160,6 +185,20 @@ export function createClient(opts: ClientOptions) {
     listing: (id: string) => get<ListingDetail>(`/listings/${encodeURIComponent(id)}`),
     save: (id: string) => call<{ saved: boolean }>('PUT', `/listings/${encodeURIComponent(id)}/save`),
     unsave: (id: string) => del<{ saved: boolean }>(`/listings/${encodeURIComponent(id)}/save`),
+
+    pro: {
+      me: () => get<ProMe>('/pro/me'),
+      showings: () => get<ProShowing[]>('/pro/showings'),
+      decide: (id: string, d: Decision) => post<{ id: string; status: Showing['status']; at: string }>(`/pro/showings/${encodeURIComponent(id)}/decide`, d),
+      checkIn: (id: string, g: GeoReading) => post<{ checkedIn: true; distanceM: number }>(`/pro/showings/${encodeURIComponent(id)}/check-in`, g),
+      complete: (id: string, g: GeoReading) => post<{ completed: true; distanceM: number }>(`/pro/showings/${encodeURIComponent(id)}/complete`, g),
+      clients: () => get<ProClient[]>('/pro/clients'),
+      client: (id: string) => get<ProClientDetail>(`/pro/clients/${encodeURIComponent(id)}`),
+    },
+    admin: {
+      idReviews: () => get<IdReview[]>('/admin/id-reviews'),
+      reviewId: (id: string, decision: 'approve' | 'reject', note: string) => post<{ id: string; status: 'verified' | 'rejected' }>(`/admin/id-reviews/${encodeURIComponent(id)}`, { decision, note }),
+    },
   };
 }
 

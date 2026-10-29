@@ -17,6 +17,9 @@ importers:
 
   apps/admin:
     dependencies:
+      '@klyr/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       '@klyr/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -26,6 +29,9 @@ importers:
       '@klyr/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
+      '@klyr/web-kit':
+        specifier: workspace:*
+        version: link:../../packages/web-kit
       next:
         specifier: 16.4.3
         version: 16.4.3(@types/node@22.18.12)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -194,6 +200,9 @@ importers:
 
   apps/pro:
     dependencies:
+      '@klyr/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       '@klyr/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -203,6 +212,9 @@ importers:
       '@klyr/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
+      '@klyr/web-kit':
+        specifier: workspace:*
+        version: link:../../packages/web-kit
       next:
         specifier: 16.4.3
         version: 16.4.3(@types/node@22.18.12)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -240,6 +252,9 @@ importers:
       '@klyr/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
+      '@klyr/web-kit':
+        specifier: workspace:*
+        version: link:../../packages/web-kit
       '@simplewebauthn/browser':
         specifier: 14.0.0
         version: 14.0.0
@@ -312,6 +327,43 @@ importers:
 
   packages/tokens:
     devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/web-kit:
+    dependencies:
+      '@klyr/api-client':
+        specifier: workspace:*
+        version: link:../api-client
+      '@klyr/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@klyr/tokens':
+        specifier: workspace:*
+        version: link:../tokens
+      qrcode:
+        specifier: 1.5.4
+        version: 1.5.4
+      server-only:
+        specifier: 0.0.1
+        version: 0.0.1
+    devDependencies:
+      '@types/node':
+        specifier: 22.18.12
+        version: 22.18.12
+      '@types/qrcode':
+        specifier: 1.5.6
+        version: 1.5.6
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      next:
+        specifier: 16.4.3
+        version: 16.4.3(@types/node@22.18.12)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      react:
+        specifier: 19.3.1
+        version: 19.3.1
       typescript:
         specifier: 5.9.3
         version: 5.9.3

@@ -9,8 +9,9 @@ import { Back } from '../components/back';
 import { Card, ErrorText, Screen, sora, t, Title } from '../components/ui';
 
 const STATUS: Record<Showing['status'], [string, string, string]> = {
-  requested: ['Waiting for the listing brokerage', '#FBEBDD', '#A54B00'],
+  requested: ['Waiting for your agent to confirm', '#FBEBDD', '#A54B00'],
   confirmed: ['Confirmed', '#E3F2E8', '#2B7A4B'],
+  declined: ['Can’t go ahead', '#FDECEC', '#A11B1B'],
   cancelled: ['Cancelled', '#F2F2F7', '#5E5E63'],
   completed: ['Visited', '#F2F2F7', '#5E5E63'],
 };
@@ -38,18 +39,19 @@ export default function Visits() {
   return (
     <Screen>
       <Back />
-      <Title sub="Visits are confirmed by the listing brokerage. Tenant-occupied homes need 24 hours’ written notice to the tenant.">Your visits</Title>
+      <Title sub="Your agent arranges each visit with the listing brokerage and confirms it here. Tenant-occupied homes need 24 hours’ written notice to the tenant.">Your visits</Title>
       <ErrorText>{error}</ErrorText>
       {visits?.length === 0 && <Card><Text style={sora(700)}>No visits yet</Text><Text style={t.note}>Open any home and tap “Book a visit”.</Text></Card>}
       {visits?.map(v => {
         const [label, bg, fg] = STATUS[v.status];
-        const upcoming = v.status !== 'cancelled' && Date.parse(v.at) > Date.now();
+        const upcoming = (v.status === 'requested' || v.status === 'confirmed') && Date.parse(v.at) > Date.now();
         return (
           <Card key={v.id} style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
             {v.photo && <Image source={{ uri: v.photo.url }} accessibilityLabel={v.photo.alt} style={{ width: 72, height: 54, borderRadius: 8 }} />}
             <View style={{ flex: 1, gap: 2 }}>
               <Pressable accessibilityRole="link" onPress={() => router.push(`/listing/${v.listingId}`)}><Text style={sora(700)}>{v.address}, {v.city}</Text></Pressable>
               <Text style={t.note}>{when(v.at)}</Text>
+              {v.agentNote && <Text style={[t.note, { color: color.text }]}>Your agent: “{v.agentNote}”</Text>}
               <Text style={{ ...sora(600), fontSize: 12, alignSelf: 'flex-start', backgroundColor: bg, color: fg, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>{label}</Text>
             </View>
             {upcoming && (

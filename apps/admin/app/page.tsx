@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 /**
  * Klyr Admin: internal back office for the brokerage. Not yet designed; modules follow the
  * Launch Checklist owners. Served only on the corporate VPN / SSO, never to clients.
@@ -14,6 +16,9 @@ const MODULES = [
   ['Users and roles', 'Staff accounts, roles, MFA status, audit log'],
 ] as const;
 
+/** Built so far: the FINTRAC ID review queue. */
+const LIVE: Record<string, string> = { 'Compliance (FINTRAC)': '/id-reviews' };
+
 export default function AdminHome() {
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px' }}>
@@ -21,7 +26,7 @@ export default function AdminHome() {
       <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 12 }}>
         {MODULES.map(([t, d]) => (
           <li key={t} style={{ background: '#fff', borderRadius: 12, padding: 16 }}>
-            <strong>{t}</strong>
+            {LIVE[t] ? <Link href={LIVE[t]}><strong>{t}</strong></Link> : <strong>{t}</strong>}
             <div style={{ color: 'var(--muted)' }}>{d}</div>
           </li>
         ))}

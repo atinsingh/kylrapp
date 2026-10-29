@@ -60,7 +60,7 @@ export default function Visit() {
         {!idDone && !idReview && <Button title="Verify my ID" alt onPress={() => router.push('/id-check')} />}
       </Step>
       <Card style={b.canBookVisits ? undefined : { opacity: 0.6 }}>
-        <Text style={t.label}>PICK A TIME · LISTING BROKERAGE CONFIRMS</Text>
+        <Text style={t.label}>PICK A TIME · YOUR AGENT CONFIRMS</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>{days.map(d => <Chip key={d} label={d} on={d === day} onPress={() => { if (b.canBookVisits) { setDay(d); setPick(null); } }} />)}</View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
           {all.filter(s => s.day === day).map(s => <Chip key={s.at.toISOString()} label={s.time} on={pick?.getTime() === s.at.getTime()} onPress={() => b.canBookVisits && setPick(s.at)} />)}

@@ -6,10 +6,12 @@ import { fileURLToPath } from 'node:url';
 import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../app.module.js';
 import { config } from '../config.js';
 import { createDb } from '../db/client.js';
+import { sessions } from '../db/schema.js';
 import { totpAt, totpStep } from './crypto.js';
 import { MAILER, type Mail } from './mailer.js';
 
@@ -163,7 +165,11 @@ describe('security settings', () => {
     const setup = await call('POST', '/auth/mfa/totp/setup', undefined, token);
     const step = totpStep();
     await call('POST', '/auth/mfa/totp/enable', { code: totpAt(setup.body.secret, step) }, token);
-    // This email-code session has never passed a second factor.
+    // Entering the code at enable counts as a second factor; let that check go stale.
+    const { db, pool } = createDb();
+    const sid = (await call('GET', '/auth/sessions', undefined, token)).body.find((s: Json) => s.current).id;
+    await db.update(sessions).set({ mfaAt: new Date(Date.now() - 60 * 60_000) }).where(eq(sessions.id, sid));
+    await pool.end();
     expect((await call('POST', '/auth/mfa/totp/setup', undefined, token)).body.code).toBe('step_up_required');
     expect((await call('POST', '/auth/mfa/totp/disable', undefined, token)).status).toBe(403);
     expect((await call('POST', '/auth/mfa/totp/verify', { code: totpAt(setup.body.secret, step + 1) }, token)).status).toBe(200);

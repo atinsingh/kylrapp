@@ -27,3 +27,32 @@ export const BookShowingRequest = z.object({
   note: z.string().max(500).optional(),
 });
 export type BookShowingRequest = z.infer<typeof BookShowingRequest>;
+
+/** An agent's decision on a requested visit. Moving or declining needs a note for the buyer. */
+export const DecideShowingRequest = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('confirm'), note: z.string().trim().max(500).optional() }),
+  z.object({ action: z.literal('move'), at: z.iso.datetime({ offset: true }), note: z.string().trim().min(3).max(500) }),
+  z.object({ action: z.literal('decline'), note: z.string().trim().min(3).max(500) }),
+]);
+export type DecideShowingRequest = z.infer<typeof DecideShowingRequest>;
+
+/** Compliance officer's decision on an ID check that needed review. */
+export const ReviewIdRequest = z.object({
+  decision: z.enum(['approve', 'reject']),
+  note: z.string().trim().min(3, 'Add a short note for the record').max(1000),
+});
+export type ReviewIdRequest = z.infer<typeof ReviewIdRequest>;
+
+/** A location reading from the agent's device for geofenced check-in and check-out. */
+export const GeoCheckRequest = z.object({
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+  /** Reported accuracy radius in metres. */
+  accuracyM: z.number().nonnegative().max(100_000),
+  /** Android reports locations from mock-location apps; such readings are refused. */
+  mocked: z.boolean().optional(),
+});
+export type GeoCheckRequest = z.infer<typeof GeoCheckRequest>;
+
+/** Geofence rules, shared so the app can explain them. */
+export const GEOFENCE = { radiusM: 150, maxAccuracyM: 100, earlyMinutes: 30, lateMinutes: 120, minOnSiteMinutes: 10 } as const;

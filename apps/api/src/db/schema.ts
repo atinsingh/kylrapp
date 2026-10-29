@@ -311,8 +311,20 @@ export const showings = pgTable('showings', {
   dealId: uuid('deal_id').notNull().references(() => deals.id),
   listingId: uuid('listing_id').notNull().references(() => listings.id),
   at: ts('at').notNull(),
-  status: text('status', { enum: ['requested', 'confirmed', 'cancelled', 'completed'] }).notNull().default('requested'),
+  status: text('status', { enum: ['requested', 'confirmed', 'declined', 'cancelled', 'completed'] }).notNull().default('requested'),
   note: text('note'),
+  /** What the agent told the buyer when confirming, moving or declining. */
+  agentNote: text('agent_note'),
+  decidedBy: uuid('decided_by').references(() => users.id),
+  decidedAt: ts('decided_at'),
+  /** Geofenced check-in and check-out by the agent at the property: proof the visit happened. */
+  checkInAt: ts('check_in_at'),
+  checkInGeom: geometry('check_in_geom', { type: 'point', mode: 'xy', srid: 4326 }),
+  checkInDistanceM: integer('check_in_distance_m'),
+  checkInAccuracyM: integer('check_in_accuracy_m'),
+  checkOutAt: ts('check_out_at'),
+  checkOutGeom: geometry('check_out_geom', { type: 'point', mode: 'xy', srid: 4326 }),
+  checkOutDistanceM: integer('check_out_distance_m'),
   createdAt: created(),
   cancelledAt: ts('cancelled_at'),
 }, t => [index('showings_deal_ix').on(t.dealId, t.at)]);
@@ -356,6 +368,9 @@ export const idVerifications = pgTable('id_verifications', {
   /** Third-party or politically exposed cases wait for the compliance officer before visits and offers. */
   status: text('status', { enum: ['verified', 'needs_review', 'rejected'] }).notNull().default('verified'),
   buyingAs: text('buying_as', { enum: ['self', 'company'] }).notNull().default('self'),
+  reviewedBy: uuid('reviewed_by').references(() => users.id),
+  reviewedAt: ts('reviewed_at'),
+  reviewNote: text('review_note'),
   /** Pointer to the immutable record in the records bucket. */
   recordS3Key: text('record_s3_key').notNull(),
   verifiedAt: ts('verified_at').notNull(),

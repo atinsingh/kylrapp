@@ -7,6 +7,7 @@ import { AppHeader } from '@/components/app-header';
 import { api, sessionToken } from '@/lib/session';
 import { RentControl } from '../tenant';
 import { Apply } from './apply';
+import { Viewings } from './viewings';
 
 export const metadata = { title: 'Rental · Klyr' };
 const longDate = (ymd: string) => new Date(ymd + 'T12:00:00Z').toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
@@ -41,6 +42,7 @@ export default async function RentalPage({ params }: { params: Promise<{ id: str
           <div className="k-note">{[r.availableFrom && `Available ${longDate(r.availableFrom)}`, r.parking && `Parking: ${r.parking}`, r.utilities && `Utilities: ${r.utilities}`, r.furnished ? 'Furnished' : 'Unfurnished'].filter(Boolean).join(' · ')}</div>
           <div className="k-note">Listing brokerage: {r.listingBrokerage}</div>
         </section>
+        {r.status === 'active' && <Viewings listingId={r.id} viewings={r.viewings} canBook={!!renting.data?.agreement} />}
         <Apply rental={r} renting={renting.data!} legalName={me.data?.legalName ?? ''} />
       </div>
     </main>

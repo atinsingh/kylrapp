@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import type { Rental, Renting, TenantProfile } from '@klyr/api-client';
-import { money } from '@klyr/core';
+import { money, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
@@ -40,6 +40,12 @@ export default function Rent() {
           <Text style={t.note}>{money(r.profile.monthlyIncome)}/month · {r.profile.jobTitle}, {r.profile.employer} · {r.profile.occupants} occupant(s)</Text>
         </Card>
       )}
+      {r.viewings.map(v => (
+        <Card key={v.id}>
+          <Text style={sora(700)}>Viewing · {v.address}</Text>
+          <Text style={t.note}>{torontoWhen(v.at)} · {v.status === 'completed' ? (v.feedback ? 'viewed · feedback sent' : 'viewed · open it to tell us how it went') : v.status}</Text>
+        </Card>
+      ))}
       {r.applications.map(a => <Card key={a.id}><Text style={sora(700)}>{a.address}</Text><Text style={t.note}>{money(a.rent)}/month · {STATUS[a.status]}{a.status === 'accepted' ? ` · next: sign the Ontario Standard Lease and pay ${money(a.moveIn.total)} (first and last month)` : ''}</Text></Card>)}
       {rentals.map(x => (
         <Pressable key={x.id} accessibilityRole="link" accessibilityLabel={`${x.address}, ${money(x.rent)} a month`} onPress={() => router.push(`/rental/${x.id}`)}

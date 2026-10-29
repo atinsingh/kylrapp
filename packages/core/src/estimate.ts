@@ -110,8 +110,26 @@ export function sellerNet(o: SellerInput) {
 export const LANDLORD_FEE = 699;
 /** Shares of one month's rent a landlord can offer the tenant's brokerage. */
 export const TENANT_SIDE_CHOICES = [0, 0.5, 1] as const;
-/** Ontario's rent increase guideline for rent-controlled units (Residential Tenancies Act s. 120). */
+/** Ontario's rent increase guideline for rent-controlled units (Residential Tenancies Act s. 120), by calendar year. */
+export const RENT_GUIDELINES: Record<number, number> = { 2023: 2.5, 2024: 2.5, 2025: 2.5, 2026: 2.1 };
 export const RENT_GUIDELINE = { year: 2026, pct: 2.1 } as const;
+/** The guideline for a year; years not yet announced use the latest known one. */
+export const guidelineFor = (year: number) => RENT_GUIDELINES[year] ?? RENT_GUIDELINES[Math.max(...Object.keys(RENT_GUIDELINES).map(Number).filter(y => y <= year))] ?? RENT_GUIDELINE.pct;
+
+/**
+ * Interest on the last month's rent deposit (RTA s. 106): due every year on the lease anniversary, at the guideline in
+ * effect that day. Lists each anniversary from the start up to the one after `today`.
+ */
+export function lmrInterestSchedule(deposit: number, startDate: string, today: string) {
+  const [y, m, d] = startDate.split('-').map(Number) as [number, number, number];
+  const out: { dueDate: string; pct: number; amount: number }[] = [];
+  for (let k = 1; k <= 50; k++) {
+    const due = new Date(Date.UTC(y + k, m - 1, d)).toISOString().slice(0, 10), pct = guidelineFor(y + k);
+    out.push({ dueDate: due, pct, amount: Math.round((deposit * pct) / 100 * 100) / 100 });
+    if (due > today) break;
+  }
+  return out;
+}
 /** Units first occupied as a residence after this date are exempt from the guideline (RTA s. 6.1). */
 export const RENT_CONTROL_CUTOFF = '2018-11-15';
 

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { LeaseProperty, Leasing } from '@klyr/api-client';
-import { landlordNet, money, RENT_CONTROL_CUTOFF, rentControlled, TENANT_SIDE_CHOICES, torontoWhen } from '@klyr/core';
+import { landlordNet, money, moneyCents, RENT_CONTROL_CUTOFF, rentControlled, TENANT_SIDE_CHOICES, torontoWhen } from '@klyr/core';
 import { StepUp } from '@/components/step-up';
 import { errorText, klyr } from '@/lib/client';
 import { consent326 } from '../offer/[id]/consent';
@@ -12,6 +12,41 @@ import { consent326 } from '../offer/[id]/consent';
 const n = (v: string) => Number(v.replace(/\D/g, '')) || 0;
 const SIDE: Record<number, string> = { 0: 'None', 0.5: 'Half a month', 1: 'One month' };
 const STATUS = { submitted: 'Waiting for you', accepted: 'Chosen', declined: 'Not chosen', withdrawn: 'Withdrawn' } as const;
+const FEEDBACK = { interest: { yes: 'Would consider applying', maybe: 'Maybe', no: 'Not for them' }, price: { low: 'priced low', fair: 'priced fairly', high: 'priced high' } } as const;
+const longDate = (ymd: string) => new Date(ymd + 'T12:00:00Z').toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+
+/** Ontario: interest on the last month's rent deposit every year, at the guideline. Pay it, or keep it to top the deposit up. */
+function DepositInterest({ l }: { l: Leasing }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  async function record(dueDate: string, method: 'paid' | 'topped_up') {
+    setBusy(true); setError('');
+    const r = await klyr.recordDepositInterest(dueDate, method);
+    setBusy(false);
+    if (!r.ok) return setError(errorText(r.error));
+    router.refresh();
+  }
+  const soon = (d: string) => Date.parse(d) - Date.now() <= 30 * 86_400_000;
+  return (
+    <section className="k-card" aria-label="Deposit interest">
+      <div className="k-label">INTEREST ON THE LAST MONTH’S RENT DEPOSIT</div>
+      <span className="k-note">Each year on the lease anniversary you owe the tenant interest at that year’s rent increase guideline. Pay it, or keep it to top up the deposit if the rent went up.</span>
+      {l.interest.map(i => (
+        <div key={i.dueDate} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '6px 0', borderTop: '.5px solid var(--sep)' }}>
+          <div><strong>{moneyCents(i.amount)}</strong> <span className="k-note">· {i.pct}% · due {longDate(i.dueDate)}{i.method ? ` · ${i.method === 'paid' ? 'paid' : 'kept to top up'} ${torontoWhen(i.recordedAt!)}` : ''}</span></div>
+          {!i.method && soon(i.dueDate) && (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="k-btn k-alt" style={{ width: 'auto', padding: '0 14px', minHeight: 40 }} disabled={busy} onClick={() => record(i.dueDate, 'paid')}>I paid it</button>
+              <button className="k-btn k-alt" style={{ width: 'auto', padding: '0 14px', minHeight: 40 }} disabled={busy} onClick={() => record(i.dueDate, 'topped_up')}>Kept it to top up</button>
+            </div>
+          )}
+        </div>
+      ))}
+      {error && <div className="k-error" role="alert">{error}</div>}
+    </section>
+  );
+}
 
 export function LeaseFlow({ leasing, legalName }: { leasing: Leasing | null; legalName: string }) {
   if (!leasing) return <Start />;
@@ -175,6 +210,20 @@ function Live({ l, legalName }: { l: Leasing; legalName: string }) {
             : <button className="k-btn" style={{ width: 'auto', padding: '0 18px', alignSelf: 'flex-start' }} onClick={() => { setOpen({ id: c.id, kind: 'consent' }); setRead(false); setName(''); }}>Review and sign</button>}
         </section>
       ))}
+
+      {leased && l.interest.length > 0 && <DepositInterest l={l} />}
+
+      {l.viewings.length > 0 && (
+        <section className="k-card" aria-label="Viewings">
+          <div className="k-label">VIEWINGS · {l.viewings.filter(v => v.status === 'completed').length} DONE · {l.viewings.filter(v => v.status !== 'completed').length} BOOKED</div>
+          {l.viewings.map((v, i) => (
+            <div key={v.id} style={{ padding: '6px 0', borderTop: i ? '.5px solid var(--sep)' : 0 }}>
+              <strong>{torontoWhen(v.at)}</strong> <span className="k-note">· {v.status === 'completed' ? 'viewed' : v.status}</span>
+              {v.feedback && <div className="k-note" style={{ color: 'var(--text)' }}>{FEEDBACK.interest[v.feedback.interest]} · {FEEDBACK.price[v.feedback.price]}{v.feedback.comment ? ` · “${v.feedback.comment}”` : ''}</div>}
+            </div>
+          ))}
+        </section>
+      )}
 
       {l.applications.length > 0 && (
         <section className="k-card" aria-label="Applicants">

@@ -48,3 +48,14 @@ export const LeaseDecision = z.discriminatedUnion('result', [
   z.object({ result: z.literal('declined') }),
 ]);
 export type LeaseDecision = z.infer<typeof LeaseDecision>;
+
+/** A viewing of a rental. The tenant's agent confirms it and checks in at the home, as for a purchase. */
+export const BookViewingRequest = z.object({
+  at: z.iso.datetime({ offset: true }),
+  note: z.string().trim().max(500).optional(),
+});
+export type BookViewingRequest = z.infer<typeof BookViewingRequest>;
+
+/** The landlord records each year's interest on the last month's rent deposit. */
+export const LmrInterestRequest = z.object({ dueDate: day, method: z.enum(['paid', 'topped_up']) });
+export type LmrInterestRequest = z.infer<typeof LmrInterestRequest>;

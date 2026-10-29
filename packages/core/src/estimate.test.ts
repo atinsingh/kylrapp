@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { affordFromIncome, buyerEstimate, cmhcPremium, landlordNet, landTransferTax, minimumDown, money, moneyShort, moveInCost, rentControlled, sellerNet, termCost } from './index.js';
+import { affordFromIncome, buyerEstimate, cmhcPremium, landlordNet, landTransferTax, minimumDown, money, moneyShort, moveInCost, lmrInterestSchedule, rentControlled, sellerNet, termCost } from './index.js';
 
 // Reference values computed with design/prototype/klyr-app.js, the source this engine was ported from.
 const maple = { price: 1_150_000, city: 'Mississauga', type: 'House', coop: 0.022, tax: 6960 } as const;
@@ -97,5 +97,15 @@ describe('lender quotes', () => {
     expect(b.total - a.total).toBeLessThan(0);
     expect(b.total).toBe(b.interest + 2500);
     expect(a.balanceAfter).toBeLessThan(800_000);
+  });
+});
+
+describe('last month’s rent interest', () => {
+  it('is due on each anniversary at that year’s guideline', () => {
+    expect(lmrInterestSchedule(3100, '2024-12-01', '2026-10-29')).toEqual([
+      { dueDate: '2025-12-01', pct: 2.5, amount: 77.5 },
+      { dueDate: '2026-12-01', pct: 2.1, amount: 65.1 },
+    ]);
+    expect(lmrInterestSchedule(3100, '2026-12-01', '2026-10-29')).toEqual([{ dueDate: '2027-12-01', pct: 2.1, amount: 65.1 }]);
   });
 });

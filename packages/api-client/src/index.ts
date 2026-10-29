@@ -208,14 +208,19 @@ export interface Rental {
   availableFrom: string | null; parking: string | null; utilities: string | null; furnished: boolean; description: string | null;
   listingBrokerage: string; source: string; status: string; photo: { url: string; alt: string } | null;
 }
-export interface RentalDetail extends Rental { photos: { url: string; alt: string }[]; consent: Consent | null; application: LeaseApplication | null }
+export interface Viewing { id: string; listingId: string; address: string; city: string; at: string; status: Showing['status']; agentNote: string | null; feedback: VisitFeedback | null }
+export interface DepositInterest { dueDate: string; pct: number; amount: number; method: 'paid' | 'topped_up' | null; recordedAt: string | null }
+export interface RentalDetail extends Rental { photos: { url: string; alt: string }[]; consent: Consent | null; application: LeaseApplication | null; viewings: Viewing[] }
 export interface Renting {
   agreement: { documentId: string; signedAt: string } | null; agent: { name: string; title: string } | null;
-  profile: TenantProfile | null; applications: (LeaseApplication & { address: string; city: string })[];
+  profile: TenantProfile | null; applications: (LeaseApplication & { address: string; city: string; interest: DepositInterest[] })[];
+  viewings: Viewing[];
 }
 export interface LeaseProperty { address: string; unit?: string; city: string; type: 'House' | 'Townhouse' | 'Condo'; beds: number; baths: number; sqft?: number; firstOccupied: string; parking: string; utilities: string; furnished: boolean; description: string }
 export interface Leasing {
   dealId: string; stage: string; property: LeaseProperty; rent: number; availableFrom: string; tenantSidePct: number;
+  viewings: { id: string; at: string; status: 'requested' | 'confirmed' | 'completed'; feedback: VisitFeedback | null }[];
+  interest: DepositInterest[];
   rentControlled: boolean; guideline: { year: number; pct: number };
   net: { gross: number; fee: number; tenantSide: number; net: number; months: number }; fee: number;
   agreement: { documentId: string; signedAt: string } | null; listingId: string | null; publishedAt: string | null; agent: { name: string; title: string } | null;
@@ -398,6 +403,8 @@ export function createClient(opts: ClientOptions) {
     withdrawApplication: (id: string) => del<Renting>(`/renting/applications/${encodeURIComponent(id)}`),
     rentals: (q: { city?: string; maxRent?: number } = {}) => get<Rental[]>(`/rentals?${new URLSearchParams(Object.entries(q).filter(([, v]) => v).map(([k, v]) => [k, String(v)]))}`),
     rental: (id: string) => get<RentalDetail>(`/rentals/${encodeURIComponent(id)}`),
+    bookViewing: (id: string, at: string, note?: string) => post<RentalDetail>(`/rentals/${encodeURIComponent(id)}/viewings`, { at, note }),
+    recordDepositInterest: (dueDate: string, method: 'paid' | 'topped_up') => post<Leasing>('/leasing/interest', { dueDate, method }),
     consentToApply: (id: string, typedName: string) => post<RentalDetail>(`/rentals/${encodeURIComponent(id)}/consent`, { typedName, readConfirmed: true }),
     applyForRental: (id: string, a: { rent: number; startDate: string; termMonths: number; typedName: string }) => post<RentalDetail>(`/rentals/${encodeURIComponent(id)}/apply`, { ...a, readConfirmed: true }),
     leasing: () => get<Leasing>('/leasing'),

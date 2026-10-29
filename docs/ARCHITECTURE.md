@@ -220,8 +220,12 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * Content and assumptions: the estimate defaults (rate, down payment, lawyer's fee) are published as versions with a note and the publisher, reviewed at least every 90 days, and every new client starts from the newest one.
   * Users and roles: staff, their roles, second factor and last sign-in; adding an agent needs their RECO name, title and number; the brokerage always keeps a broker of record (and you can't remove your own); an agent with open deals is reassigned first; the audit log.
 
+* Rentals, part 2 (web, phone and Klyr Pro; screenshots `137`–`140`):
+  * Tenants book viewings once Form 346 is signed. A viewing is an ordinary visit: it reaches the tenant's agent in Klyr Pro and the agent app, which confirm it and check in at the home with the phone's location. Afterwards the tenant leaves feedback, which the landlord sees without a name.
+  * Interest on the last month's rent deposit (RTA s. 106): due every lease anniversary at that year's guideline (`lmrInterestSchedule` and `RENT_GUIDELINES` in `@klyr/core`). The landlord records each year as paid, or kept to top the deposit up to a new rent, within 30 days of the date. The tenant sees it and is emailed.
+  * Landlords have the full flow on the phone: start, first year after fees, Form 210, Form 326 consents, applicants on the same facts, viewings and deposit interest.
+
 **Still to build** (no outside dependency, smaller follow-ups):
-* Viewings for rentals; landlord screens on the phone; tracking interest on last month's rent deposits.
 * A provider portal so lenders, lawyers, inspectors and insurers send quotes themselves, and quote imports.
 * Privacy requests on the phone (web only today); the client-facing "as of" date reading the published assumptions everywhere (the Admin value drives defaults today, the label still shows the shipped date on some screens).
 * Reassigning an agent's deals from Users and roles.

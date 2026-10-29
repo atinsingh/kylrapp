@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDb } from '../db/client.js';
-import { listings } from '../db/schema.js';
+import { leaseApplications, listings, showings } from '../db/schema.js';
 import { startApp } from '../test/harness.js';
 import { AGENT_EMAIL, people, resetStaff } from '../test/people.js';
 
@@ -71,6 +71,18 @@ describe('renting and leasing out', () => {
     expect((await apply(a.t)).body.code).toBe('already_applied');
     expect(mail(ll.email).subject).toBe('New application · 9 Willow St #2');
 
+    // A viewing goes to the tenant's agent like any visit; after it, feedback reaches the landlord without a name.
+    const day = new Date(Date.now() + 2 * 86_400_000);
+    const at = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 18)).toISOString();
+    const viewed = (await h.call('POST', `/rentals/${listingId}/viewings`, { at }, a.t)).body;
+    expect(viewed.viewings[0]).toMatchObject({ at, status: 'requested' });
+    expect((await h.call('POST', `/rentals/${listingId}/viewings`, { at }, a.t)).body.code).toBe('already_booked');
+    const tenantAgent = await p.staff(AGENT_EMAIL[(await h.call('GET', '/renting', undefined, a.t)).body.agent.name]!);
+    expect((await h.call('GET', '/pro/showings', undefined, tenantAgent)).body.some((v: { id: string }) => v.id === viewed.viewings[0].id)).toBe(true);
+    await db.update(showings).set({ status: 'completed' }).where(eq(showings.id, viewed.viewings[0].id));
+    await h.call('POST', `/showings/${viewed.viewings[0].id}/feedback`, { interest: 'yes', price: 'fair' }, a.t);
+    expect((await h.call('GET', '/leasing', undefined, ll.t)).body.viewings).toEqual([{ id: viewed.viewings[0].id, at, status: 'completed', feedback: { interest: 'yes', price: 'fair' } }]);
+
     // Tenant B applies too.
     const b = await signedIn();
     await h.call('POST', '/renting/agreement/sign', sign, b.t);
@@ -94,5 +106,15 @@ describe('renting and leasing out', () => {
     expect(mail(b.email).subject).toBe('Update on your application · 9 Willow St');
     expect((await h.call('GET', '/renting', undefined, a.t)).body.applications[0].status).toBe('accepted');
     expect((await h.call('GET', '/rentals?city=Toronto', undefined, a.t)).body.some((r: { id: string }) => r.id === listingId)).toBe(false);
+
+    // Interest on the last month's rent deposit, each anniversary at that year's guideline.
+    expect(done.interest).toEqual([{ dueDate: '2027-12-01', pct: 2.1, amount: 65.1, method: null, recordedAt: null }]);
+    expect((await h.call('POST', '/leasing/interest', { dueDate: '2027-12-01', method: 'paid' }, ll.t)).body.code).toBe('too_early');
+    await db.update(leaseApplications).set({ startDate: '2025-11-15' }).where(eq(leaseApplications.id, view.applications[0].id));
+    const yearOne = (await h.call('POST', '/leasing/interest', { dueDate: '2026-11-15', method: 'paid' }, ll.t)).body.interest[0];
+    expect(yearOne).toMatchObject({ dueDate: '2026-11-15', amount: 65.1, method: 'paid' });
+    expect(mail(a.email).subject).toBe('Interest on your deposit · 9 Willow St');
+    expect((await h.call('POST', '/leasing/interest', { dueDate: '2026-11-15', method: 'paid' }, ll.t)).body.code).toBe('already_recorded');
+    expect((await h.call('GET', '/renting', undefined, a.t)).body.applications[0].interest[0].method).toBe('paid');
   });
 });

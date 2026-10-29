@@ -120,6 +120,13 @@
       "when": 1793295889660,
       "tag": "0016_admin_modules",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793301144087,
+      "tag": "0017_rentals_part2",
+      "breakpoints": true
     }
   ]
 }

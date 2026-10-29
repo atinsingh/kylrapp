@@ -425,6 +425,16 @@ export const leaseApplications = pgTable('lease_applications', {
   createdAt: created(),
 }, t => [index('lease_applications_listing_ix').on(t.listingId)]);
 
+/** Interest on a last month's rent deposit, recorded by the landlord each anniversary: paid, or kept to top the deposit up. */
+export const lmrInterest = pgTable('lmr_interest', {
+  applicationId: uuid('application_id').notNull().references(() => leaseApplications.id),
+  dueDate: date('due_date', { mode: 'string' }).notNull(),
+  amount: numeric('amount', { precision: 10, scale: 2 }).notNull(),
+  method: text('method', { enum: ['paid', 'topped_up'] }).notNull(),
+  recordedBy: uuid('recorded_by').notNull().references(() => users.id),
+  recordedAt: ts('recorded_at').notNull().defaultNow(),
+}, t => [primaryKey({ columns: [t.applicationId, t.dueDate] })]);
+
 /**
  * Multiple representation (OREA Form 326): Klyr represents the seller and the buyer of the same home.
  * Both sign before the buyer can make an offer; each signature is a document on that party's own deal.

@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 import { Image, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
-import type { RentalDetail, Renting } from '@klyr/api-client';
-import { money, torontoWhen } from '@klyr/core';
+import type { RentalDetail, Renting, VisitFeedback } from '@klyr/api-client';
+import { money, torontoInstant, torontoToday, torontoWhen } from '@klyr/core';
 import { Back } from '../../components/back';
 import { StepUp } from '../../components/step-up';
 import { Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../../components/ui';
@@ -26,6 +26,9 @@ export default function RentalScreen() {
   const [stepUp, setStepUp] = useState<'consent' | 'apply' | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [day, setDay] = useState(1);
+  const [hour, setHour] = useState(18);
+  const [fb, setFb] = useState<Partial<VisitFeedback>>({});
   const load = useCallback(() => {
     void Promise.all([klyr.rental(id), klyr.renting()]).then(([a, b]) => {
       if (a.ok) { setR(a.data); setRent(x => x || a.data.rent); setStart(x => x || (a.data.availableFrom ?? '')); } else setError(errorText(a.error));
@@ -53,6 +56,20 @@ export default function RentalScreen() {
         <Button title={title} busy={busy} disabled={!read || name.trim().length < 2} onPress={() => go(kind)} />
       </>
     );
+  async function book() {
+    setBusy(true); setError('');
+    const [y, m, d] = torontoToday();
+    const res = await klyr.bookViewing(id, torontoInstant(y, m, d + day, hour, 0).toISOString());
+    setBusy(false);
+    if (!res.ok) return setError(errorText(res.error));
+    setR(res.data);
+  }
+  async function feedback(vid: string) {
+    const res = await klyr.visitFeedback(vid, fb as VisitFeedback);
+    if (!res.ok) return setError(errorText(res.error));
+    setFb({}); load();
+  }
+  const upcoming = r.viewings.some(v => (v.status === 'requested' || v.status === 'confirmed') && Date.parse(v.at) > Date.now());
   const consentOpen = r.consent && !(r.consent.buyerSignedAt && r.consent.sellerSignedAt);
 
   return (
@@ -67,6 +84,33 @@ export default function RentalScreen() {
         {r.description && <Text style={t.body}>{r.description}</Text>}
         <Text style={t.note}>Listing brokerage: {r.listingBrokerage}</Text>
       </Card>
+      {r.status === 'active' && (
+        <Card>
+          <Text style={t.label}>VIEWINGS</Text>
+          {r.viewings.map(v => (
+            <View key={v.id} style={{ gap: 6 }}>
+              <Text style={sora(600)}>{torontoWhen(v.at)} · {v.status === 'completed' ? 'viewed' : v.status}</Text>
+              {v.agentNote && <Text style={t.note}>Your agent: “{v.agentNote}”</Text>}
+              {v.status === 'completed' && !v.feedback && (
+                <>
+                  <View style={{ flexDirection: 'row', gap: 6 }}>{(['yes', 'maybe', 'no'] as const).map(k => <Chip key={k} flex label={{ yes: 'I’d apply', maybe: 'Maybe', no: 'Not for me' }[k]} on={fb.interest === k} onPress={() => setFb(x => ({ ...x, interest: k }))} />)}</View>
+                  <View style={{ flexDirection: 'row', gap: 6 }}>{(['low', 'fair', 'high'] as const).map(k => <Chip key={k} flex label={{ low: 'Priced low', fair: 'Fair', high: 'Priced high' }[k]} on={fb.price === k} onPress={() => setFb(x => ({ ...x, price: k }))} />)}</View>
+                  <Button title="Send feedback" alt disabled={!fb.interest || !fb.price} onPress={() => feedback(v.id)} />
+                </>
+              )}
+              {v.feedback && <Text style={t.note}>Feedback sent. The landlord sees it without your name.</Text>}
+            </View>
+          ))}
+          {mine.agreement && !upcoming && (
+            <>
+              <View style={{ flexDirection: 'row', gap: 6 }}>{[[1, 'Tomorrow'], [2, 'In 2 days'], [3, 'In 3 days']].map(([d, l]) => <Chip key={l} flex label={l as string} on={day === d} onPress={() => setDay(d as number)} />)}</View>
+              <View style={{ flexDirection: 'row', gap: 6 }}>{[[10, '10 am'], [14, '2 pm'], [18, '6 pm']].map(([h, l]) => <Chip key={l} flex label={l as string} on={hour === h} onPress={() => setHour(h as number)} />)}</View>
+              <ErrorText>{error}</ErrorText>
+              <Button title="Book a viewing" alt busy={busy} onPress={book} />
+            </>
+          )}
+        </Card>
+      )}
       {r.application && r.application.status !== 'withdrawn' ? (
         <Card><Text style={t.label}>YOUR APPLICATION</Text><Text style={sora(700)}>{STATUS[r.application.status]}</Text><Text style={t.note}>{money(r.application.rent)}/month from {r.application.startDate} · sent {torontoWhen(r.application.createdAt)}</Text></Card>
       ) : !mine.agreement || !mine.profile ? (

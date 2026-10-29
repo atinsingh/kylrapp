@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Rental, Renting, TenantProfile } from '@klyr/api-client';
-import { money, torontoWhen } from '@klyr/core';
+import { money, moneyCents, torontoWhen } from '@klyr/core';
 import { StepUp } from '@/components/step-up';
 import { errorText, klyr } from '@/lib/client';
 
@@ -68,6 +68,17 @@ export function TenantSetup({ renting: r, legalName }: { renting: Renting; legal
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 640 }}>
+      {r.viewings.length > 0 && (
+        <section className="k-card" aria-label="Your viewings">
+          <div className="k-label">YOUR VIEWINGS</div>
+          {r.viewings.map((v, i) => (
+            <div key={v.id} style={{ padding: '6px 0', borderTop: i ? '.5px solid var(--sep)' : 0 }}>
+              <Link href={`/rent/${v.listingId}`} style={{ fontWeight: 700, color: 'var(--text)' }}>{v.address}, {v.city}</Link>
+              <div className="k-note">{torontoWhen(v.at)} · {v.status === 'completed' ? (v.feedback ? 'viewed · feedback sent' : 'viewed · tell us how it went') : v.status}</div>
+            </div>
+          ))}
+        </section>
+      )}
       {r.applications.length > 0 && (
         <section className="k-card" aria-label="Your applications">
           <div className="k-label">YOUR APPLICATIONS</div>
@@ -75,6 +86,7 @@ export function TenantSetup({ renting: r, legalName }: { renting: Renting; legal
             <div key={a.id} style={{ padding: '8px 0', borderTop: i ? '.5px solid var(--sep)' : 0 }}>
               <Link href={`/rent/${a.listingId}`} style={{ fontWeight: 700, color: 'var(--text)' }}>{a.address}, {a.city}</Link>
               <div className="k-note">{money(a.rent)}/month from {longDate(a.startDate)} · {STATUS[a.status]}{a.status === 'accepted' ? ` · next: sign the Ontario Standard Lease and pay ${money(a.moveIn.total)} (first and last month)` : ''}</div>
+              {a.interest.length > 0 && <div className="k-note">Interest on your deposit: {a.interest.map(x => `${moneyCents(x.amount)} on ${longDate(x.dueDate)}${x.method ? (x.method === 'paid' ? ' (paid)' : ' (kept to top up the deposit)') : ''}`).join(' · ')}</div>}
             </div>
           ))}
         </section>

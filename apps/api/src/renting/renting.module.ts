@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Inject, Module, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { LeaseDecision, LeasePlanRequest, LeaseStartRequest, PublishListingRequest, RentalApplyRequest, SignOfferRequest, TenantProfileRequest } from '@klyr/contracts';
+import { BookViewingRequest, LeaseDecision, LmrInterestRequest, LeasePlanRequest, LeaseStartRequest, PublishListingRequest, RentalApplyRequest, SignOfferRequest, TenantProfileRequest } from '@klyr/contracts';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { DealsModule } from '../deals/deals.module.js';
 import { assertFreshMfa, Auth, AuthGuard, StepUp, type AuthContext } from '../identity/auth.guard.js';
@@ -32,6 +32,9 @@ class RentingController {
 
   @Get('rentals/:id')
   rental(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string) { return this.renting.rental(a.userId, id); }
+
+  @Post('rentals/:id/viewings') @HttpCode(201)
+  viewing(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(BookViewingRequest)) b: BookViewingRequest) { return this.renting.bookViewing(a.userId, id, b); }
 
   @Post('rentals/:id/consent') @HttpCode(200) @StepUp()
   consent(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(SignOfferRequest)) b: SignOfferRequest, @Req() req: Request) {
@@ -70,6 +73,9 @@ class LeasingController {
   consent(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(SignOfferRequest)) b: SignOfferRequest, @Req() req: Request) {
     return this.renting.signLandlordConsent(a.userId, id, b.typedName, client(req));
   }
+
+  @Post('interest') @HttpCode(200)
+  interest(@Auth() a: AuthContext, @Body(new ZodPipe(LmrInterestRequest)) b: LmrInterestRequest) { return this.renting.recordInterest(a.userId, b); }
 
   @Post('applications/:id') @HttpCode(200)
   decide(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(LeaseDecision)) b: LeaseDecision, @Req() req: Request) {

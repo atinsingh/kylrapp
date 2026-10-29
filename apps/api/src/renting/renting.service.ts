@@ -1,13 +1,14 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, lte, ne } from 'drizzle-orm';
-import type { LeaseDecision, LeasePlanRequest, LeaseStartRequest, RentalApplyRequest, TenantProfileRequest } from '@klyr/contracts';
-import { landlordNet, LANDLORD_FEE, moveInCost, RENT_GUIDELINE, rentControlled, torontoToday } from '@klyr/core';
+import { and, asc, desc, eq, gt, inArray, lte, ne } from 'drizzle-orm';
+import type { BookViewingRequest, LeaseDecision, LeasePlanRequest, LeaseStartRequest, LmrInterestRequest, RentalApplyRequest, TenantProfileRequest, VisitFeedbackRequest } from '@klyr/contracts';
+import { landlordNet, LANDLORD_FEE, lmrInterestSchedule, moveInCost, RENT_GUIDELINE, rentControlled, torontoToday } from '@klyr/core';
 import { config } from '../config.js';
 import { DB, type Db } from '../db/db.module.js';
-import { agents, auditLog, dealParties, deals, documents, leaseApplications, leaseProfiles, listingMedia, listings, organizations, representationConsents, tenantProfiles, users } from '../db/schema.js';
-import { DealsService } from '../deals/deals.service.js';
+import { agents, auditLog, dealParties, deals, documents, leaseApplications, leaseProfiles, listingMedia, listings, lmrInterest, organizations, representationConsents, showings, tenantProfiles, users } from '../db/schema.js';
+import { DealsService, VISIT_MAX_AHEAD_DAYS, VISIT_MIN_LEAD_MS } from '../deals/deals.service.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 import { NotifyService } from '../notify/notify.service.js';
+import { visitNotes } from '../notify/visit-notes.js';
 import { consentRecord } from '../offers/offers.service.js';
 
 const SIGN = 'Klyr Realty Inc., Brokerage';
@@ -44,11 +45,14 @@ export class RentingService {
     const apps = deal ? await this.db.select({ a: leaseApplications, address: listings.address, unit: listings.unit, city: listings.city, listingStatus: listings.status })
       .from(leaseApplications).innerJoin(listings, eq(listings.id, leaseApplications.listingId))
       .where(eq(leaseApplications.dealId, deal.id)).orderBy(desc(leaseApplications.createdAt)) : [];
+    const viewings = deal ? await this.db.select({ s: showings, address: listings.address, unit: listings.unit, city: listings.city }).from(showings)
+      .innerJoin(listings, eq(listings.id, showings.listingId)).where(eq(showings.dealId, deal.id)).orderBy(desc(showings.at)) : [];
     return {
       agreement: doc ? { documentId: doc.id, signedAt: doc.createdAt.toISOString() } : null,
       agent: deal ? await this.agentOf(deal.agentId) : null,
       profile: (p?.data ?? null) as TenantProfileRequest | null,
-      applications: apps.map(r => ({ ...this.app(r.a), address: r.unit ? `${r.address} #${r.unit}` : r.address, city: r.city })),
+      applications: await Promise.all(apps.map(async r => ({ ...this.app(r.a), address: r.unit ? `${r.address} #${r.unit}` : r.address, city: r.city, interest: r.a.status === 'accepted' ? await this.interest(r.a) : [] }))),
+      viewings: viewings.map(v => this.viewing(v.s, v.unit ? `${v.address} #${v.unit}` : v.address, v.city)),
     };
   }
 
@@ -104,6 +108,8 @@ export class RentingService {
     return {
       ...this.rentalCard(r, media[0]), photos: media.map(m => ({ url: this.url(m.url), alt: m.alt ?? '' })),
       consent: await this.consentFor(userId, r), application: mine ? this.app(mine) : null,
+      viewings: deal ? (await this.db.select().from(showings).where(and(eq(showings.dealId, deal.id), eq(showings.listingId, id))).orderBy(desc(showings.at)))
+        .map(v => this.viewing(v, r.unit ? `${r.address} #${r.unit}` : r.address, r.city)) : [],
     };
   }
 
@@ -171,6 +177,27 @@ export class RentingService {
       await this.notify.toUser(landlord.id, 'consumer', { title: 'New rental application', body: address, data: { screen: 'lease' } });
       await this.notify.toUser(landlord.agentId, 'agent', { title: 'New application on your rental', body: address, data: { screen: 'deals' } });
     }
+    return this.rental(userId, listingId);
+  }
+
+  /** A viewing: the tenant's agent confirms it and checks in at the home with the phone's location, as for a purchase. */
+  async bookViewing(userId: string, listingId: string, req: BookViewingRequest) {
+    const deal = await this.requireTenant(userId);
+    const at = new Date(req.at), now = Date.now();
+    if (at.getTime() < now + VISIT_MIN_LEAD_MS || at.getTime() > now + VISIT_MAX_AHEAD_DAYS * 86_400_000) {
+      throw new BadRequestException({ code: 'bad_time', message: `Pick a time between one hour and ${VISIT_MAX_AHEAD_DAYS} days from now.` });
+    }
+    const [r] = await this.db.select().from(listings).where(and(eq(listings.id, listingId), eq(listings.kind, 'lease'), eq(listings.status, 'active'), eq(listings.internetDisplay, true)));
+    if (!r) throw new NotFoundException();
+    const [open] = await this.db.select({ id: showings.id }).from(showings)
+      .where(and(eq(showings.dealId, deal.id), eq(showings.listingId, listingId), inArray(showings.status, ['requested', 'confirmed']), gt(showings.at, new Date())));
+    if (open) throw new ConflictException({ code: 'already_booked', message: 'You already have a viewing booked here.' });
+    const [row] = await this.db.insert(showings).values({ dealId: deal.id, listingId, at, note: req.note ?? null }).returning();
+    await this.db.insert(auditLog).values({ actorId: userId, action: 'book_viewing', entity: 'showing', entityId: row!.id, data: { listingId, at: req.at } });
+    const address = r.unit ? `${r.address} #${r.unit}` : r.address;
+    await this.notify.toUser(deal.agentId, 'agent', visitNotes.requested(address, at, row!.id));
+    const landlord = await this.landlordOf(listingId);
+    if (landlord) await this.notify.toUser(landlord.id, 'consumer', { title: 'Viewing requested', body: address, data: { screen: 'lease' } });
     return this.rental(userId, listingId);
   }
 
@@ -298,6 +325,27 @@ export class RentingService {
     return this.presentLease(deal.id);
   }
 
+  /** Each anniversary the landlord pays the deposit interest, or keeps it to top the deposit up to a new rent. */
+  async recordInterest(userId: string, req: LmrInterestRequest) {
+    const deal = await this.requireLandlord(userId);
+    const p = await this.leaseProfile(deal.id);
+    const [a] = p.listingId ? await this.db.select().from(leaseApplications).where(and(eq(leaseApplications.listingId, p.listingId), eq(leaseApplications.status, 'accepted'))) : [];
+    if (!a) throw new ConflictException({ code: 'no_lease', message: 'There’s no signed lease yet.' });
+    const due = (await this.interest(a)).find(i => i.dueDate === req.dueDate);
+    if (!due) throw new BadRequestException({ code: 'bad_date', message: 'That isn’t one of the lease anniversaries.' });
+    if (due.recordedAt) throw new ConflictException({ code: 'already_recorded', message: 'Already recorded for that year.' });
+    if (Date.parse(req.dueDate) - Date.now() > 30 * 86_400_000) throw new ConflictException({ code: 'too_early', message: 'Record it within 30 days of the anniversary.' });
+    await this.db.insert(lmrInterest).values({ applicationId: a.id, dueDate: req.dueDate, amount: String(due.amount), method: req.method, recordedBy: userId });
+    await this.db.insert(auditLog).values({ actorId: userId, action: 'lmr_interest', entity: 'lease_application', entityId: a.id, data: { ...req, amount: due.amount } });
+    const tenant = await this.client(a.dealId);
+    if (tenant) {
+      const prop = p.property as Property;
+      await this.mail.send({ to: tenant.email, subject: `Interest on your deposit · ${prop.address}`, text: `Your landlord recorded this year’s interest on your last month’s rent deposit: $${due.amount.toFixed(2)} (${due.pct}%), ${req.method === 'paid' ? 'paid to you' : 'kept to top up your deposit to your current rent'}.\n\n${SIGN}` });
+      await this.notify.toUser(tenant.id, 'consumer', { title: 'Deposit interest recorded', body: prop.address, data: { screen: 'rent' } });
+    }
+    return this.presentLease(deal.id);
+  }
+
   // ── Agent ────────────────────────────────────────────────────────────────
 
   async forAgent(agentId: string) {
@@ -345,8 +393,12 @@ export class RentingService {
       .innerJoin(dealParties, and(eq(dealParties.dealId, leaseApplications.dealId), eq(dealParties.role, 'client')))
       .innerJoin(users, eq(users.id, dealParties.userId))
       .where(eq(leaseApplications.listingId, p.listingId)).orderBy(asc(leaseApplications.createdAt)) : [];
+    const visits = p.listingId ? await this.db.select().from(showings).where(and(eq(showings.listingId, p.listingId), inArray(showings.status, ['requested', 'confirmed', 'completed']))).orderBy(asc(showings.at)) : [];
+    const leased = apps.find(x => x.a.status === 'accepted');
     return {
       dealId, stage: deal!.stage, property: prop, rent: p.rent, availableFrom: p.availableFrom, tenantSidePct: pct,
+      viewings: visits.map(v => ({ id: v.id, at: v.at.toISOString(), status: v.status, feedback: v.feedback as VisitFeedbackRequest | null })),
+      interest: leased ? await this.interest(leased.a) : [],
       rentControlled: rentControlled(prop.firstOccupied), guideline: RENT_GUIDELINE,
       net: landlordNet({ rent: p.rent, tenantSidePct: pct }), fee: LANDLORD_FEE,
       agreement: doc ? { documentId: doc.id, signedAt: doc.createdAt.toISOString() } : null,
@@ -366,6 +418,19 @@ export class RentingService {
         };
       }),
     };
+  }
+
+  /** The deposit interest schedule with what the landlord recorded. */
+  private async interest(a: typeof leaseApplications.$inferSelect) {
+    const recorded = await this.db.select().from(lmrInterest).where(eq(lmrInterest.applicationId, a.id));
+    return lmrInterestSchedule(a.rent, a.startDate, today()).map(i => {
+      const r = recorded.find(x => x.dueDate === i.dueDate);
+      return { ...i, method: r?.method ?? null, recordedAt: r?.recordedAt.toISOString() ?? null };
+    });
+  }
+
+  private viewing(v: typeof showings.$inferSelect, address: string, city: string) {
+    return { id: v.id, listingId: v.listingId, address, city, at: v.at.toISOString(), status: v.status, agentNote: v.agentNote, feedback: v.feedback as VisitFeedbackRequest | null };
   }
 
   private app(a: typeof leaseApplications.$inferSelect) {

@@ -13,7 +13,7 @@ import { visitNotes } from '../notify/visit-notes.js';
 const DAY = 86_400_000;
 /** Form 300 terms Klyr offers. Placeholders until legal review (Launch Checklist action 3). */
 export const FORM_300 = { version: '2026-10-27', termDays: 90, cashBackPct: 60, holdoverDays: 60, cancelNoticeDays: 30 } as const;
-const VISIT_MIN_LEAD_MS = 60 * 60_000, VISIT_MAX_AHEAD_DAYS = 14;
+export const VISIT_MIN_LEAD_MS = 60 * 60_000, VISIT_MAX_AHEAD_DAYS = 14;
 
 const torontoDate = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
 const longDate = (iso: string) => new Date(iso + 'T12:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -155,10 +155,13 @@ export class DealsService {
 
   /** After a completed visit: the buyer's feedback, shared with a Klyr seller without the buyer's name. */
   async visitFeedback(userId: string, id: string, req: VisitFeedbackRequest) {
-    const deal = await this.buyDeal(userId);
-    if (!deal) throw new NotFoundException();
+    // Any deal the person is a client on: a purchase visit or a rental viewing.
+    const [mine] = await this.db.select({ id: showings.id }).from(showings)
+      .innerJoin(dealParties, and(eq(dealParties.dealId, showings.dealId), eq(dealParties.userId, userId), eq(dealParties.role, 'client')))
+      .where(eq(showings.id, id));
+    if (!mine) throw new NotFoundException();
     const r = await this.db.update(showings).set({ feedback: req, feedbackAt: new Date() })
-      .where(and(eq(showings.id, id), eq(showings.dealId, deal.id), eq(showings.status, 'completed'))).returning({ listingId: showings.listingId });
+      .where(and(eq(showings.id, id), eq(showings.status, 'completed'))).returning({ listingId: showings.listingId });
     if (!r.length) throw new ConflictException({ code: 'not_completed', message: 'You can leave feedback after the visit.' });
     await this.db.insert(auditLog).values({ actorId: userId, action: 'visit_feedback', entity: 'showing', entityId: id, data: req });
     return { ok: true };

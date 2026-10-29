@@ -123,10 +123,11 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 * Security screen on web and phone: passkeys (add on web, remove), password set/change, authenticator app on/off (QR on web, open-in-app or copy key on phone), devices with "sign out" and "sign out all other devices". Sensitive changes ask "Confirm it’s you" (passkey on web, authenticator code on both).
 * `apps/mobile`: same onboarding as web with email code and password, then home with live all-in cards and the Security screen. Token in the iOS Keychain / Android Keystore (`expo-secure-store`); Sora font loaded. Screenshots `docs/screenshots/2*-phone-*.png`.
 * `packages/api-client`: typed calls shared by web (through its proxy) and mobile (bearer token).
+* Buyer browsing on web and phone: search with swipeable photos, filters (cities, price, beds, type, sort; in the URL on web), "Viewed" badges, saved homes, and the listing page: gallery, all-in breakdown, monthly costs, open house, price history, sold nearby (same type, within 2 km, last 6 months, from a PostGIS query), schools, commute and details.
 * `apps/pro`, `apps/admin`: shells listing the role workspaces and admin modules.
 
 **Next, in order:**
-1. Port the consumer screens from App Core: buyer home, search with map and filters, listing detail with the cost breakdown, saved, compare and afford. Pull a shared component layer (money hero, breakdown row, task row, quote row, rule tag) into `packages/ui`.
+1. Rest of the buyer screens from App Core: map view, compare, what you can afford, saved searches with alerts, and the "How we estimate" assumptions editor. Pull a shared component layer (money hero, breakdown row, task row, quote row, rule tag) into `packages/ui`.
 2. Deals: representation agreement gate (Form 300 before the first visit), offers, conditions, timeline, deadline jobs.
 3. Documents + e-sign, then compliance (ID check), then money (deposit, cash back).
 4. Phone passkeys (needs the klyr.ca associated domain and a native passkey module) and Sign in with Apple/Google.

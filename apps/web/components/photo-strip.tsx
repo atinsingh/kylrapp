@@ -8,7 +8,7 @@ type Photo = { url: string; alt: string };
  * Swipeable photos for a search card. Native scroll-snap, so touch swipe, trackpad and
  * Shift+wheel all work; arrow buttons for mouse and keyboard users.
  */
-export function PhotoStrip({ photos, address, sample }: { photos: Photo[]; address: string; sample: boolean }) {
+export function PhotoStrip({ photos, address, sample, href, tall }: { photos: Photo[]; address: string; sample: boolean; href?: string; tall?: boolean }) {
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
 
@@ -25,13 +25,16 @@ export function PhotoStrip({ photos, address, sample }: { photos: Photo[]; addre
 
   return (
     <div className="k-strip" role="region" aria-roledescription="carousel" aria-label={`Photos of ${address}`}>
-      <div ref={track} className="k-strip-track" tabIndex={0}
+      <div ref={track} className="k-strip-track" tabIndex={0} style={tall ? { aspectRatio: '16 / 9' } : undefined}
         onScroll={e => setIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
         onKeyDown={e => { if (e.key === 'ArrowRight') { e.preventDefault(); go(index + 1); } if (e.key === 'ArrowLeft') { e.preventDefault(); go(index - 1); } }}>
-        {photos.map((p, i) => (
-          <img key={p.url + i} src={p.url} alt={p.alt || `Photo ${i + 1} of ${address}`} loading={i === 0 ? 'eager' : 'lazy'}
-            draggable={false} aria-roledescription="slide" aria-label={`${i + 1} of ${photos.length}`} />
-        ))}
+        {photos.map((p, i) => {
+          const img = <img src={p.url} alt={p.alt || `Photo ${i + 1} of ${address}`} loading={i === 0 ? 'eager' : 'lazy'} draggable={false} />;
+          // On a search card a tap on the photo opens the listing; the text link below is the keyboard path.
+          return href
+            ? <a key={p.url + i} href={href} tabIndex={-1} className="k-strip-slide" aria-roledescription="slide" aria-label={`${i + 1} of ${photos.length}`}>{img}</a>
+            : <div key={p.url + i} className="k-strip-slide" aria-roledescription="slide" aria-label={`${i + 1} of ${photos.length}`}>{img}</div>;
+        })}
       </div>
       {photos.length > 1 && (
         <>

@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { FlatList, Image, Text, View } from 'react-native';
+import { FlatList, Image, Pressable, Text, View } from 'react-native';
 import { color } from '@klyr/tokens';
 import { sora } from './ui';
 
 type Photo = { url: string; alt: string };
 
 /** Swipe left and right through a listing's photos, with dots and a "2 / 4" count. */
-export function PhotoStrip({ photos, address, sample }: { photos: Photo[]; address: string; sample: boolean }) {
+export function PhotoStrip({ photos, address, sample, onPress }: { photos: Photo[]; address: string; sample: boolean; onPress?: () => void }) {
   const [width, setWidth] = useState(0);
   const [index, setIndex] = useState(0);
   const height = width * (2 / 3);
@@ -28,10 +28,12 @@ export function PhotoStrip({ photos, address, sample }: { photos: Photo[]; addre
           onMomentumScrollEnd={e => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
           onScroll={e => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
           scrollEventThrottle={64}
-          renderItem={({ item, index: i }) => (
-            <Image source={{ uri: item.url }} style={{ width, height }} resizeMode="cover"
-              accessible accessibilityLabel={item.alt || `Photo ${i + 1} of ${photos.length}`} />
-          )}
+          renderItem={({ item, index: i }) => {
+            const img = <Image source={{ uri: item.url }} style={{ width, height }} resizeMode="cover"
+              accessible accessibilityLabel={item.alt || `Photo ${i + 1} of ${photos.length}`} />;
+            // On a search card a tap opens the listing; a swipe still pages the photos.
+            return onPress ? <Pressable onPress={onPress} accessible={false}>{img}</Pressable> : img;
+          }}
         />
       )}
       {width > 0 && !photos.length && (

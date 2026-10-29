@@ -12,6 +12,30 @@ export interface ListingCard {
   photos: { url: string; alt: string }[];
   /** True for seed data, whose photos are stand-ins and must be labelled as such. */
   samplePhotos: boolean;
+  saved: boolean;
+  /** When this user last opened the listing, for the "Viewed" badge. */
+  viewedAt: string | null;
+}
+
+export interface ListingDetail extends ListingCard {
+  style: string | null; yearBuilt: number | null; lot: string | null; parking: string | null; heating: string | null;
+  annualTax: number | null; condoFee: number | null; coop: number; openHouse: string | null; offerDate: string | null;
+  daysOnMarket: number | null;
+  estimate: {
+    asOf: string; downPct: number; price: number; plan: number;
+    ltt: { on: number; onR: number; to: number; toR: number; total: number };
+    lawyer: number; inspection: number; statusCertificate: number; title: number; adjustments: number;
+    commission: number; cashBack: number; down: number; cmhc: number; cmhcPst: number; loan: number; rate: number;
+    monthly: number; monthlyTax: number; condoFee: number; costs: number; allIn: number;
+  };
+  history: { at: string; event: 'listed' | 'price_change' | 'sold' | 'leased' | 'terminated' | 'expired'; price: number | null }[];
+  comparables: { address: string; beds: number | null; sqft: number | null; soldPrice: number; soldAt: string; distanceM: number }[];
+  insights: { schools: { name: string; grades: string; distance: string }[]; commute: { to: string; how: string; time: string }[]; nearby: string | null } | null;
+}
+
+export interface SearchQuery {
+  city?: string; minPrice?: number; maxPrice?: number; minBeds?: number; type?: 'House' | 'Townhouse' | 'Condo';
+  sort?: 'price_asc' | 'price_desc' | 'newest'; saved?: boolean;
 }
 /** Session as the client sees it; web never receives the token (the proxy keeps it). */
 export type SignedIn = Omit<SessionResponse, 'session'> & { session: { token?: string; expiresAt: string; mfaRequired: boolean } };
@@ -85,8 +109,18 @@ export function createClient(opts: ClientOptions) {
     passkeyStepUpOptions: <O = Json>() => post<Challenge<O>>('/auth/passkey/stepup/options'),
     passkeyStepUpVerify: (challengeId: string, response: unknown) => post<{ ok: true }>('/auth/passkey/stepup/verify', { challengeId, response }),
 
-    listings: (query = '') => get<{ results: ListingCard[]; capped: boolean }>(`/listings${query ? '?' + query : ''}`),
+    listings: (q: SearchQuery = {}) => get<{ results: ListingCard[]; capped: boolean }>(`/listings${searchParams(q)}`),
+    listing: (id: string) => get<ListingDetail>(`/listings/${encodeURIComponent(id)}`),
+    save: (id: string) => call<{ saved: boolean }>('PUT', `/listings/${encodeURIComponent(id)}/save`),
+    unsave: (id: string) => del<{ saved: boolean }>(`/listings/${encodeURIComponent(id)}/save`),
   };
 }
 
 export type KlyrClient = ReturnType<typeof createClient>;
+
+export function searchParams(q: SearchQuery): string {
+  const p = new URLSearchParams();
+  for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== '' && v !== false) p.set(k, String(v));
+  const s = p.toString();
+  return s ? '?' + s : '';
+}

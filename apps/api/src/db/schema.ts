@@ -181,6 +181,12 @@ export const listings = pgTable('listings', {
   annualTax: dollars('annual_tax'),
   condoFee: dollars('condo_fee'),
   rentControlled: boolean('rent_controlled'),
+  lot: text('lot'),
+  parking: text('parking'),
+  heating: text('heating'),
+  /** Free text from the listing brokerage, e.g. "Sat Oct 31 · 2–4 pm". */
+  openHouse: text('open_house'),
+  offerDate: text('offer_date'),
   geom: geometry('geom', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),
   listedAt: date('listed_at'),
   soldAt: date('sold_at'),
@@ -203,6 +209,25 @@ export const listingMedia = pgTable('listing_media', {
   altText: text('alt_text'),
   captionsUrl: text('captions_url'),
   position: integer('position').notNull(),
+});
+
+/** Price history: listed, price changes, sold, terminated (VOW data, signed-in users only). */
+export const listingEvents = pgTable('listing_events', {
+  id: id(),
+  listingId: uuid('listing_id').notNull().references(() => listings.id, { onDelete: 'cascade' }),
+  at: date('at').notNull(),
+  event: text('event', { enum: ['listed', 'price_change', 'sold', 'leased', 'terminated', 'expired'] }).notNull(),
+  price: dollars('price'),
+}, t => [index('listing_events_listing_ix').on(t.listingId, t.at)]);
+
+/** Schools, commute and nearby places. Not MLS data: comes from school-board and routing providers. */
+export const listingInsights = pgTable('listing_insights', {
+  listingId: uuid('listing_id').primaryKey().references(() => listings.id, { onDelete: 'cascade' }),
+  schools: jsonb('schools').$type<{ name: string; grades: string; distance: string }[]>().notNull(),
+  commute: jsonb('commute').$type<{ to: string; how: string; time: string }[]>().notNull(),
+  nearby: text('nearby'),
+  source: text('source').notNull(),
+  updatedAt: ts('updated_at').notNull().defaultNow(),
 });
 
 export const savedSearches = pgTable('saved_searches', {

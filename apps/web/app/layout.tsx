@@ -32,7 +32,8 @@ button{cursor:pointer}
 .k-strip{position:relative;background:var(--bg)}
 .k-strip-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;aspect-ratio:3/2}
 .k-strip-track::-webkit-scrollbar{display:none}
-.k-strip-track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;user-select:none}
+.k-strip-slide{flex:0 0 100%;width:100%;height:100%;scroll-snap-align:start;display:block}
+.k-strip-slide img{width:100%;height:100%;object-fit:cover;user-select:none;display:block}
 .k-strip-nav{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--ink);font-size:22px;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.2);opacity:0;transition:opacity .15s}
 .k-strip:hover .k-strip-nav:not([disabled]),.k-strip-nav:focus-visible{opacity:1}
 @media (hover:none){.k-strip-nav{display:none}}

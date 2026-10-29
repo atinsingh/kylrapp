@@ -3,7 +3,7 @@ import type { Me } from '@klyr/contracts';
 import { SignOut } from './sign-out';
 
 /** Signed-in header: logo, main sections, account. */
-export function AppHeader({ me, current }: { me: Me | null; current?: 'search' | 'saved' | 'afford' | 'estimate' | 'visits' | 'offers' | 'documents' }) {
+export function AppHeader({ me, current }: { me: Me | null; current?: 'search' | 'saved' | 'afford' | 'estimate' | 'visits' | 'offers' | 'documents' | 'sell' }) {
   const tab = (href: string, label: string, on: boolean) => (
     <Link href={href} aria-current={on ? 'page' : undefined}
       style={{ fontWeight: on ? 800 : 600, fontSize: 14, color: on ? 'var(--brand)' : 'var(--text)', textDecoration: 'none', minHeight: 44, display: 'grid', placeItems: 'center' }}>
@@ -23,6 +23,7 @@ export function AppHeader({ me, current }: { me: Me | null; current?: 'search' |
           {tab('/afford', 'Afford', current === 'afford')}
           {tab('/visits', 'Visits', current === 'visits')}
           {tab('/offers', 'Offers', current === 'offers')}
+          {tab('/sell', 'Sell', current === 'sell')}
           {tab('/documents', 'Docs', current === 'documents')}
         </nav>
       </div>

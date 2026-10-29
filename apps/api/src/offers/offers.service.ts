@@ -20,7 +20,7 @@ const ymdPlus = (days: number) => { const [y, m, d] = torontoToday(); return new
 
 type Terms = Omit<OfferTerms, 'listingId' | 'price' | 'deposit' | 'irrevocableAt'>;
 type OfferRow = typeof offers.$inferSelect;
-export type Home = { id: string; address: string; city: string; price: number; type: PropertyType; listingBrokerage: string; coop: number; annualTax: number; condoFee: number | null; active: boolean };
+export type Home = { id: string; address: string; city: string; price: number; type: PropertyType; listingBrokerage: string; coop: number; annualTax: number; condoFee: number | null; active: boolean; source: string };
 
 const CONDITION_TEXT: Record<'financing' | 'inspection' | 'status_certificate', (days: number) => string> = {
   financing: d => `This offer is conditional on the buyer arranging a new first mortgage satisfactory to the buyer, in the buyer's sole discretion. Unless the buyer gives written notice that this condition is fulfilled by 11:59 p.m. on the ${ordinal(d)} banking day after acceptance, this offer is null and void and the deposit is returned in full without deduction.`,
@@ -92,6 +92,8 @@ export class OffersService {
     const deal = (await this.deals.buyDeal(userId))!;
     const home = await this.home(t.listingId);
     if (!home.active) throw new ConflictException({ code: 'not_available', message: 'This home is no longer for sale.' });
+    // Klyr represents this seller too: both sides consent in writing (Form 326) before any offer.
+    if (home.source === 'klyr_exclusive') throw new ConflictException({ code: 'multiple_representation', message: 'Klyr Realty represents the seller of this home. Before an offer, you and the seller both consent in writing to multiple representation (Form 326). Ask your agent.' });
     const terms = this.check(t, home);
     const live = await this.db.select({ id: offers.id }).from(offers)
       .where(and(eq(offers.dealId, deal.id), eq(offers.listingId, t.listingId), inArray(offers.status, [...LIVE, 'accepted'])));
@@ -401,7 +403,7 @@ function torontoOffset(at: Date) {
 export async function loadHome(db: Db, listingId: string): Promise<Home> {
   const [h] = await db.select({
     id: listings.id, address: ADDRESS, city: listings.city, price: listings.price, type: listings.propertyType, listingBrokerage: listings.listingBrokerage,
-    coop: listings.coop, annualTax: listings.annualTax, condoFee: listings.condoFee, status: listings.status, internetDisplay: listings.internetDisplay,
+    coop: listings.coop, annualTax: listings.annualTax, condoFee: listings.condoFee, status: listings.status, internetDisplay: listings.internetDisplay, source: listings.source,
   }).from(listings).where(eq(listings.id, listingId));
   if (!h) throw new NotFoundException();
   return { ...h, type: h.type as PropertyType, coop: Number(h.coop ?? 0.025), annualTax: h.annualTax ?? 0, active: h.status === 'active' && h.internetDisplay };

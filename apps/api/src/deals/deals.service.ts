@@ -211,7 +211,7 @@ export class DealsService {
   }
 
   /** Spread new buyers evenly: fewest open buy deals, then the longest-serving agent. */
-  private async nextAgent() {
+  async nextAgent() {
     const open = sql<number>`(select count(*) from ${deals} d where d.agent_id = ${agents.userId} and d.side = 'buy' and d.stage not in ('closed', 'released'))`;
     const [a] = await this.db.select({ id: agents.userId }).from(agents).innerJoin(users, eq(users.id, agents.userId))
       .orderBy(asc(open), asc(users.createdAt)).limit(1);

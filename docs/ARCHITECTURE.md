@@ -184,8 +184,16 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * When a search is saved, Klyr records what already matches. The worker job `alerts` (every 5 minutes; daily digests from 7 am Toronto) then sends one email per search listing new homes and price drops, and a push that names no prices. This works the same with seed data and with the PropTx feed later.
 * The map on the phone: react-native-maps (Apple Maps on iOS; Google Maps on Android, which needs a Google Maps API key in the app config before release), with the all-in on each pin. The web preview uses Leaflet. Tiles come from `EXPO_PUBLIC_MAP_TILES`; OpenStreetMap is the development default only.
 
+* Selling, part 1 (web, phone and Klyr Pro web; screenshots `100`–`108`):
+  * The seller describes the home and sees what they keep: sale price less Klyr's fee, the buyer's brokerage share, the lawyer and the mortgage payout, all including HST.
+  * Plan: Self-directed ($999 + HST, the seller hosts showings) or Assisted (1% + HST). The buyer's brokerage share (1.5%, 2% or 2.5%) is the seller's choice, and the net updates as it changes.
+  * Listing agreement (Form 200 summary: 90 days, 60-day holdover, Form 326 notice), signed with a fresh check after the ID check (FINTRAC).
+  * Prep: the seller records the mortgage payout, showing times and offer date, and approves the description and inclusions. The agent marks photos and the optional inspection.
+  * The agent publishes from the Klyr Pro Listings tab with coordinates and photo URLs (no geocoder or media vendor yet). The home goes live as a `klyr_exclusive` listing in search, and the seller gets an email and a push.
+  * A Klyr buyer offering on it is stopped until multiple representation is consented to (Form 326).
+
 **Next, in order:**
-1. Selling (App Core `s_*` screens): plan and listing agreement (Form 200), listing prep, showing requests and feedback, offers received with net proceeds, and accepting through the same deal flow.
+1. Selling, part 2: showing requests and feedback, Form 326 consent for Klyr buyers, offers received with the net for each, and accepting through the same deal flow.
 2. Renting and leasing out (`t_*`, `l_*`): tenant profile and Form 400 offers to lease (with Form 346), and landlord listing and applicants.
 3. Provider marketplace: lawyer, lender, inspector and insurer quotes in Klyr Pro, with referral fees shown to the buyer before they choose.
 4. Remaining Admin modules in the order the Launch Checklist owners need them: listings feed status, Klyr AI review, privacy requests, content and assumptions, users and roles.

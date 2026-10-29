@@ -165,6 +165,21 @@ export interface SavedSearch {
   createdAt: string; lastAlertedAt: string | null; matches: number;
 }
 
+export interface SellProperty { address: string; unit?: string; city: string; type: 'House' | 'Townhouse' | 'Condo'; beds: number; baths: number; sqft?: number; yearBuilt?: number; annualTax?: number; condoFee?: number }
+export type SellTaskKey = 'payout' | 'photos' | 'inspection' | 'rules' | 'approve';
+export type SellTaskInput =
+  | { key: 'payout'; lender: string; balance: number } | { key: 'rules'; offerDate?: string; showings: string }
+  | { key: 'approve'; description: string; inclusions: string } | { key: 'photos'; note?: string } | { key: 'inspection'; note?: string };
+export interface Selling {
+  dealId: string; stage: string; property: SellProperty; plan: 'flat' | 'percent'; coop: number; listPrice: number; mortgageBalance: number;
+  net: { price: number; fee: number; coop: number; lawyer: number; mortgage: number; penalty: number; net: number; vsTraditional: number };
+  nets: { flat: number; percent: number }; fees: { flat: number; percentPct: number };
+  agreement: { documentId: string; signedAt: string } | null;
+  tasks: { key: SellTaskKey; doneAt: string | null; details: Record<string, string> }[];
+  listingId: string | null; publishedAt: string | null; agent: { name: string; title: string } | null;
+}
+export interface ProListing extends Selling { clientName: string | null; clientEmail: string }
+
 export interface Assumptions { rate: number; downPct: number; firstTime: boolean; lawyerFee: number }
 /** Session as the client sees it; web never receives the token (the proxy keeps it). */
 export type SignedIn = Omit<SessionResponse, 'session'> & { session: { token?: string; expiresAt: string; mfaRequired: boolean } };
@@ -272,6 +287,11 @@ export function createClient(opts: ClientOptions) {
     conditionNotice: (id: string, action: 'waive' | 'fulfil', typedName: string) => post<Deal>(`/deal/conditions/${encodeURIComponent(id)}`, { action, typedName, readConfirmed: true }),
     proposeAmendment: (a: { closingDate?: string; extend: { conditionId: string; until: string }[] }, typedName: string) => post<Deal>('/deal/amendments', { ...a, typedName, readConfirmed: true }),
     withdrawAmendment: (id: string) => del<Deal>(`/deal/amendments/${encodeURIComponent(id)}`),
+    selling: () => get<Selling>('/selling'),
+    startSelling: (p: SellProperty & { listPrice: number; mortgageBalance: number }) => post<Selling>('/selling', p),
+    setSellPlan: (p: { plan: Selling['plan']; coop: number; listPrice: number; mortgageBalance: number }) => call<Selling>('PUT', '/selling/plan', p),
+    signListing: (typedName: string) => post<Selling>('/selling/agreement/sign', { typedName, readConfirmed: true }),
+    sellTask: (t: SellTaskInput) => post<Selling>('/selling/tasks', t),
     searches: () => get<SavedSearch[]>('/me/searches'),
     saveSearch: (name: string, filters: SearchFilters, alert: SavedSearch['alert'] = 'daily') => post<{ id: string; matches: number }>('/me/searches', { name, filters, alert }),
     setSearchAlert: (id: string, alert: SavedSearch['alert']) => call<{ id: string; alert: string }>('PATCH', `/me/searches/${encodeURIComponent(id)}`, { alert }),
@@ -285,6 +305,9 @@ export function createClient(opts: ClientOptions) {
       offerResult: (id: string, r: { result: 'accepted'; note?: string } | { result: 'signed_back'; price: number; irrevocableAt: string; note?: string } | { result: 'rejected'; note?: string }) =>
         post<{ id: string; status: OfferStatus; signBackId?: string }>(`/pro/offers/${encodeURIComponent(id)}/result`, r),
       deals: () => get<ProDeal[]>('/pro/deals'),
+      listings: () => get<ProListing[]>('/pro/listings'),
+      listingTask: (dealId: string, t: SellTaskInput) => post<{ ok: true }>(`/pro/listings/${encodeURIComponent(dealId)}/tasks`, t),
+      publish: (dealId: string, p: { lat: number; lng: number; photos: string[] }) => post<{ listingId: string }>(`/pro/listings/${encodeURIComponent(dealId)}/publish`, p),
       dealTask: (dealId: string, t: DealTaskInput) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/tasks`, t),
       closeDeal: (dealId: string) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/close`),
       amendmentResult: (id: string, result: 'accepted' | 'rejected', note?: string) => post<{ id: string; status: string }>(`/pro/amendments/${encodeURIComponent(id)}/result`, { result, note }),

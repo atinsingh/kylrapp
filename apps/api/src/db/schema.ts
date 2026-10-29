@@ -271,7 +271,7 @@ export const listingViews = pgTable('listing_views', {
 }, t => [primaryKey({ columns: [t.userId, t.listingId] })]);
 
 // ── Deals ───────────────────────────────────────────────────────────────────
-export const dealStageEnum = pgEnum('deal_stage', ['searching', 'touring', 'offer', 'conditional', 'firm', 'closing', 'closed', 'released']);
+export const dealStageEnum = pgEnum('deal_stage', ['searching', 'touring', 'offer', 'conditional', 'firm', 'closing', 'closed', 'released', 'preparing', 'listed']);
 
 export const deals = pgTable('deals', {
   id: id(),
@@ -362,11 +362,27 @@ export const amendments = pgTable('amendments', {
 /** The closing checklist after acceptance: one row per finished step, with what the buyer told us. */
 export const dealTasks = pgTable('deal_tasks', {
   dealId: uuid('deal_id').notNull().references(() => deals.id),
-  key: text('key', { enum: ['lawyer', 'mortgage', 'insurance', 'adjustments', 'walkthrough'] }).notNull(),
+  /** Buying: lawyer … walkthrough. Selling prep: payout, rules, approve (seller); photos, inspection (agent). */
+  key: text('key', { enum: ['lawyer', 'mortgage', 'insurance', 'adjustments', 'walkthrough', 'payout', 'photos', 'inspection', 'rules', 'approve'] }).notNull(),
   details: jsonb('details').notNull().default({}),
   doneAt: ts('done_at').notNull().defaultNow(),
   doneBy: uuid('done_by').notNull().references(() => users.id),
 }, t => [primaryKey({ columns: [t.dealId, t.key] })]);
+
+/** A seller's home and listing plan, on their sell deal. The listing row exists once the agent publishes it. */
+export const sellProfiles = pgTable('sell_profiles', {
+  dealId: uuid('deal_id').primaryKey().references(() => deals.id),
+  /** Address, city, type, beds, baths, sqft, year built, tax, condo fee. */
+  property: jsonb('property').notNull(),
+  plan: text('plan', { enum: ['flat', 'percent'] }).notNull().default('flat'),
+  /** Offered to the buyer's brokerage, fraction of price. The seller decides this, not the agent. */
+  coop: numeric('coop', { precision: 6, scale: 4 }).notNull().default('0.025'),
+  listPrice: dollars('list_price').notNull(),
+  mortgageBalance: dollars('mortgage_balance').notNull().default(0),
+  listingId: uuid('listing_id').references(() => listings.id),
+  publishedAt: ts('published_at'),
+  createdAt: created(),
+});
 
 /** Visits a buyer books; the listing brokerage confirms. */
 export const showings = pgTable('showings', {

@@ -89,7 +89,7 @@ export function Security() {
     const r = await klyr.totpSetup();
     if (r.status === 403 && r.error?.code === 'step_up_required') return setPending({ label: 'Set up a new authenticator', run: async () => { await startTotp(); return { ok: true, status: 200, data: null }; } });
     if (!r.ok) return setError(errorText(r.error));
-    setTotp({ secret: r.data.secret, qr: await QRCode.toDataURL(r.data.otpauthUrl, { margin: 1, width: 200, color: { dark: '#1F2B27' } }) });
+    setTotp({ secret: r.data.secret, qr: await QRCode.toDataURL(r.data.otpauthUrl, { margin: 1, width: 200, color: { dark: '#000000' } }) });
   }
 
   async function enableTotp() {

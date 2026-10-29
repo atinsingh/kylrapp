@@ -36,7 +36,7 @@ export function StaffSignIn({ client, app, roles, home }: { client: KlyrClient; 
     if (!me.ok || !me.data.roles.some(x => roles.includes(x))) { await client.logout(); return setStep('denied'); }
     const s = await client.totpSetup();
     if (!s.ok) return setError(errorText(s.error));
-    setSetup({ secret: s.data.secret, qr: await QRCode.toDataURL(s.data.otpauthUrl, { margin: 1, width: 200, color: { dark: '#1F2B27' } }) });
+    setSetup({ secret: s.data.secret, qr: await QRCode.toDataURL(s.data.otpauthUrl, { margin: 1, width: 200, color: { dark: '#000000' } }) });
     setStep('setup');
   });
 

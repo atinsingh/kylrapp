@@ -18,7 +18,7 @@ export type AdminPage = (typeof ADMIN_LINKS)[number][1];
 export function AdminNav({ current }: { current: AdminPage }) {
   return (
     <aside className="k-side" aria-label="Klyr Admin">
-      <Link href="/" className="k-brand">Klyr <span>Admin</span></Link>
+      <Link href="/" className="k-brand"><img src="/klyr-mark.png" alt="" width={26} height={26} style={{ borderRadius: 6 }} />Klyr <span>Admin</span></Link>
       <nav aria-label="Klyr Admin">
         {ADMIN_LINKS.map(([href, key, label, Ico]) => (
           <Link key={key} href={href} aria-current={current === key ? 'page' : undefined}><Ico size={20} strokeWidth={current === key ? 2.4 : 2} aria-hidden />{label}</Link>

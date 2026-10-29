@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { font } from '@klyr/tokens';
-import { baseCss } from '@klyr/web-kit/styles';
+import { baseCss, fontLinks } from '@klyr/web-kit/styles';
+
+export const viewport = { themeColor: '#F2F2F7' };
 
 const css = `${baseCss}
 .k-strip{position:relative;background:var(--bg)}
@@ -27,7 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en-CA">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link href={fontLinks} rel="stylesheet" />
         <style>{css}</style>
       </head>
       <body>{children}</body>

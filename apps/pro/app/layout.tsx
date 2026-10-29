@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { baseCss, fontLinks } from '@klyr/web-kit/styles';
 
 export const metadata = { title: 'Klyr Pro' };
+export const viewport = { themeColor: '#F2F2F7' };
 
 const css = `${baseCss}
 .p-wrap{max-width:1100px;padding:32px 40px 64px;display:flex;flex-direction:column;gap:16px}

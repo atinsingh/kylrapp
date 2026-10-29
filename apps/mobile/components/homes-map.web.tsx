@@ -25,7 +25,7 @@ export function HomesMap({ homes, onOpen }: { homes: ListingCard[]; onOpen: (id:
       L.tileLayer(TILES, { attribution: process.env.EXPO_PUBLIC_MAP_ATTRIBUTION ?? '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
       for (const h of homes) {
         const icon = L.divIcon({ className: 'k-pin', iconSize: [0, 0],
-          html: `<span style="display:inline-block;transform:translate(-50%,-100%);white-space:nowrap;border-radius:999px;padding:5px 10px;color:#fff;background:${color.brand};font:800 12px Sora_800ExtraBold,system-ui;box-shadow:0 4px 10px rgba(0,0,0,.25);cursor:pointer">${pinLabel(h)}</span>` });
+          html: `<span style="display:inline-block;transform:translate(-50%,-100%);white-space:nowrap;border-radius:999px;padding:5px 10px;color:#fff;background:${color.brand};font:700 12px -apple-system,Inter_700Bold,system-ui;box-shadow:0 4px 10px rgba(0,0,0,.25);cursor:pointer">${pinLabel(h)}</span>` });
         L.marker([h.lat, h.lng], { icon, keyboard: true, title: `${h.address}, all-in ${money(h.allIn)}`, alt: h.address }).on('click', () => onOpen(h.id)).addTo(map);
       }
       map.fitBounds(L.latLngBounds(homes.map(h => [h.lat, h.lng])), { padding: [40, 40], maxZoom: 14 });

@@ -11,19 +11,24 @@
       "supportsTablet": false
     },
     "android": {
-      "package": "ca.klyr.app"
+      "package": "ca.klyr.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#007AFF"
+      }
     },
     "plugins": [
       "expo-router",
       [
         "expo-notifications",
         {
-          "color": "#2F5E53"
+          "color": "#007AFF"
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "icon": "./assets/icon.png"
   }
 }

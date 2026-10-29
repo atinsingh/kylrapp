@@ -5,6 +5,7 @@ import type { BuyingStatus, Deal } from '@klyr/api-client';
 import { money, torontoWhen } from '@klyr/core';
 import { AppHeader } from '@/components/app-header';
 import { api, sessionToken } from '@/lib/session';
+import { Amendments } from './amendments';
 import { ConditionActions, ReleaseCard } from './deal-actions';
 
 export const metadata = { title: 'Your deal · Klyr' };
@@ -101,6 +102,8 @@ export default async function DealPage() {
               })}
               {d.conditions.length > 0 && !isVoid && <span className="k-note">Each condition ends at 11:59 pm on its last banking day. Your signed waiver or notice counts once {agent} delivers it to the seller’s brokerage before then; if not, the agreement ends and your deposit comes back.</span>}
             </section>
+
+            {!isVoid && <Amendments deal={d} legalName={legalName} agent={agent} />}
 
             {!isVoid && (
               <section className="k-card">

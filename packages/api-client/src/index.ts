@@ -99,7 +99,14 @@ export interface Deal {
   }[];
   /** Mutual release (Form 122) signed by the buyer after the agreement went void. */
   release: { documentId: string; signedAt: string } | null;
+  /** Form 120 changes, newest first. */
+  amendments: Amendment[];
   allIn: number; cashBack: number; landTransfer: number;
+}
+export interface Amendment {
+  id: string; status: 'signed' | 'accepted' | 'rejected' | 'withdrawn';
+  changes: { closingDate?: string; extend?: { conditionId: string; kind: Deal['conditions'][number]['kind']; from: string; until: string }[] };
+  documentId: string | null; agentNote: string | null; createdAt: string; decidedAt: string | null;
 }
 export interface ProDeal extends Deal { clientName: string | null; clientEmail: string }
 
@@ -240,7 +247,11 @@ export function createClient(opts: ClientOptions) {
     acceptSignBack: (id: string, typedName: string) => post<Offer>(`/offers/${encodeURIComponent(id)}/respond`, { decision: 'accept', typedName, readConfirmed: true }),
     declineSignBack: (id: string, note?: string) => post<Offer>(`/offers/${encodeURIComponent(id)}/respond`, { decision: 'decline', note }),
     deal: () => get<Deal>('/deal'),
+    /** The Klyr app on this phone gets push while this sign-in lasts. */
+    registerDevice: (token: string, platform: 'ios' | 'android') => post<{ ok: true }>('/me/devices', { token, platform }),
     conditionNotice: (id: string, action: 'waive' | 'fulfil', typedName: string) => post<Deal>(`/deal/conditions/${encodeURIComponent(id)}`, { action, typedName, readConfirmed: true }),
+    proposeAmendment: (a: { closingDate?: string; extend: { conditionId: string; until: string }[] }, typedName: string) => post<Deal>('/deal/amendments', { ...a, typedName, readConfirmed: true }),
+    withdrawAmendment: (id: string) => del<Deal>(`/deal/amendments/${encodeURIComponent(id)}`),
     signRelease: (typedName: string) => post<Deal>('/deal/release', { typedName, readConfirmed: true }),
 
     pro: {
@@ -249,6 +260,7 @@ export function createClient(opts: ClientOptions) {
       offerResult: (id: string, r: { result: 'accepted'; note?: string } | { result: 'signed_back'; price: number; irrevocableAt: string; note?: string } | { result: 'rejected'; note?: string }) =>
         post<{ id: string; status: OfferStatus; signBackId?: string }>(`/pro/offers/${encodeURIComponent(id)}/result`, r),
       deals: () => get<ProDeal[]>('/pro/deals'),
+      amendmentResult: (id: string, result: 'accepted' | 'rejected', note?: string) => post<{ id: string; status: string }>(`/pro/amendments/${encodeURIComponent(id)}/result`, { result, note }),
       delivered: (conditionId: string) => post<{ id: string; firm: boolean }>(`/pro/conditions/${encodeURIComponent(conditionId)}/delivered`),
       trustVerified: (dealId: string, note: string) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/trust-verified`, { note }),
       depositReturned: (dealId: string) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/deposit-returned`),

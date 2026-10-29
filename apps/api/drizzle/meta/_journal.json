@@ -64,6 +64,13 @@
       "when": 1793287396932,
       "tag": "0008_deal_progress",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793288844259,
+      "tag": "0009_amendments",
+      "breakpoints": true
     }
   ]
 }

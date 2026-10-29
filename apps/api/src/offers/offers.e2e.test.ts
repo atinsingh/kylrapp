@@ -69,6 +69,9 @@ describe('an offer through to acceptance', () => {
     const agent = await p.staff(b.agentEmail);
     const token = `ExponentPushToken[offers-${Date.now()}]`;
     await h.call('POST', '/pro/devices', { token, platform: 'android' }, agent);
+    const phone = `ExponentPushToken[buyer-${Date.now()}]`;
+    expect((await h.call('POST', '/me/devices', { token: phone, platform: 'ios' }, b.t)).status).toBe(200);
+    const buyerPush = () => h.pushes.filter(m => m.to === phone).map(m => m.title);
     const house = (await homes(b.t)).find(l => l.type === 'House')!;
     const draft = (await h.call('PUT', '/offers/draft', terms(house, { price: house.price - 10_000, noteToAgent: 'Can we close sooner?' }), b.t)).body;
 
@@ -116,6 +119,8 @@ describe('an offer through to acceptance', () => {
     expect(done).toMatchObject({ id: draft.id, signBack: { status: 'accepted' } });
     expect(h.pushes.filter(m => m.to === token).at(-1)!.title).toBe('Your client accepted the sign-back');
     expect(mail(b.email).subject).toBe(`Accepted · ${house.address}`);
+    expect(buyerPush()).toEqual(['Your agent sent your offer back', 'Your offer is with the seller', 'The seller signed back', 'Your offer was accepted']);
+    expect(h.pushes.filter(m => m.to === phone).every(m => !m.body.includes('$'))).toBe(true); // no prices on the lock screen
 
     const deal = (await h.call('GET', '/deal', undefined, b.t)).body;
     expect(deal).toMatchObject({ stage: 'conditional', price: house.price, address: house.address, deposit: { amount: 50_000, holder: house.listingBrokerage, receivedAt: null } });

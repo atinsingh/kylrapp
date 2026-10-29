@@ -134,3 +134,7 @@ export const torontoWhen = (at: Date | string | number) =>
 /** "4:36 pm" in Toronto. */
 export const torontoTime = (at: Date | string | number) =>
   ampm(new Date(at).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: TORONTO }));
+
+/** "YYYY-MM-DD" as "Tue, Jan 12, 2027" (a calendar date, no time zone involved). */
+export const calendarDate = (ymd: string) =>
+  new Date(ymd + 'T12:00:00Z').toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });

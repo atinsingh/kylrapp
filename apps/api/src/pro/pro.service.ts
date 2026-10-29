@@ -8,6 +8,7 @@ import {
 } from '../db/schema.js';
 import { config } from '../config.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
+import { NotifyService } from '../notify/notify.service.js';
 
 const MIN = 60_000, DAY = 86_400_000;
 const when = (d: Date) => torontoWhen(d);
@@ -16,7 +17,7 @@ const address = sql<string>`case when ${listings.unit} is null then ${listings.a
 /** Klyr Pro for agents: only their own clients' deals. */
 @Injectable()
 export class ProService {
-  constructor(@Inject(DB) private readonly db: Db, @Inject(MAILER) private readonly mail: Mailer) {}
+  constructor(@Inject(DB) private readonly db: Db, @Inject(MAILER) private readonly mail: Mailer, @Inject(NotifyService) private readonly notify: NotifyService) {}
 
   async me(agentId: string) {
     const [a] = await this.db.select({ name: agents.registeredName, title: agents.title, reco: agents.recoNumber, brokerage: organizations.name })
@@ -64,6 +65,7 @@ export class ProService {
       ? `${s.address}, ${when(s.at)}\n\n${me.name} says: ${req.note}\n\nYou can pick another time in Klyr.`
       : `${s.address}\n${when(at)}\n\n${me.name}, ${me.title} meets you there.${req.note ? `\n\n${me.name} says: ${req.note}` : ''}`;
     await this.mail.send({ to: s.clientEmail, subject, text: `${body}\n\nKlyr Realty Inc., Brokerage` });
+    await this.notify.toUser(s.clientId, 'consumer', { title: subject, body: `${s.address} · ${when(at)}`, data: { screen: 'visits' } });
     return { id: showingId, status, at: at.toISOString() };
   }
 
@@ -150,7 +152,7 @@ export class ProService {
   private async ownShowing(agentId: string, showingId: string) {
     const [s] = await this.db.select({
       id: showings.id, at: showings.at, status: showings.status, checkInAt: showings.checkInAt, listingId: showings.listingId,
-      address, clientEmail: users.email,
+      address, clientId: users.id, clientEmail: users.email,
     }).from(showings)
       .innerJoin(deals, eq(deals.id, showings.dealId))
       .innerJoin(dealParties, and(eq(dealParties.dealId, deals.id), eq(dealParties.role, 'client')))

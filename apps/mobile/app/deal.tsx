@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import type { Deal } from '@klyr/api-client';
-import { money, torontoWhen } from '@klyr/core';
+import { calendarDate, money, nextBankingDate, torontoInputValue, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
@@ -14,7 +14,11 @@ const when = torontoWhen;
 const longDate = (ymd: string) => new Date(ymd + 'T12:00:00Z').toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 const LABEL: Record<Deal['conditions'][number]['kind'], string> = { financing: 'Financing', inspection: 'Inspection', status_certificate: 'Status certificate', sale_of_buyer_home: 'Sale of your home', other: 'Other' };
 
-type Signing = { kind: 'notice'; id: string; action: 'waive' | 'fulfil'; title: string } | { kind: 'release' };
+type Signing = { kind: 'notice'; id: string; action: 'waive' | 'fulfil'; title: string } | { kind: 'release' }
+  | { kind: 'amend'; closingDate?: string; extend: { conditionId: string; until: string }[]; summary: string };
+/** A Toronto calendar date plus some days, moved to a banking day. */
+const plusDays = (ymd: string, n: number) => nextBankingDate(new Date(Date.parse(ymd + 'T12:00:00Z') + n * 86_400_000).toISOString().slice(0, 10));
+const STATUS = { signed: 'Waiting for the seller', accepted: 'Agreed by the seller', rejected: 'Not agreed', withdrawn: 'Withdrawn' } as const;
 
 export default function DealScreen() {
   const { me } = useAuth();
@@ -30,7 +34,9 @@ export default function DealScreen() {
   async function sign() {
     if (!signing) return;
     setBusy(true); setError('');
-    const r = signing.kind === 'release' ? await klyr.signRelease(name) : await klyr.conditionNotice(signing.id, signing.action, name);
+    const r = signing.kind === 'release' ? await klyr.signRelease(name)
+      : signing.kind === 'amend' ? await klyr.proposeAmendment({ closingDate: signing.closingDate, extend: signing.extend }, name)
+        : await klyr.conditionNotice(signing.id, signing.action, name);
     setBusy(false);
     if (r.status === 403 && r.error?.code === 'step_up_required') return setStepUp(true);
     if (!r.ok) return setError(errorText(r.error));
@@ -43,8 +49,8 @@ export default function DealScreen() {
     ? <StepUp reason="Signing needs a fresh check." onCancel={() => setStepUp(false)} onDone={() => { setStepUp(false); void sign(); }} />
     : (
       <Card style={{ borderWidth: 2, borderColor: color.brand }}>
-        <Text style={sora(700)}>{signing.kind === 'release' ? 'Mutual release · Form 122' : `${signing.action === 'waive' ? 'Waive' : 'Confirm fulfilled'}: ${signing.title} · Form 123`}</Text>
-        <Text style={t.note}>{signing.kind === 'release' ? 'You and the seller release each other; your deposit comes back in full.' : 'Once your agent delivers it, you can’t take it back.'}</Text>
+        <Text style={sora(700)}>{signing.kind === 'release' ? 'Mutual release · Form 122' : signing.kind === 'amend' ? `Amendment · Form 120: ${signing.summary}` : `${signing.action === 'waive' ? 'Waive' : 'Confirm fulfilled'}: ${signing.title} · Form 123`}</Text>
+        <Text style={t.note}>{signing.kind === 'release' ? 'You and the seller release each other; your deposit comes back in full.' : signing.kind === 'amend' ? 'It changes the agreement only if the seller agrees.' : 'Once your agent delivers it, you can’t take it back.'}</Text>
         <Field label={`Type your full name to sign (${me?.legalName ?? ''})`} value={name} onChangeText={setName} autoComplete="name" />
         <ErrorText>{error}</ErrorText>
         <Button title="Sign" busy={busy} disabled={name.trim().length < 2} onPress={sign} />
@@ -99,6 +105,31 @@ export default function DealScreen() {
         })}
         {d.conditions.length > 0 && !isVoid && <Text style={t.note}>Each ends at 11:59 pm on its last banking day. Your notice counts once your agent delivers it before then.</Text>}
       </Card>
+      {!isVoid && (
+        <Card>
+          <Text style={t.label}>CHANGES TO THE AGREEMENT · FORM 120</Text>
+          {d.amendments.map(a => (
+            <View key={a.id} style={{ gap: 4 }}>
+              <Text style={sora(600)}>{[...(a.changes.closingDate ? [`Closing to ${calendarDate(a.changes.closingDate)}`] : []), ...(a.changes.extend ?? []).map(e => `${LABEL[e.kind]} to ${when(e.until)}`)].join(' · ')}</Text>
+              <Text style={t.note}>{STATUS[a.status]}{a.agentNote ? ` · “${a.agentNote}”` : ''}</Text>
+              {a.status === 'signed' && <Button title="Withdraw" alt busy={busy} onPress={async () => { const r = await klyr.withdrawAmendment(a.id); if (r.ok) setD(r.data); else setError(errorText(r.error)); }} />}
+            </View>
+          ))}
+          {signing?.kind === 'amend' ? signPanel : !d.amendments.some(a => a.status === 'signed') && (
+            <View style={{ gap: 6 }}>
+              <Text style={t.note}>Propose a change; it takes effect only if the seller agrees.</Text>
+              {[7, 14].map(n => {
+                const closingDate = plusDays(d.closingDate, n);
+                return <Button key={n} title={`Move closing to ${calendarDate(closingDate)}`} alt onPress={() => setSigning({ kind: 'amend', closingDate, extend: [], summary: `closing to ${calendarDate(closingDate)}` })} />;
+              })}
+              {d.conditions.filter(c => !c.deliveredAt && !c.lapsedAt).map(c => {
+                const until = plusDays(torontoInputValue(c.dueAt).slice(0, 10), 3);
+                return <Button key={c.id} title={`More time for ${LABEL[c.kind].toLowerCase()} (to ${calendarDate(until)})`} alt onPress={() => setSigning({ kind: 'amend', extend: [{ conditionId: c.id, until }], summary: `${LABEL[c.kind].toLowerCase()} to ${calendarDate(until)}` })} />;
+              })}
+            </View>
+          )}
+        </Card>
+      )}
     </Screen>
   );
 }

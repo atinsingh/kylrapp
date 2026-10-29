@@ -3,7 +3,7 @@ import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ProDeal } from '@klyr/api-client';
-import { money, torontoWhen } from '@klyr/core';
+import { calendarDate, money, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
 import { Button, Card, ErrorText, Field, sora, t } from '../components/ui';
@@ -72,6 +72,16 @@ function DealCard({ d, onChange }: { d: ProDeal; onChange: () => Promise<void> }
           </View>
         );
       })}
+      {d.amendments.filter(a => a.status === 'signed').map(a => (
+        <View key={a.id} style={{ backgroundColor: '#E8EEF9', borderRadius: 12, padding: 10, gap: 6 }}>
+          <Text style={{ ...sora(700), color: '#2A4D8F' }}>Amendment to present (Form 120)</Text>
+          <Text style={t.body}>{[...(a.changes.closingDate ? [`Closing to ${calendarDate(a.changes.closingDate)}`] : []), ...(a.changes.extend ?? []).map(e => `${LABEL[e.kind]} to ${torontoWhen(e.until)}`)].join(' · ')}</Text>
+          <View style={{ flexDirection: 'row', gap: 6 }}>
+            <View style={{ flex: 1 }}><Button title="Seller agreed" busy={busy} onPress={() => run(() => klyr.pro.amendmentResult(a.id, 'accepted'))} /></View>
+            <View style={{ flex: 1 }}><Button title="Seller refused" alt onPress={() => run(() => klyr.pro.amendmentResult(a.id, 'rejected'))} /></View>
+          </View>
+        </View>
+      ))}
       {isVoid && <Text style={t.note}>{d.release ? 'Client signed the mutual release.' : 'Waiting for the client’s mutual release (Form 122).'}</Text>}
       {isVoid && d.release && dep && !dep.returnedAt && <Button title="Deposit returned to client" busy={busy} onPress={() => run(() => klyr.pro.depositReturned(d.dealId))} />}
       <ErrorText>{error}</ErrorText>

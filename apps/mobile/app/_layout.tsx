@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts, Sora_400Regular, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold } from '@expo-google-fonts/sora';
 import { color } from '@klyr/tokens';
 import { AuthProvider, useAuth } from '../lib/auth';
+import { usePush } from '../lib/push';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({ Sora_400Regular, Sora_600SemiBold, Sora_700Bold, Sora_800ExtraBold });
@@ -21,6 +22,7 @@ export default function RootLayout() {
 /** Signed-out screens and app screens never mix; the router redirects when the status changes. */
 function Routes() {
   const { status } = useAuth();
+  usePush(status === 'signedIn');
   if (status === 'loading') return null;
   const signedIn = status === 'signedIn';
   return (

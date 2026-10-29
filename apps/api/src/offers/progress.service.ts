@@ -1,8 +1,9 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, gt, inArray, isNull, lt, lte } from 'drizzle-orm';
-import { buyerEstimate, torontoWhen } from '@klyr/core';
+import type { AmendmentRequest } from '@klyr/contracts';
+import { buyerEstimate, calendarDate, nextBankingDate, torontoInstant, torontoToday, torontoWhen } from '@klyr/core';
 import { DB, type Db } from '../db/db.module.js';
-import { agents, auditLog, conditions, dealParties, deals, deposits, documents, offers, users } from '../db/schema.js';
+import { agents, amendments, auditLog, conditions, dealParties, deals, deposits, documents, offers, users } from '../db/schema.js';
 import { DealsService } from '../deals/deals.service.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 import { AssumptionsService, engineOptions } from '../listings/assumptions.service.js';
@@ -15,6 +16,7 @@ const SIGN = 'Klyr Realty Inc., Brokerage';
 type Kind = typeof conditions.$inferSelect['kind'];
 const NAME: Record<Kind, string> = { financing: 'financing', inspection: 'inspection', status_certificate: 'status certificate', sale_of_buyer_home: 'sale of your home', other: 'other' };
 type Client = { ip?: string; userAgent?: string };
+type Changes = { closingDate?: string; extend?: { conditionId: string; kind: Kind; from: string; until: string }[] };
 
 /** Before the deposit is due / a condition ends, the buyer and agent are reminded once. */
 export const REMINDER = { depositHours: 6, conditionHours: 24 } as const;
@@ -66,6 +68,7 @@ export class DealProgressService {
     const [dep] = await this.db.select().from(deposits).where(eq(deposits.dealId, dealId)).orderBy(desc(deposits.dueAt)).limit(1);
     const conds = await this.db.select().from(conditions).where(eq(conditions.dealId, dealId)).orderBy(asc(conditions.dueAt));
     const release = o.status === 'void' ? await this.releaseDoc(dealId, o.decidedAt!) : null;
+    const amends = await this.db.select().from(amendments).where(eq(amendments.offerId, o.id)).orderBy(desc(amendments.createdAt));
     const est = buyerEstimate({ price: o.price, city: home.city, type: home.type, coop: home.coop, tax: home.annualTax, fee: home.condoFee ?? undefined },
       { ...engineOptions(await this.assumptions.get(clientId)), price: o.price });
     const iso = (d: Date | null) => d?.toISOString() ?? null;
@@ -82,6 +85,7 @@ export class DealProgressService {
         documentId: c.documentId, deliveredAt: iso(c.deliveredAt), lapsedAt: iso(c.lapsedAt),
       })),
       release: release ? { documentId: release.id, signedAt: release.createdAt.toISOString() } : null,
+      amendments: amends.map(a => ({ id: a.id, status: a.status, changes: a.changes as Changes, documentId: a.documentId, agentNote: a.agentNote, createdAt: a.createdAt.toISOString(), decidedAt: iso(a.decidedAt) })),
       allIn: est.allIn, cashBack: est.cashBack, landTransfer: est.ltt.total,
     };
   }
@@ -145,7 +149,98 @@ export class DealProgressService {
     return this.forBuyer(userId);
   }
 
+  /** Form 120, signed by the buyer: a new closing date and/or later condition deadlines. One open at a time. */
+  async proposeAmendment(userId: string, req: AmendmentRequest, client: Client) {
+    await this.lapseDue();
+    const deal = await this.deals.buyDeal(userId);
+    const [o] = deal ? await this.db.select().from(offers).where(and(eq(offers.dealId, deal.id), eq(offers.status, 'accepted'))) : [];
+    if (!deal || !o) throw new ConflictException({ code: 'no_agreement', message: 'There’s no accepted agreement to change.' });
+    const [open] = await this.db.select({ id: amendments.id }).from(amendments).where(and(eq(amendments.offerId, o.id), eq(amendments.status, 'signed')));
+    if (open) throw new ConflictException({ code: 'amendment_open', message: 'You already have a change waiting for the seller. Withdraw it first.' });
+    const terms = o.terms as { closingDate: string };
+    const today = (() => { const [y, m, d] = torontoToday(); return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`; })();
+    const changes: Changes = {};
+    if (req.closingDate) {
+      if (req.closingDate === terms.closingDate) throw new BadRequestException({ code: 'same_closing', message: 'That’s already your closing date.' });
+      if (req.closingDate <= today) throw new BadRequestException({ code: 'bad_closing', message: 'Pick a closing date after today.' });
+      if (nextBankingDate(req.closingDate) !== req.closingDate) throw new BadRequestException({ code: 'closing_not_banking_day', message: `The land registry is closed that day. The next open day is ${calendarDate(nextBankingDate(req.closingDate))}.` });
+      changes.closingDate = req.closingDate;
+    }
+    if (req.extend.length) {
+      const conds = await this.db.select().from(conditions).where(and(eq(conditions.dealId, deal.id), inArray(conditions.id, req.extend.map(e => e.conditionId))));
+      changes.extend = req.extend.map(e => {
+        const c = conds.find(x => x.id === e.conditionId);
+        if (!c) throw new NotFoundException();
+        if (c.deliveredAt || c.lapsedAt) throw new ConflictException({ code: 'condition_closed', message: `The ${NAME[c.kind]} condition is already settled.` });
+        const [y, m, d] = e.until.split('-').map(Number) as [number, number, number];
+        const until = torontoInstant(y, m, d, 23, 59);
+        if (until <= c.dueAt) throw new BadRequestException({ code: 'not_later', message: `Pick a date after the current ${NAME[c.kind]} deadline.` });
+        if (nextBankingDate(e.until) !== e.until) throw new BadRequestException({ code: 'not_banking_day', message: 'Pick a banking day for the new deadline.' });
+        return { conditionId: c.id, kind: c.kind, from: c.dueAt.toISOString(), until: until.toISOString() };
+      });
+    }
+    const [buyer] = await this.db.select({ legalName: users.legalName }).from(users).where(eq(users.id, userId));
+    this.deals.assertTypedName(req.typedName, buyer!.legalName ?? '');
+    const home = await loadHome(this.db, o.listingId);
+    const clauses: [string, string][] = [
+      ...(changes.closingDate ? [['Completion', `The completion date changes from ${calendarDate(terms.closingDate)} to ${calendarDate(changes.closingDate)}.`] as [string, string]] : []),
+      ...(changes.extend ?? []).map(e => ['Condition', `The ${NAME[e.kind]} condition is extended from ${torontoWhen(e.from)} to ${torontoWhen(e.until)}.`] as [string, string]),
+      ['Everything else', 'All other terms of the agreement stay the same.'],
+    ];
+    const record = { form: '120', title: 'Amendment to Agreement of Purchase and Sale', buyer: buyer!.legalName, property: `${home.address}, ${home.city}, Ontario`, clauses,
+      note: 'Klyr’s plain-language summary of OREA Form 120. It changes the agreement only once the seller accepts it.' };
+    const signed = await this.deals.signRecord({ dealId: deal.id, userId, form: '120', title: `Amendment · ${home.address}`, record, typedName: req.typedName, client });
+    const [a] = await this.db.insert(amendments).values({ dealId: deal.id, offerId: o.id, changes, status: 'signed', documentId: signed.documentId }).returning();
+    await this.db.insert(auditLog).values({ actorId: userId, action: 'amendment_sign', entity: 'amendment', entityId: a!.id, data: changes });
+    await this.notify.toUser(deal.agentId, 'agent', { title: 'Amendment to present', body: home.address, data: { screen: 'deals', dealId: deal.id } });
+    const agent = await this.email(deal.agentId);
+    if (agent) await this.mail.send({ to: agent, subject: `Amendment to present · ${home.address}`, text: `Your client signed an amendment (Form 120):\n${clauses.slice(0, -1).map(c => `· ${c[1]}`).join('\n')}\n\nPresent it to ${home.listingBrokerage} and record the seller’s answer in Klyr Pro.` });
+    return this.forBuyer(userId);
+  }
+
+  async withdrawAmendment(userId: string, id: string) {
+    const deal = await this.deals.buyDeal(userId);
+    const r = deal ? await this.db.update(amendments).set({ status: 'withdrawn', decidedAt: new Date() })
+      .where(and(eq(amendments.id, id), eq(amendments.dealId, deal.id), eq(amendments.status, 'signed'))).returning() : [];
+    if (!r.length) throw new ConflictException({ code: 'not_open', message: 'This change can no longer be withdrawn.' });
+    await this.db.insert(auditLog).values({ actorId: userId, action: 'amendment_withdraw', entity: 'amendment', entityId: id });
+    return this.forBuyer(userId);
+  }
+
   // ── Agent ────────────────────────────────────────────────────────────────
+
+  /** The seller accepted or refused the amendment. Accepted changes apply now, if the conditions are still open. */
+  async amendmentResult(agentId: string, id: string, result: 'accepted' | 'rejected', note?: string) {
+    await this.lapseDue();
+    const [r] = await this.db.select({ a: amendments, deal: deals }).from(amendments).innerJoin(deals, eq(deals.id, amendments.dealId))
+      .where(and(eq(amendments.id, id), eq(deals.agentId, agentId)));
+    if (!r) throw new NotFoundException();
+    if (r.a.status !== 'signed') throw new ConflictException({ code: 'not_open', message: 'This amendment was already decided or withdrawn.' });
+    const changes = r.a.changes as Changes;
+    if (result === 'accepted') {
+      const [o] = await this.db.select().from(offers).where(and(eq(offers.id, r.a.offerId), eq(offers.status, 'accepted')));
+      if (!o) throw new ConflictException({ code: 'agreement_void', message: 'The agreement ended before the seller accepted.' });
+      for (const e of changes.extend ?? []) {
+        const [c] = await this.db.select().from(conditions).where(eq(conditions.id, e.conditionId));
+        if (!c || c.lapsedAt || c.deliveredAt) throw new ConflictException({ code: 'too_late', message: 'A condition in this amendment is already settled or lapsed.' });
+      }
+      for (const e of changes.extend ?? []) await this.db.update(conditions).set({ dueAt: new Date(e.until), reminderSentAt: null }).where(eq(conditions.id, e.conditionId));
+      if (changes.closingDate) {
+        await this.db.update(offers).set({ terms: { ...(o.terms as object), closingDate: changes.closingDate }, updatedAt: new Date() }).where(eq(offers.id, o.id));
+        await this.db.update(deals).set({ closingDate: changes.closingDate }).where(eq(deals.id, r.deal.id));
+      }
+    }
+    await this.db.update(amendments).set({ status: result, decidedAt: new Date(), agentNote: note ?? null }).where(eq(amendments.id, id));
+    await this.db.insert(auditLog).values({ actorId: agentId, action: `amendment_${result}`, entity: 'amendment', entityId: id, data: { note: note ?? null } });
+    const buyer = await this.client(r.deal.id);
+    if (buyer) {
+      const title = result === 'accepted' ? 'The seller agreed to your change' : 'The seller didn’t agree to your change';
+      await this.mail.send({ to: buyer.email, subject: title, text: `${result === 'accepted' ? 'Your amendment is now part of the agreement.' : 'The agreement stays as it was.'}${note ? `\n\nYour agent says: ${note}` : ''}\n\n${SIGN}` });
+      await this.notify.toUser(buyer.id, 'consumer', { title, body: 'Open your deal for the details', data: { screen: 'deal' } });
+    }
+    return { id, status: result };
+  }
+
 
   /** The agent delivered the signed notice to the listing brokerage. All conditions delivered → firm. */
   async deliver(agentId: string, conditionId: string) {
@@ -268,8 +363,8 @@ export async function remindDeadlines(x: Ctx, now = new Date()): Promise<number>
     const buyer = await clientOf(x.db, d.dealId);
     const [deal] = await x.db.select({ agentId: deals.agentId }).from(deals).where(eq(deals.id, d.dealId));
     const text = `Your ${money(d.amount)} deposit to ${d.holder} is due by ${torontoWhen(d.dueAt)}.`;
-    if (buyer) { await x.mail.send({ to: buyer.email, subject: 'Deposit due soon', text: `${text} Confirm the trust account by phone before you send it.\n\n${SIGN}` }); await x.notify.toUser(buyer.id, 'consumer', { title: 'Deposit due soon', body: text, data: { screen: 'deal' } }); }
-    await x.notify.toUser(deal!.agentId, 'agent', { title: 'Client deposit due soon', body: `${money(d.amount)} to ${d.holder} by ${torontoWhen(d.dueAt)}`, data: { screen: 'deals', dealId: d.dealId } });
+    if (buyer) { await x.mail.send({ to: buyer.email, subject: 'Deposit due soon', text: `${text} Confirm the trust account by phone before you send it.\n\n${SIGN}` }); await x.notify.toUser(buyer.id, 'consumer', { title: 'Deposit due soon', body: `Due by ${torontoWhen(d.dueAt)}`, data: { screen: 'deal' } }); }
+    await x.notify.toUser(deal!.agentId, 'agent', { title: 'Client deposit due soon', body: `To ${d.holder} by ${torontoWhen(d.dueAt)}`, data: { screen: 'deals', dealId: d.dealId } });
     sent++;
   }
   const conds = await x.db.update(conditions).set({ reminderSentAt: now })

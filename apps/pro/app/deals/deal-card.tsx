@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ProDeal } from '@klyr/api-client';
-import { money, torontoWhen } from '@klyr/core';
+import { calendarDate, money, torontoWhen } from '@klyr/core';
 import { errorText, klyr } from '@/lib/client';
 
 const LABEL = { financing: 'Financing', inspection: 'Inspection', status_certificate: 'Status certificate', sale_of_buyer_home: 'Sale of buyer’s home', other: 'Other' } as const;
@@ -71,6 +71,19 @@ export function DealCard({ d }: { d: ProDeal }) {
           })}
         </div>
       )}
+      {d.amendments.filter(a => a.status === 'signed').map(a => (
+        <div key={a.id} className="p-fence" style={{ background: '#E8EEF9', color: '#2A4D8F', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <span><strong>Amendment to present (Form 120)</strong> · {[
+            ...(a.changes.closingDate ? [`closing to ${calendarDate(a.changes.closingDate)}`] : []),
+            ...(a.changes.extend ?? []).map(e => `${LABEL[e.kind].toLowerCase()} to ${torontoWhen(e.until)}`),
+          ].join(' · ')}</span>
+          <input className="k-select" style={{ height: 40 }} placeholder="Note for your client (optional)" value={note} onChange={e => setNote(e.target.value)} aria-label="Note for your client about the amendment" />
+          <div className="p-row">
+            <button className="k-btn" disabled={busy} onClick={() => run(() => klyr.pro.amendmentResult(a.id, 'accepted', note || undefined))}>Seller agreed</button>
+            <button className="k-btn k-alt" disabled={busy} onClick={() => run(() => klyr.pro.amendmentResult(a.id, 'rejected', note || undefined))}>Seller refused</button>
+          </div>
+        </div>
+      ))}
       {isVoid && (
         <div className="p-fence">
           {d.release ? `Client signed the mutual release ${torontoWhen(d.release.signedAt)}.` : 'Waiting for your client to sign the mutual release (Form 122).'}

@@ -124,7 +124,7 @@ export class OffersService {
     await this.db.insert(auditLog).values({ actorId: userId, action: 'offer_sign', entity: 'offer', entityId: id, data: { price: row.price, documentId: signed.documentId } });
 
     const agent = await this.agentOf(deal.agentId);
-    await this.notify.toUser(deal.agentId, 'agent', { title: 'Offer to review', body: `${home.address} · ${money(row.price)} · open until ${when(row.irrevocableAt)}`, data: { screen: 'offers', offerId: id } });
+    await this.notify.toUser(deal.agentId, 'agent', { title: 'Offer to review', body: `${home.address} · open until ${when(row.irrevocableAt)}`, data: { screen: 'offers', offerId: id } });
     if (agent) await this.mail.send({ to: agent.email, subject: `Offer to review · ${home.address}`, text: `${buyer!.legalName} signed an offer of ${money(row.price)} on ${home.address}, ${home.city}.\nIrrevocable until ${when(row.irrevocableAt)}.\n\nReview it in Klyr Pro, then register it with ${home.listingBrokerage}.` });
     return this.get(userId, id);
   }
@@ -139,7 +139,7 @@ export class OffersService {
     await this.db.insert(auditLog).values({ actorId: userId, action: 'offer_withdraw', entity: 'offer', entityId: id });
     if (row.status === 'sent' || row.status === 'registered') {
       const home = await this.home(row.listingId);
-      await this.notify.toUser(deal.agentId, 'agent', { title: 'Offer withdrawn by your client', body: `${home.address} · ${money(row.price)}`, data: { screen: 'offers', offerId: id } });
+      await this.notify.toUser(deal.agentId, 'agent', { title: 'Offer withdrawn by your client', body: home.address, data: { screen: 'offers', offerId: id } });
     }
     return { ok: true };
   }
@@ -153,7 +153,7 @@ export class OffersService {
     if (r.decision === 'decline') {
       await this.db.update(offers).set({ status: 'rejected', decidedAt: new Date(), updatedAt: new Date() }).where(eq(offers.id, row.id));
       await this.db.insert(auditLog).values({ actorId: userId, action: 'sign_back_decline', entity: 'offer', entityId: row.id, data: { note: r.note ?? null } });
-      await this.notify.toUser(deal.agentId, 'agent', { title: 'Sign-back declined by your client', body: `${home.address} · ${money(row.price)}`, data: { screen: 'offers', offerId: row.parentId ?? row.id } });
+      await this.notify.toUser(deal.agentId, 'agent', { title: 'Sign-back declined by your client', body: home.address, data: { screen: 'offers', offerId: row.parentId ?? row.id } });
       return this.get(userId, row.parentId ?? row.id);
     }
     const [buyer] = await this.db.select({ legalName: users.legalName }).from(users).where(eq(users.id, userId));
@@ -163,7 +163,7 @@ export class OffersService {
     const signed = await this.deals.signRecord({ dealId: deal.id, userId, form, title: `Sign-back accepted · ${home.address}`, record, typedName: r.typedName, client });
     await this.db.update(offers).set({ documentId: signed.documentId }).where(eq(offers.id, row.id));
     await this.accept(row, userId);
-    await this.notify.toUser(deal.agentId, 'agent', { title: 'Your client accepted the sign-back', body: `${home.address} · ${money(row.price)}. Deposit due within 24 hours.`, data: { screen: 'offers', offerId: row.parentId ?? row.id } });
+    await this.notify.toUser(deal.agentId, 'agent', { title: 'Your client accepted the sign-back', body: `${home.address} · deposit due within 24 hours`, data: { screen: 'offers', offerId: row.parentId ?? row.id } });
     return this.get(userId, row.parentId ?? row.id);
   }
 
@@ -203,10 +203,12 @@ export class OffersService {
       await this.db.update(offers).set({ status: 'returned', agentNote: r.note, updatedAt: new Date() }).where(eq(offers.id, id));
       await this.db.insert(auditLog).values({ actorId: agentId, action: 'offer_return', entity: 'offer', entityId: id, data: { note: r.note } });
       await this.mail.send({ to: buyer.email, subject: `Your agent sent your offer back · ${home.address}`, text: `Your offer on ${home.address} wasn’t sent to the seller yet. Your agent says:\n\n${r.note}\n\nChange it and sign again in Klyr.\n\nKlyr Realty Inc., Brokerage` });
+      await this.notify.toUser(buyer.id, 'consumer', { title: 'Your agent sent your offer back', body: home.address, data: { screen: 'offers' } });
     } else {
       await this.db.update(offers).set({ status: 'registered', registeredAt: new Date(), agentNote: r.note ?? null, updatedAt: new Date() }).where(eq(offers.id, id));
       await this.db.insert(auditLog).values({ actorId: agentId, action: 'offer_register', entity: 'offer', entityId: id, data: { note: r.note ?? null } });
       await this.mail.send({ to: buyer.email, subject: `Your offer is with the seller · ${home.address}`, text: `Your offer of ${money(row.price)} on ${home.address} was registered with ${home.listingBrokerage}, which confirmed receipt (Form 801).\nIt is open until ${when(row.irrevocableAt)}.${r.note ? `\n\nYour agent says: ${r.note}` : ''}\n\nKlyr Realty Inc., Brokerage` });
+      await this.notify.toUser(buyer.id, 'consumer', { title: 'Your offer is with the seller', body: home.address, data: { screen: 'offers' } });
     }
     return { id, status: r.action === 'return' ? 'returned' : 'registered' };
   }
@@ -224,6 +226,7 @@ export class OffersService {
       await this.db.update(offers).set({ status: 'rejected', decidedAt: new Date(), agentNote: r.note ?? row.agentNote, updatedAt: new Date() }).where(eq(offers.id, id));
       await this.db.insert(auditLog).values({ actorId: agentId, action: 'offer_rejected', entity: 'offer', entityId: id, data: { note: r.note ?? null } });
       await this.mail.send({ to: buyer.email, subject: `The seller didn’t accept your offer · ${home.address}`, text: `The seller of ${home.address} didn’t accept your offer of ${money(row.price)}. Your deposit was never cashed.${r.note ? `\n\nYour agent says: ${r.note}` : ''}\n\nYour offer details are saved, so your next offer starts from them.\n\nKlyr Realty Inc., Brokerage` });
+      await this.notify.toUser(buyer.id, 'consumer', { title: 'The seller didn’t accept your offer', body: home.address, data: { screen: 'offers' } });
       return { id, status: 'rejected' };
     }
     const until = new Date(r.irrevocableAt);
@@ -237,6 +240,7 @@ export class OffersService {
     await this.db.update(offers).set({ status: 'signed_back', decidedAt: new Date(), updatedAt: new Date() }).where(eq(offers.id, id));
     await this.db.insert(auditLog).values({ actorId: agentId, action: 'offer_signed_back', entity: 'offer', entityId: id, data: { signBackId: child!.id, price: r.price, irrevocableAt: r.irrevocableAt } });
     await this.mail.send({ to: buyer.email, subject: `The seller signed back · ${home.address}`, text: `The seller of ${home.address} signed your offer back at ${money(r.price)} (you offered ${money(row.price)}). Other terms are unchanged.\nIt is open until ${when(until)}.${r.note ? `\n\nYour agent says: ${r.note}` : ''}\n\nAccept or decline in Klyr.\n\nKlyr Realty Inc., Brokerage` });
+    await this.notify.toUser(buyer.id, 'consumer', { title: 'The seller signed back', body: `${home.address} · reply before ${when(until)}`, data: { screen: 'offers' } });
     return { id, status: 'signed_back', signBackId: child!.id };
   }
 
@@ -247,8 +251,9 @@ export class OffersService {
     const r = await this.db.update(deposits).set({ receivedAt: new Date() }).where(and(eq(deposits.dealId, dealId), isNull(deposits.receivedAt))).returning();
     if (!r.length) throw new ConflictException({ code: 'no_deposit_due', message: 'No deposit is waiting on this deal.' });
     await this.db.insert(auditLog).values({ actorId: agentId, action: 'deposit_received', entity: 'deal', entityId: dealId, data: { amount: r[0]!.amount, holder: r[0]!.holder } });
-    const [client] = await this.db.select({ email: users.email }).from(dealParties).innerJoin(users, eq(users.id, dealParties.userId)).where(and(eq(dealParties.dealId, dealId), eq(dealParties.role, 'client')));
+    const [client] = await this.db.select({ id: users.id, email: users.email }).from(dealParties).innerJoin(users, eq(users.id, dealParties.userId)).where(and(eq(dealParties.dealId, dealId), eq(dealParties.role, 'client')));
     if (client) await this.mail.send({ to: client.email, subject: 'Your deposit was received', text: `${r[0]!.holder} confirmed it received your deposit of ${money(r[0]!.amount)}. It is held in their trust account until closing.\n\nKlyr Realty Inc., Brokerage` });
+    if (client) await this.notify.toUser(client.id, 'consumer', { title: 'Your deposit was received', body: 'Held in trust until closing', data: { screen: 'deal' } });
     return { ok: true };
   }
 
@@ -271,7 +276,7 @@ export class OffersService {
     await this.db.update(deals).set({ stage: conds.length ? 'conditional' : 'firm', listingId: row.listingId, closingDate: terms.closingDate }).where(eq(deals.id, row.dealId));
     await this.db.insert(auditLog).values({ actorId, action: 'offer_accepted', entity: 'offer', entityId: row.id, data: { price: row.price, conditions: conds, depositDueAt: dueAt.toISOString() } });
 
-    const [client] = await this.db.select({ email: users.email }).from(dealParties).innerJoin(users, eq(users.id, dealParties.userId)).where(and(eq(dealParties.dealId, row.dealId), eq(dealParties.role, 'client')));
+    const [client] = await this.db.select({ id: users.id, email: users.email }).from(dealParties).innerJoin(users, eq(users.id, dealParties.userId)).where(and(eq(dealParties.dealId, row.dealId), eq(dealParties.role, 'client')));
     if (client) await this.mail.send({
       to: client.email, subject: `Accepted · ${home.address}`,
       text: `Your offer on ${home.address} is accepted at ${money(row.price)}.\n\n`
@@ -279,6 +284,7 @@ export class OffersService {
         + (conds.length ? `Conditions:\n${conds.map(c => `· ${c.kind.replace('_', ' ')}: until ${when(bankingDayDeadline(at, c.days))}`).join('\n')}\n\n` : 'No conditions: the deal is firm.\n\n')
         + `Closing: ${longDate(terms.closingDate)}.\n\nKlyr Realty Inc., Brokerage`,
     });
+    if (client) await this.notify.toUser(client.id, 'consumer', { title: 'Your offer was accepted', body: `${home.address} · deposit due within 24 hours`, data: { screen: 'deal' } });
   }
 
   /** Offers still open past their irrevocable time are void. */
@@ -341,13 +347,13 @@ export class OffersService {
   }
 
   private async agentOffer(agentId: string, id: string) {
-    const [r] = await this.db.select({ o: offers, email: users.email, name: users.legalName }).from(offers)
+    const [r] = await this.db.select({ o: offers, id: users.id, email: users.email, name: users.legalName }).from(offers)
       .innerJoin(deals, eq(deals.id, offers.dealId))
       .innerJoin(dealParties, and(eq(dealParties.dealId, deals.id), eq(dealParties.role, 'client')))
       .innerJoin(users, eq(users.id, dealParties.userId))
       .where(and(eq(offers.id, id), eq(deals.agentId, agentId)));
     if (!r) throw new NotFoundException();
-    return { row: r.o, buyer: { email: r.email, name: r.name }, home: await this.home(r.o.listingId) };
+    return { row: r.o, buyer: { id: r.id, email: r.email, name: r.name }, home: await this.home(r.o.listingId) };
   }
 
   private async agentOf(agentId: string) {

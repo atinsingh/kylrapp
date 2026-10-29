@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { nextBankingDate } from '@klyr/core';
+import { nextBankingDate, torontoInputValue } from '@klyr/core';
 import { createDb } from '../db/client.js';
 import { conditions, deposits } from '../db/schema.js';
 import { startApp } from '../test/harness.js';
@@ -114,5 +114,48 @@ describe('after acceptance', () => {
       irrevocableAt: inMin(24 * 60), closingDate: ymd(60), inclusions: 'Appliances', exclusions: '', noteToAgent: '',
     }, b.t);
     expect(again.body.status).toBe('draft');
+  });
+
+  it('changes the agreement with an amendment only once the seller accepts it', async () => {
+    const { b, agent, deal } = await acceptedDeal(0);
+    const insp = cond(deal, 'inspection');
+    const dayAfter = (iso: string, n: number) => nextBankingDate(new Date(Date.parse(iso) + n * 86_400_000).toISOString().slice(0, 10));
+    const later = dayAfter(insp.dueAt, 3), closing = dayAfter(deal.closingDate + 'T12:00:00Z', 7);
+    const amend = (body: object) => h.call('POST', '/deal/amendments', { ...sign, extend: [], ...body }, b.t);
+
+    await p.stepUp(b.t, b.email);
+    expect((await amend({})).status).toBe(400); // nothing to change
+    expect((await amend({ closingDate: deal.closingDate })).body.code).toBe('same_closing');
+    expect((await amend({ extend: [{ conditionId: insp.id, until: torontoInputValue(insp.dueAt).slice(0, 10) }] })).body.code).toBe('not_later');
+    const proposed = (await amend({ closingDate: closing, extend: [{ conditionId: insp.id, until: later }] })).body;
+    expect(proposed.amendments[0]).toMatchObject({ status: 'signed', changes: { closingDate: closing } });
+    const doc = (await h.call('GET', `/documents/${proposed.amendments[0].documentId}`, undefined, b.t)).body;
+    expect(doc.record).toMatchObject({ form: '120', title: 'Amendment to Agreement of Purchase and Sale' });
+    expect(mail(b.agentEmail).subject).toMatch(/^Amendment to present/);
+    expect((await amend({ closingDate: closing })).body.code).toBe('amendment_open');
+
+    // Withdraw, propose again, then the seller agrees.
+    const id1 = proposed.amendments[0].id;
+    expect((await h.call('DELETE', `/deal/amendments/${id1}`, undefined, b.t)).body.amendments[0].status).toBe('withdrawn');
+    expect((await h.call('POST', `/pro/amendments/${id1}/result`, { result: 'accepted' }, agent)).body.code).toBe('not_open');
+    const id2 = (await amend({ closingDate: closing, extend: [{ conditionId: insp.id, until: later }] })).body.amendments[0].id;
+    expect((await h.call('POST', `/pro/amendments/${id2}/result`, { result: 'accepted', note: 'Seller signed this morning.' }, agent)).body.status).toBe('accepted');
+    const now = (await h.call('GET', '/deal', undefined, b.t)).body;
+    expect(now.closingDate).toBe(closing);
+    expect(cond(now, 'inspection').dueAt.slice(0, 10) >= later).toBe(true);
+    expect(mail(b.email).subject).toBe('The seller agreed to your change');
+    expect((await h.call('GET', '/pro/deals', undefined, agent)).body.find((d: { dealId: string }) => d.dealId === deal.dealId).amendments[0].status).toBe('accepted');
+
+    // Refused: nothing changes.
+    const fin = cond(now, 'financing');
+    const id3 = (await amend({ extend: [{ conditionId: fin.id, until: dayAfter(fin.dueAt, 2) }] })).body.amendments[0].id;
+    await h.call('POST', `/pro/amendments/${id3}/result`, { result: 'rejected', note: 'Seller won’t extend.' }, agent);
+    expect(cond((await h.call('GET', '/deal', undefined, b.t)).body, 'financing').dueAt).toBe(fin.dueAt);
+    expect(mail(b.email).subject).toBe('The seller didn’t agree to your change');
+
+    // Too late: the condition lapsed before the seller answered, so the agreement is void.
+    const id4 = (await amend({ extend: [{ conditionId: fin.id, until: dayAfter(fin.dueAt, 2) }] })).body.amendments[0].id;
+    await db.update(conditions).set({ dueAt: new Date(Date.now() - 60_000) }).where(eq(conditions.id, fin.id));
+    expect((await h.call('POST', `/pro/amendments/${id4}/result`, { result: 'accepted' }, agent)).body.code).toBe('agreement_void');
   });
 });

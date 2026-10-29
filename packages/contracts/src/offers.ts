@@ -82,3 +82,18 @@ export const TrustVerifiedRequest = z.object({
   note: z.string().trim().min(3, 'Say who you spoke to and the number you called').max(500),
 });
 export type TrustVerifiedRequest = z.infer<typeof TrustVerifiedRequest>;
+
+/** Form 120: move closing and/or extend conditions. Signed by the buyer, then presented to the seller. */
+export const AmendmentRequest = z.object({
+  closingDate: ymd.optional(),
+  extend: z.array(z.object({ conditionId: z.string().uuid(), until: ymd })).max(5).default([]),
+  typedName: z.string().trim().min(2).max(200),
+  readConfirmed: z.literal(true),
+}).refine(a => a.closingDate || a.extend.length, { message: 'Change the closing date or extend a condition' });
+export type AmendmentRequest = z.infer<typeof AmendmentRequest>;
+
+export const AmendmentResultRequest = z.object({
+  result: z.enum(['accepted', 'rejected']),
+  note: z.string().trim().max(1000).optional(),
+});
+export type AmendmentResultRequest = z.infer<typeof AmendmentResultRequest>;

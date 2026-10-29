@@ -167,9 +167,15 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * A condition still open at its deadline voids the agreement: the offer becomes void and the buyer's representation carries on (they can offer again). The buyer then signs a mutual release (Form 122) and the agent records the deposit's return.
   * The worker job `deadlines` (every minute) runs the lapse check and sends one reminder 6 hours before the deposit is due and 24 hours before a condition ends. Reads also run the lapse check, so screens are never stale.
 
+* Amendments (Form 120), on the web and phone: the buyer proposes a new closing date and/or later condition deadlines (banking days only) and signs. The agent records whether the seller agreed, in Klyr Pro or the agent app; only then do the deadlines and closing change. One amendment can be open at a time and the buyer can withdraw it. If a condition lapses before the seller agrees, accepting is refused because the agreement is already void.
+* Push in the buyer app (`expo-notifications`, `/me/devices`, tied to the sign-in like agent devices):
+  * Visit confirmed, moved or declined; offer sent back, registered, signed back, not accepted or accepted; deposit received; condition removed or deal firm; reminders; agreement ended; amendment agreed or refused.
+  * Tapping a push opens the deal, offers or visits.
+  * Lock-screen text never includes prices or amounts, on either app.
+
 **Next, in order:**
 1. Klyr Pro phone app, next: device attestation for check-ins (App Attest / Play Integrity through a config plugin and a development build), and opt-in "on shift" tracking if the brokerage wants travel logs (needs a privacy review first).
-2. Deal after acceptance, part 2: amendments (Form 120, e.g. extend a condition or move closing), push in the consumer app, and the closing checklist (lawyer, insurance binder, statement of adjustments, keys, cash back).
+2. Closing: checklist (lawyer, mortgage instructions, insurance binder, statement of adjustments, final walk-through, keys), the deal closing in Klyr Pro, and the cash-back payout record for Admin's trust and payouts module.
 3. Real integrations as vendors are chosen: OREA forms + e-sign, ID verification, S3 file store with Object Lock, SES email.
 4. Saved searches with alerts, the phone map, phone passkeys (needs the klyr.ca associated domain) and Sign in with Apple/Google. Pull a shared component layer into `packages/ui`.
 5. Provider quote builders in Klyr Pro, then the Admin modules in the order the Launch Checklist owners need them.

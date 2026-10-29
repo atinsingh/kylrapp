@@ -328,6 +328,23 @@ export const conditions = pgTable('conditions', {
   reminderSentAt: ts('reminder_sent_at'),
 }, t => [index('conditions_open_due_ix').on(t.dueAt).where(sql`${t.waivedAt} is null and ${t.fulfilledAt} is null`)]);
 
+/**
+ * Amendment to an accepted agreement (Form 120): move closing and/or extend conditions. The buyer signs,
+ * the agent presents it, and it changes the deal only once the seller accepts.
+ */
+export const amendments = pgTable('amendments', {
+  id: id(),
+  dealId: uuid('deal_id').notNull().references(() => deals.id),
+  offerId: uuid('offer_id').notNull().references(() => offers.id),
+  /** { closingDate?: 'YYYY-MM-DD', extend?: [{ conditionId, until: 'YYYY-MM-DD', from: ISO }] } */
+  changes: jsonb('changes').notNull(),
+  status: text('status', { enum: ['signed', 'accepted', 'rejected', 'withdrawn'] }).notNull(),
+  documentId: uuid('document_id').references(() => documents.id),
+  agentNote: text('agent_note'),
+  createdAt: created(),
+  decidedAt: ts('decided_at'),
+}, t => [index('amendments_deal_ix').on(t.dealId)]);
+
 /** Visits a buyer books; the listing brokerage confirms. */
 export const showings = pgTable('showings', {
   id: id(),

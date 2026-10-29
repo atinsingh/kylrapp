@@ -136,14 +136,20 @@ export default function Listing() {
             <Text style={t.note}>{e.allIn < 0 ? 'You get back' : 'All-in to close'}</Text>
             <Text style={{ ...sora(800), fontSize: 18, color: color.brand }}>{money(Math.abs(e.allIn))}</Text>
           </View>
-          <Pressable accessibilityRole="button" accessibilityState={{ selected: saved }} accessibilityLabel={`${saved ? 'Saved' : 'Save'} ${l.address}`} onPress={toggleSave}
-            style={{ minHeight: 50, borderRadius: 14, paddingHorizontal: 20, justifyContent: 'center', backgroundColor: saved ? color.brand : color.brandTint }}>
-            <Text style={{ ...sora(700), fontSize: 15, color: saved ? '#fff' : color.brand }}>{saved ? '♥ Saved' : '♡ Save'}</Text>
-          </Pressable>
-          <Pressable accessibilityRole="button" onPress={() => router.push(`/visit/${l.id}`)}
-            style={{ minHeight: 50, borderRadius: 14, paddingHorizontal: 18, justifyContent: 'center', backgroundColor: color.brand }}>
-            <Text style={{ ...sora(700), fontSize: 15, color: '#fff' }}>Book a visit</Text>
-          </Pressable>
+          <View style={{ flexDirection: 'row', gap: 6 }}>
+            <Pressable accessibilityRole="button" accessibilityState={{ selected: saved }} accessibilityLabel={`${saved ? 'Saved' : 'Save'} ${l.address}`} onPress={toggleSave}
+              style={{ width: 50, minHeight: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: saved ? color.brand : color.brandTint }}>
+              <Text style={{ ...sora(700), fontSize: 20, color: saved ? '#fff' : color.brand }}>{saved ? '♥' : '♡'}</Text>
+            </Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Book a visit" onPress={() => router.push(`/visit/${l.id}`)}
+              style={{ minHeight: 50, borderRadius: 14, paddingHorizontal: 14, justifyContent: 'center', backgroundColor: color.brandTint }}>
+              <Text style={{ ...sora(700), fontSize: 15, color: color.brand }}>Visit</Text>
+            </Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Make an offer" onPress={() => router.push(`/offer/${l.id}`)}
+              style={{ minHeight: 50, borderRadius: 14, paddingHorizontal: 14, justifyContent: 'center', backgroundColor: color.brand }}>
+              <Text style={{ ...sora(700), fontSize: 15, color: '#fff' }}>Offer</Text>
+            </Pressable>
+          </View>
         </View>
       </SafeAreaView>
     </SafeAreaView>

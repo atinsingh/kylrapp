@@ -66,24 +66,37 @@ export class DealsService {
   /** Signs Form 300. The caller has passed step-up; the typed name must match the account's legal name. */
   async signAgreement(userId: string, typedName: string, client: { ip?: string; userAgent?: string }) {
     const terms = await this.agreementTerms(userId);
-    const norm = (s: string) => s.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
-    if (norm(typedName) !== norm(terms.buyer)) {
-      throw new BadRequestException({ code: 'name_mismatch', message: `Type your full legal name exactly as on your account: ${terms.buyer}` });
-    }
+    this.assertTypedName(typedName, terms.buyer);
     const deal = (await this.buyDeal(userId)) ?? (await this.openBuyDeal(userId));
     if (await this.signedAgreement(deal.id)) throw new ConflictException({ code: 'already_signed', message: 'Your buyer agreement is already signed.' });
 
+    return this.signRecord({ dealId: deal.id, userId, form: '300', title: terms.title, record: terms, typedName, client });
+  }
+
+  /**
+   * Stores a signed record (the form's terms plus who signed, when and from where) with its SHA-256,
+   * and the signature and audit rows. Used for Form 300 and offers alike.
+   */
+  async signRecord(a: { dealId: string; userId: string; form: string; title: string; record: object; typedName: string; client: { ip?: string; userAgent?: string } }) {
     const signedAt = new Date();
-    const record = { ...terms, dealId: deal.id, signer: { userId, typedName: typedName.trim(), signedAt: signedAt.toISOString(), ip: client.ip ?? null, userAgent: client.userAgent ?? null } };
+    const record = { ...a.record, dealId: a.dealId, signer: { userId: a.userId, typedName: a.typedName.trim(), signedAt: signedAt.toISOString(), ip: a.client.ip ?? null, userAgent: a.client.userAgent ?? null } };
     const body = Buffer.from(JSON.stringify(record, null, 2));
     const [doc] = await this.db.insert(documents).values({
-      dealId: deal.id, ownerId: userId, oreaForm: '300', title: terms.title, status: 'signed', s3Key: 'pending', sha256: '0'.repeat(64),
+      dealId: a.dealId, ownerId: a.userId, oreaForm: a.form, title: a.title, status: 'signed', s3Key: 'pending', sha256: '0'.repeat(64),
     }).returning();
-    const stored = await this.files.put('docs', `deals/${deal.id}/form-300-${doc!.id}.json`, body);
+    const stored = await this.files.put('docs', `deals/${a.dealId}/form-${a.form}-${doc!.id}.json`, body);
     await this.db.update(documents).set({ s3Key: stored.key, sha256: stored.sha256 }).where(eq(documents.id, doc!.id));
-    await this.db.insert(signatures).values({ documentId: doc!.id, userId, signedAt, ip: client.ip ?? null });
-    await this.db.insert(auditLog).values({ actorId: userId, action: 'sign', entity: 'document', entityId: doc!.id, data: { form: '300', sha256: stored.sha256 } });
+    await this.db.insert(signatures).values({ documentId: doc!.id, userId: a.userId, signedAt, ip: a.client.ip ?? null });
+    await this.db.insert(auditLog).values({ actorId: a.userId, action: 'sign', entity: 'document', entityId: doc!.id, data: { form: a.form, sha256: stored.sha256 } });
     return { documentId: doc!.id, sha256: stored.sha256, signedAt: signedAt.toISOString() };
+  }
+
+  /** The legal name a signer must type, compared loosely (case, spacing, Unicode form). */
+  assertTypedName(typedName: string, legalName: string) {
+    const norm = (s: string) => s.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
+    if (norm(typedName) !== norm(legalName)) {
+      throw new BadRequestException({ code: 'name_mismatch', message: `Type your full legal name exactly as on your account: ${legalName}` });
+    }
   }
 
   async documents(userId: string) {
@@ -153,7 +166,8 @@ export class DealsService {
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
-  private async buyDeal(userId: string) {
+  /** The buyer's open buy deal, if any. */
+  async buyDeal(userId: string) {
     const [row] = await this.db.select({ deal: deals }).from(deals)
       .innerJoin(dealParties, and(eq(dealParties.dealId, deals.id), eq(dealParties.userId, userId), eq(dealParties.role, 'client')))
       .where(and(eq(deals.side, 'buy'), inArray(deals.stage, ['searching', 'touring', 'offer', 'conditional', 'firm', 'closing'])))

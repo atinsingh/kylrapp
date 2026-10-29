@@ -4,7 +4,7 @@ import { color } from '@klyr/tokens';
 import { useAuth } from '../lib/auth';
 import { sora, t } from './ui';
 
-const TABS = [['today', 'Today'], ['activity', 'Activity'], ['clients', 'Clients']] as const;
+const TABS = [['today', 'Today'], ['offers', 'Offers'], ['activity', 'Activity'], ['clients', 'Clients']] as const;
 
 export function Nav({ current }: { current: (typeof TABS)[number][0] }) {
   const { agent, signOut } = useAuth();

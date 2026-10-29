@@ -1,51 +1,26 @@
-import { and, eq, inArray, like } from 'drizzle-orm';
+import { and, eq, like } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDb } from '../db/client.js';
-import { auditLog, emailCodes, pushDevices, sessions, showings, totpCredentials, users } from '../db/schema.js';
+import { auditLog, pushDevices, sessions, showings } from '../db/schema.js';
 import { NotifyService } from '../notify/notify.service.js';
 import { sendVisitReminders } from '../notify/visit-notes.js';
-import { totpAt, totpStep } from '../identity/crypto.js';
 import { startApp } from '../test/harness.js';
+import { AGENT_EMAIL, ID, inMin, people, resetStaff } from '../test/people.js';
 
 let h: Awaited<ReturnType<typeof startApp>>;
 const { db, pool } = createDb();
 beforeAll(async () => {
   h = await startApp();
+  p = people(h);
   await import('../db/seed.js');
-  // Seeded staff keep their authenticator and recent codes between runs; start each run clean.
-  await db.delete(emailCodes).where(like(emailCodes.email, '%@klyr.example'));
-  await db.delete(totpCredentials).where(inArray(totpCredentials.userId, db.select({ id: users.id }).from(users).where(like(users.email, '%@klyr.example'))));
+  await resetStaff(db);
 });
 afterAll(async () => { await h?.app.close(); await pool.end(); });
 
-const inMin = (m: number) => new Date(Date.now() + m * 60_000).toISOString();
-const lastCode = (email: string) => h.outbox.filter(m => m.to === email).at(-1)!.text.match(/\b(\d{6})\b/)![1]!;
-const ID = { occupation: 'Nurse', sourceOfFunds: ['savings'], actingForThirdParty: false, politicallyExposed: false, buyingAs: 'self', vendorRef: 'sandbox' };
-const AGENT_EMAIL: Record<string, string> = { 'Maya Chen': 'maya.chen@klyr.example', 'Daniel Okafor': 'daniel.okafor@klyr.example' };
-const staffTokens = new Map<string, string>();
-
-/** Staff sign in once per run: an email code, then setting up TOTP (which counts as the second factor). */
-async function staff(email: string) {
-  if (staffTokens.has(email)) return staffTokens.get(email)!;
-  await h.call('POST', '/auth/email/start', { email });
-  const t = (await h.call('POST', '/auth/email/verify', { email, code: lastCode(email) })).body.session.token as string;
-  const setup = (await h.call('POST', '/auth/mfa/totp/setup', undefined, t)).body;
-  expect((await h.call('POST', '/auth/mfa/totp/enable', { code: totpAt(setup.secret, totpStep()) }, t)).status).toBe(200);
-  staffTokens.set(email, t);
-  return t;
-}
-
-/** A buyer ready to book: Form 300 signed, ID checked. Returns token, email and their agent's email. */
-async function readyBuyer(id = ID) {
-  const t = await h.signedIn();
-  const email = (await h.call('GET', '/auth/me', undefined, t)).body.email;
-  await h.call('POST', '/auth/stepup/email/start', undefined, t);
-  await h.call('POST', '/auth/stepup/email/verify', { code: lastCode(email) }, t);
-  expect((await h.call('POST', '/agreements/300/sign', { typedName: 'Test Buyer', readConfirmed: true }, t)).status).toBe(201);
-  await h.call('POST', '/id-check', id, t);
-  const agent = (await h.call('GET', '/buying', undefined, t)).body.agent.name as string;
-  return { t, email, agentEmail: AGENT_EMAIL[agent]! };
-}
+let p: ReturnType<typeof people>;
+const lastCode = (email: string) => p.lastCode(email);
+const staff = (email: string) => p.staff(email);
+const readyBuyer = (id: Partial<typeof ID> = {}) => p.readyBuyer(id);
 
 describe('Klyr Pro access', () => {
   it('is for staff only, and only after a second factor', async () => {

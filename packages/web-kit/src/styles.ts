@@ -26,6 +26,8 @@ button{cursor:pointer}
 .k-chip[aria-pressed=true]{background:var(--brand);color:#fff}
 .k-field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--muted)}
 .k-field input{height:50px;border-radius:12px;border:0;background:#fff;box-shadow:0 0 0 .5px var(--sep);padding:0 14px;font-size:15px;color:var(--text)}
+.k-select{height:44px;border-radius:12px;border:0;background:#fff;box-shadow:0 0 0 .5px var(--sep);padding:0 10px;font:inherit;font-size:14px;color:var(--text)}
+.k-field input[type=range]{height:auto;box-shadow:none;padding:0}
 .k-check{border:0;background:none;padding:0;min-height:${layout.touch}px;display:flex;gap:10px;align-items:center;text-align:left;width:100%;font-size:13px}
 .k-dot{width:22px;height:22px;border-radius:50%;border:2px solid #C7C7CC;background:#fff;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 .k-check[aria-checked=true] .k-dot{background:#2B7A4B;border-color:#2B7A4B}

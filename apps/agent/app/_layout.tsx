@@ -35,6 +35,7 @@ function Routes() {
         </Stack.Protected>
         <Stack.Protected guard={ready}>
           <Stack.Screen name="today" />
+          <Stack.Screen name="offers" />
           <Stack.Screen name="activity" />
           <Stack.Screen name="clients" />
         </Stack.Protected>

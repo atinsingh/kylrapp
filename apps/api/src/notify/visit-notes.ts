@@ -1,13 +1,13 @@
 import { and, eq, gt, isNull, lte, sql } from 'drizzle-orm';
 import { GEOFENCE } from '@klyr/contracts';
-import { TORONTO } from '@klyr/core';
+import { TORONTO, torontoTime, torontoWhen } from '@klyr/core';
 import type { Db } from '../db/db.module.js';
 import { deals, listings, showings } from '../db/schema.js';
 import type { Note, NotifyService } from './notify.service.js';
 
 /** What an agent's phone shows. Only the home and the time: lock screens are public. */
-const when = (d: Date) => d.toLocaleString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: TORONTO });
-const time = (d: Date) => d.toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: TORONTO });
+const when = (d: Date) => torontoWhen(d);
+const time = (d: Date) => torontoTime(d);
 
 export const visitNotes = {
   requested: (address: string, at: Date, id: string): Note => ({ title: 'New visit request', body: `${address} · ${when(at)} · Tap to confirm`, data: { screen: 'today', showingId: id } }),

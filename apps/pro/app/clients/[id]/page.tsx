@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { phone } from '@klyr/web-kit/styles';
 import { notFound } from 'next/navigation';
 import type { ProClientDetail } from '@klyr/api-client';
-import { TORONTO } from '@klyr/core';
+import { TORONTO, torontoWhen } from '@klyr/core';
 import { ProHeader } from '@/components/pro-header';
 import { api, requireAgent } from '@/lib/session';
 import { Progress } from '../progress';
@@ -11,7 +11,7 @@ export const metadata = { title: 'Client · Klyr Pro' };
 
 const money = (n: number) => '$' + Math.round(n).toLocaleString('en-CA');
 const date = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric', timeZone: TORONTO });
-const when = (iso: string) => new Date(iso).toLocaleString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: TORONTO });
+const when = (iso: string) => torontoWhen(iso);
 
 export default async function ClientPage({ params }: { params: Promise<{ id: string }> }) {
   const me = await requireAgent();

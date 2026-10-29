@@ -53,5 +53,5 @@ class DealsController {
   }
 }
 
-@Module({ controllers: [DealsController], providers: [DealsService] })
+@Module({ controllers: [DealsController], providers: [DealsService], exports: [DealsService] })
 export class DealsModule {}

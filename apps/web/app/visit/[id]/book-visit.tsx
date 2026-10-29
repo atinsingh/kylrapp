@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TORONTO, visitSlots } from '@klyr/core';
+import { TORONTO, torontoTime, visitSlots } from '@klyr/core';
 import { errorText, klyr } from '@/lib/client';
 
 const TIMES: [number, number][] = [[10, 0], [13, 0], [16, 0], [18, 30]];
@@ -12,7 +12,7 @@ function slots() {
   return visitSlots(5, TIMES).map(at => ({
     at,
     day: at.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', timeZone: TORONTO }),
-    time: at.toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: TORONTO }),
+    time: torontoTime(at),
   }));
 }
 

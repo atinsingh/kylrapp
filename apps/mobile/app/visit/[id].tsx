@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import type { BuyingStatus, ListingDetail } from '@klyr/api-client';
-import { TORONTO, visitSlots } from '@klyr/core';
+import { TORONTO, torontoTime, visitSlots } from '@klyr/core';
 import { errorText, klyr } from '../../lib/klyr';
 import { Back } from '../../components/back';
 import { Button, Card, Chip, ErrorText, Field, Screen, sora, t, Title } from '../../components/ui';
@@ -13,7 +13,7 @@ function slots() {
   return visitSlots(5, TIMES).map(at => ({
     at,
     day: at.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', timeZone: TORONTO }),
-    time: at.toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: TORONTO }),
+    time: torontoTime(at),
   }));
 }
 

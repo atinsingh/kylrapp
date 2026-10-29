@@ -41,6 +41,9 @@ function Routes() {
         <Stack.Screen name="sign-300" />
         <Stack.Screen name="id-check" />
         <Stack.Screen name="visits" />
+        <Stack.Screen name="offer/[id]" />
+        <Stack.Screen name="offers" />
+        <Stack.Screen name="deal" />
         <Stack.Screen name="security" />
       </Stack.Protected>
     </Stack>

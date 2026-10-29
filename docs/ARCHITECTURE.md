@@ -152,9 +152,18 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 * Klyr Admin (`apps/admin`): the FINTRAC ID review queue for the compliance officer or broker of record. Approving or rejecting needs a note, can be done only once, and can't be done on your own file; the buyer is emailed and can then book. Other Admin modules are still listed as placeholders.
 * `packages/web-kit`: what the three Next.js apps share — the session-cookie proxy (each app has its own cookie), server-side API calls, base styles, staff sign-in and the geolocation helper.
 
+* Offers (web, phone, Klyr Pro web and phone app; screenshots `8*-*offer*.png`, `86-web-deal.png`, `9*-*.png`):
+  * Build: price, deposit, financing and inspection conditions (or status certificate for condos) in banking days, irrevocable time, closing date, inclusions, and a note to the agent, with the all-in at the offered price updating as you type. Form 100 for houses and towns, 101 for condos.
+  * Requires a signed Form 300 and a verified ID.
+  * Signing needs a fresh check and the legal name, and stores a plain-language summary of the form and Schedule A with its SHA-256 (a draft for legal review until the OREA forms licence and e-sign provider are in place).
+  * Agent: return it for changes or register it with the listing brokerage (Form 801), then record the seller's answer (accepted, signed back with price and open-until, or not accepted). The client is emailed at each step and the agent gets pushes.
+  * Buyer: withdraw before the seller decides, or accept (a signature) or decline a sign-back. Offers past their irrevocable time expire.
+  * Acceptance: the deal becomes conditional (or firm), the deposit falls due 24 hours later to the listing brokerage in trust, and each condition gets its deadline at 11:59 pm on the Nth banking day (Form 100: no weekends or Ontario statutory holidays, including moved ones; `@klyr/core`). The deal page warns the buyer to confirm trust account details by phone before sending money. The agent records the deposit receipt.
+  * Closing dates must be banking days (the land registry is closed otherwise).
+
 **Next, in order:**
 1. Klyr Pro phone app, next: device attestation for check-ins (App Attest / Play Integrity through a config plugin and a development build), and opt-in "on shift" tracking if the brokerage wants travel logs (needs a privacy review first).
-2. Offers: build an offer (Form 100/101), conditions and their day-by-day timeline, deadline reminders, deposit with trust-account call-back.
+2. Deal after acceptance: fulfil or waive conditions (Form 123) with deadline reminders, amendments (Form 120), mutual release (Form 122), trust-account call-back record, lawyer and closing tasks; buyer pushes in the consumer app.
 3. Real integrations as vendors are chosen: OREA forms + e-sign, ID verification, S3 file store with Object Lock, SES email.
 4. Saved searches with alerts, the phone map, phone passkeys (needs the klyr.ca associated domain) and Sign in with Apple/Google. Pull a shared component layer into `packages/ui`.
 5. Provider quote builders in Klyr Pro, then the Admin modules in the order the Launch Checklist owners need them.

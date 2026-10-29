@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { describeFieldEvent, type FieldDay } from '@klyr/api-client';
-import { TORONTO } from '@klyr/core';
+import { TORONTO, torontoTime } from '@klyr/core';
 import { api, sessionToken } from '@klyr/web-kit/session';
 
 export const metadata = { title: 'Field activity · Klyr Admin' };
 
-const time = (iso: string) => new Date(iso).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: TORONTO });
+const time = (iso: string) => torontoTime(iso);
 const ymd = (ms: number) => new Date(ms).toLocaleDateString('en-CA', { timeZone: TORONTO });
 const PLATFORM: Record<string, string> = { ios: 'iPhone app', android: 'Android app', web: 'web preview (testing only)' };
 const TONE = { ok: '#2B7A4B', warn: '#A11B1B', plain: 'var(--muted)' } as const;

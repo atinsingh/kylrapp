@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { ProMe } from '@klyr/api-client';
 import { SignOut } from './sign-out';
 
-export function ProHeader({ me, current }: { me: ProMe; current: 'visits' | 'clients' }) {
+export function ProHeader({ me, current }: { me: ProMe; current: 'visits' | 'offers' | 'clients' }) {
   return (
     <header className="p-top">
       <div>
@@ -11,6 +11,7 @@ export function ProHeader({ me, current }: { me: ProMe; current: 'visits' | 'cli
       </div>
       <nav className="p-tabs" aria-label="Klyr Pro">
         <Link href="/" aria-current={current === 'visits' ? 'page' : undefined}>Visits</Link>
+        <Link href="/offers" aria-current={current === 'offers' ? 'page' : undefined}>Offers</Link>
         <Link href="/clients" aria-current={current === 'clients' ? 'page' : undefined}>Clients</Link>
         <SignOut />
       </nav>

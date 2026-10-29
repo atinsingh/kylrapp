@@ -140,7 +140,8 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <CompareToggle id={l.id} address={l.address} />
             <SaveButton id={l.id} saved={l.saved} address={l.address} large />
-            <Link href={`/visit/${l.id}`} className="k-btn" style={{ width: 'auto', display: 'grid', placeItems: 'center', textDecoration: 'none' }}>Book a visit</Link>
+            <Link href={`/visit/${l.id}`} className="k-btn k-alt" style={{ width: 'auto', display: 'grid', placeItems: 'center', textDecoration: 'none' }}>Book a visit</Link>
+            <Link href={`/offer/${l.id}`} className="k-btn" style={{ width: 'auto', display: 'grid', placeItems: 'center', textDecoration: 'none' }}>Make an offer</Link>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import type { DocumentSummary, Showing } from '@klyr/api-client';
-import { TORONTO } from '@klyr/core';
+import { TORONTO, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { errorText, klyr } from '../lib/klyr';
 import { Back } from '../components/back';
@@ -15,7 +15,7 @@ const STATUS: Record<Showing['status'], [string, string, string]> = {
   cancelled: ['Cancelled', '#F2F2F7', '#5E5E63'],
   completed: ['Visited', '#F2F2F7', '#5E5E63'],
 };
-const when = (iso: string) => new Date(iso).toLocaleString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: TORONTO });
+const when = (iso: string) => torontoWhen(iso);
 
 /** Visits and signed documents. */
 export default function Visits() {

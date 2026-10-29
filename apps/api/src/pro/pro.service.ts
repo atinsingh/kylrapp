@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, count, desc, eq, gt, inArray, sql } from 'drizzle-orm';
 import { GEOFENCE, type DecideShowingRequest, type GeoCheckRequest } from '@klyr/contracts';
-import { TORONTO } from '@klyr/core';
+import { TORONTO, torontoWhen } from '@klyr/core';
 import { DB, type Db } from '../db/db.module.js';
 import {
   agents, auditLog, dealParties, deals, documents, idVerifications, listings, listingViews, moveProfiles, organizations, showings, users,
@@ -10,7 +10,7 @@ import { config } from '../config.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 
 const MIN = 60_000, DAY = 86_400_000;
-const when = (d: Date) => d.toLocaleString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: TORONTO });
+const when = (d: Date) => torontoWhen(d);
 const address = sql<string>`case when ${listings.unit} is null then ${listings.address} else ${listings.address} || ' #' || ${listings.unit} end`;
 
 /** Klyr Pro for agents: only their own clients' deals. */

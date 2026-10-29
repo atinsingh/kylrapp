@@ -42,9 +42,10 @@ export function usePush(enabled: boolean): { state: PushState; openSettings: () 
     })();
   }, [enabled]);
 
-  // Tapping a visit push opens Today.
+  // Tapping a push opens its screen: Today for visits, Offers for offers.
   useEffect(() => {
-    if (enabled && last?.notification.request.content.data?.screen === 'today') router.replace('/today');
+    const screen = last?.notification.request.content.data?.screen;
+    if (enabled && (screen === 'today' || screen === 'offers')) router.replace(`/${screen}`);
   }, [enabled, last]);
 
   return { state, openSettings: () => void Linking.openSettings() };

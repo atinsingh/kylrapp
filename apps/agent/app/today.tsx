@@ -4,7 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Decision, ProShowing } from '@klyr/api-client';
 import { GEOFENCE } from '@klyr/contracts';
-import { TORONTO, visitSlots } from '@klyr/core';
+import { TORONTO, torontoTime, visitSlots } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
 import { Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
@@ -13,7 +13,7 @@ import { metres, metresBetween, readLocation, useLivePosition } from '../lib/loc
 import { usePushState } from '../lib/push-context';
 
 const MIN = 60_000;
-const time = (iso: string | number) => new Date(iso).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: TORONTO });
+const time = (iso: string | number) => torontoTime(iso);
 const day = (iso: string | number) => new Date(iso).toLocaleDateString('en-CA', { timeZone: TORONTO });
 const dayLabel = (iso: string) => {
   const d = day(iso);

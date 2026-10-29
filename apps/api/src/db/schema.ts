@@ -283,17 +283,33 @@ export const dealParties = pgTable('deal_parties', {
   role: text('role', { enum: ['client', 'co_client', 'counterparty_unrepresented', 'lawyer', 'lender', 'inspector', 'insurer'] }).notNull(),
 }, t => [primaryKey({ columns: [t.dealId, t.userId, t.role] })]);
 
+/**
+ * An offer on one home. draft → sent (buyer signed; with their agent) → registered (listing brokerage
+ * confirmed receipt, Form 801) → accepted | signed_back | rejected. The agent can return a sent offer
+ * for changes; the buyer can withdraw before the seller decides; past irrevocableAt it expires.
+ * A sign-back is its own row (kind 'sign_back', parentId → the buyer's offer).
+ */
 export const offers = pgTable('offers', {
   id: id(),
   dealId: uuid('deal_id').notNull().references(() => deals.id),
+  listingId: uuid('listing_id').notNull().references(() => listings.id),
+  parentId: uuid('parent_id'),
   kind: text('kind', { enum: ['regular', 'pre_emptive', 'bully', 'sign_back', 'amendment'] }).notNull(),
   price: dollars('price').notNull(),
   deposit: dollars('deposit').notNull(),
   irrevocableAt: ts('irrevocable_at').notNull(),
-  status: text('status', { enum: ['draft', 'sent', 'signed_back', 'accepted', 'rejected', 'expired', 'withdrawn'] }).notNull(),
+  status: text('status', { enum: ['draft', 'sent', 'returned', 'registered', 'signed_back', 'accepted', 'rejected', 'expired', 'withdrawn'] }).notNull(),
+  /** Conditions (days), closing date, inclusions, exclusions, note to agent. */
   terms: jsonb('terms').notNull(),
+  /** The signed Form 100/101 record (buyer's offer) or the accepted sign-back. */
+  documentId: uuid('document_id').references(() => documents.id),
+  agentNote: text('agent_note'),
+  sentAt: ts('sent_at'),
+  registeredAt: ts('registered_at'),
+  decidedAt: ts('decided_at'),
   createdAt: created(),
-});
+  updatedAt: ts('updated_at').notNull().defaultNow(),
+}, t => [index('offers_deal_ix').on(t.dealId), index('offers_listing_ix').on(t.listingId)]);
 
 /** Condition deadlines drive the day-by-day timeline and reminder jobs. */
 export const conditions = pgTable('conditions', {

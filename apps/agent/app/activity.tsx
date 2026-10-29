@@ -3,7 +3,7 @@ import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { FieldDay } from '@klyr/api-client';
-import { TORONTO } from '@klyr/core';
+import { TORONTO, torontoTime } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
 import { Card, Chip, ErrorText, sora, t } from '../components/ui';
@@ -11,7 +11,7 @@ import { describeFieldEvent as describe } from '@klyr/api-client';
 import { errorText, klyr } from '../lib/klyr';
 
 const ymd = (ms: number) => new Date(ms).toLocaleDateString('en-CA', { timeZone: TORONTO });
-const time = (iso: string) => new Date(iso).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: TORONTO });
+const time = (iso: string) => torontoTime(iso);
 const DAYS = [0, 1, 2, 3, 4, 5, 6].map(i => {
   const ms = Date.now() - i * 86_400_000;
   return { day: ymd(ms), label: i === 0 ? 'Today' : i === 1 ? 'Yesterday' : new Date(ms).toLocaleDateString('en-CA', { weekday: 'short', timeZone: TORONTO }) };

@@ -5,20 +5,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Decision, ProShowing } from '@klyr/api-client';
 import { GEOFENCE } from '@klyr/contracts';
-import { TORONTO, torontoInstant } from '@klyr/core';
+import { fromTorontoInput, TORONTO, torontoInputValue, torontoTime, torontoWhen } from '@klyr/core';
 import { errorText, klyr } from '@/lib/client';
 
 const MIN = 60_000;
-const time = (iso: string | number) => new Date(iso).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: TORONTO });
-const when = (iso: string) => new Date(iso).toLocaleString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: TORONTO });
-/** "2026-10-30T14:00" in Toronto wall-clock time, for a datetime-local input. */
-const localValue = (iso: string) => new Date(iso).toLocaleString('sv-SE', { timeZone: TORONTO }).replace(' ', 'T').slice(0, 16);
-function fromLocal(v: string) {
-  const [d, t] = v.split('T') as [string, string];
-  const [y, m, day] = d.split('-').map(Number) as [number, number, number];
-  const [h, min] = t.split(':').map(Number) as [number, number];
-  return torontoInstant(y, m, day, h, min);
-}
+const time = (iso: string | number) => torontoTime(iso);
+const when = (iso: string) => torontoWhen(iso);
+const localValue = torontoInputValue;
+const fromLocal = fromTorontoInput;
 const metres = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${m} m`);
 
 const STATUS: Record<ProShowing['status'], [string, string, string]> = {

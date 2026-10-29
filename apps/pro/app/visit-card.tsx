@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import type { Decision, ProShowing } from '@klyr/api-client';
 import { GEOFENCE } from '@klyr/contracts';
 import { TORONTO, torontoInstant } from '@klyr/core';
-import { readLocation } from '@klyr/web-kit/geo';
 import { errorText, klyr } from '@/lib/client';
 
 const MIN = 60_000;
@@ -39,12 +38,10 @@ export function VisitCard({ v }: { v: ProShowing }) {
   const [at, setAt] = useState(localValue(v.at));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [status, setStatus] = useState('');
 
   const [label, bg, fg] = STATUS[v.status];
   const start = Date.parse(v.at);
   const opensAt = start - GEOFENCE.earlyMinutes * MIN;
-  const closesAt = start + GEOFENCE.lateMinutes * MIN;
   const completeFrom = v.checkInAt ? Date.parse(v.checkInAt) + GEOFENCE.minOnSiteMinutes * MIN : 0;
 
   async function decide() {
@@ -56,23 +53,6 @@ export function VisitCard({ v }: { v: ProShowing }) {
     if (!r.ok) return setError(errorText(r.error));
     setMode(null); setNote('');
     router.refresh();
-  }
-
-  async function geo(step: 'checkIn' | 'complete') {
-    setBusy(true); setError(''); setStatus('Finding your location…');
-    try {
-      const reading = await readLocation();
-      setStatus(`Location found (±${Math.round(reading.accuracyM)} m). Checking…`);
-      const r = await klyr.pro[step](v.id, reading);
-      if (!r.ok) throw new Error(errorText(r.error));
-      setStatus('');
-      router.refresh();
-    } catch (e) {
-      setStatus('');
-      setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
-    } finally {
-      setBusy(false);
-    }
   }
 
   const canChange = v.status === 'requested' || (v.status === 'confirmed' && !v.checkInAt);
@@ -98,23 +78,20 @@ export function VisitCard({ v }: { v: ProShowing }) {
       {v.status === 'confirmed' && !v.checkInAt && (
         <>
           <div className="p-fence">
-            Check in opens at {time(opensAt)} and needs you within {GEOFENCE.radiusM} m of the home.{' '}
+            Check in with the Klyr Pro app on your phone when you arrive: it opens at {time(opensAt)} and needs you within {GEOFENCE.radiusM} m of the home.{' '}
             <a href={directions} target="_blank" rel="noreferrer">Directions</a>
           </div>
-          <button className="k-btn" disabled={busy || Date.now() > closesAt} onClick={() => geo('checkIn')}>Check in at the property</button>
         </>
       )}
       {v.status === 'confirmed' && v.checkInAt && (
         <>
-          <div className="p-fence" role="status">Checked in at {time(v.checkInAt)}, {metres(v.checkInDistanceM ?? 0)} from the home. Complete the visit from {time(completeFrom)}, still at the property.</div>
-          <button className="k-btn" disabled={busy} onClick={() => geo('complete')}>Complete visit</button>
+          <div className="p-fence" role="status">Checked in at {time(v.checkInAt)}, {metres(v.checkInDistanceM ?? 0)} from the home. Complete the visit in the app from {time(completeFrom)}, still at the property.</div>
         </>
       )}
       {v.status === 'completed' && v.checkInAt && v.checkOutAt && (
         <div className="k-note">Checked in {time(v.checkInAt)} ({metres(v.checkInDistanceM ?? 0)}) · completed {time(v.checkOutAt)} ({metres(v.checkOutDistanceM ?? 0)}) · {Math.round((Date.parse(v.checkOutAt) - Date.parse(v.checkInAt)) / MIN)} min on site</div>
       )}
 
-      {status && <div className="k-note" role="status">{status}</div>}
       {error && <div className="k-error" role="alert">{error}</div>}
 
       {canChange && !mode && (

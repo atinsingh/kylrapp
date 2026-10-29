@@ -12,13 +12,19 @@ Source design: `design/prototype/Klyr App Core.dc.html` (71 screens: buy, sell, 
 |---|---|---|---|
 | **Klyr** (consumer) | Buyers, sellers, sell + buy, tenants, landlords | iOS + Android | `apps/mobile` (Expo) |
 | **Klyr web** (consumer) | Same as above, plus public listing pages | Web (responsive) | `apps/web` (Next.js) |
-| **Klyr Pro** | Agents; lawyers, lenders, inspectors, insurers | Web; agents also use the phone app | `apps/pro` (Next.js) |
+| **Klyr Pro** | Agents; lawyers, lenders, inspectors, insurers | Web | `apps/pro` (Next.js) |
+| **Klyr Pro phone app** | Agents in the field | iOS + Android | `apps/agent` (Expo) |
 | **Klyr Admin** | Broker of record, compliance, privacy, ops, finance | Web, internal only | `apps/admin` (Next.js) |
 | **API + worker** | All of the above | AWS ECS | `apps/api` (NestJS) |
 
 The prototype's "one core, two shells" model (sidebar on web, tab bar on phone) carries over. Each consumer client renders the same five plans and the same route map (`ROUTES` in App Core). Both clients get the cost engine, contracts and design tokens from shared packages.
 
-Agents need the phone for geofenced showing check-in. Rather than a fourth app, the agent workspace ships as a role inside `apps/mobile` once the consumer app is stable. Everything else an agent does stays in Klyr Pro.
+Agents in the field get their own phone app, **Klyr Pro** (`apps/agent`), rather than a role inside the consumer app:
+* Only the agent app asks for location, so buyers never see that prompt.
+* Its sign-in always requires the authenticator.
+* It has its own store listing and release cycle.
+
+The phone app covers showings with GPS check-in, the day's activity and clients. Desk work (pipeline, documents, offers) stays in Klyr Pro on the web, which can confirm or move visits but sends agents to the phone to check in.
 
 ## 2. Stack at a glance
 
@@ -127,12 +133,19 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 * Buyer tools: "How we estimate" (rate, down payment, first-time status, lawyer — stored per buyer and applied to every all-in, with the down payment raised to the legal minimum where needed), "What you can afford" (stress test plus down-payment caps, feeding search), Compare (up to 3 homes, lowest all-in and monthly marked), and a map view with all-in pins on web.
 * Buyer browsing on web and phone: search with swipeable photos, filters (cities, price, beds, type, sort; in the URL on web), "Viewed" badges, saved homes, and the listing page: gallery, all-in breakdown, monthly costs, open house, price history, sold nearby (same type, within 2 km, last 6 months, from a PostGIS query), schools, commute and details.
 * Klyr Pro for agents (`apps/pro`, screenshots `6*-pro-*.png`): staff sign in with an email code plus an authenticator app, set up on first sign-in. The API refuses staff routes (`RolesGuard`) without the role and a second factor in the session, and buyers who try Pro are turned away. Visits: a list grouped by day, where the agent confirms (with a note for the client), suggests a new time or declines. The buyer is emailed and sees the agent's note on web and phone. Clients: each buyer's Form 300, ID and visit status, saved homes and documents. An agent sees only their own deals.
-* Geofenced showings: an agent can check in only within 150 m of the listing, from 30 minutes before the visit until 2 hours after, with a location fix accurate to 100 m. Completing the visit needs at least 10 minutes on site and a second reading at the property. The API measures the distance (PostGIS) against the listing's own location rather than trusting the device. Every refused attempt (too far, low accuracy, mock location, outside the window, too soon) is written to the audit log with its coordinates for the broker of record. Limits: a browser can't detect a spoofed location, and a rooted phone can fake one. The phone app will send Android's mock-location flag (already refused by the API), and the broker of record can review check-ins that cluster suspiciously.
+* Klyr Pro phone app (`apps/agent`, Expo, screenshots `7*-agent-app-*.png`):
+  * Staff sign-in: an email code, then the authenticator app, set up in the app the first time.
+  * Today: visits to confirm, re-time or decline; the live distance to each home while a visit is near; check-in and completion from the phone's GPS (`expo-location`, best accuracy, Android's mock-location flag); directions; and calling the client.
+  * Activity: the agent's day (visits done, time on site, check-ins, refused attempts and a timeline) from the audit trail.
+  * Clients: each buyer's Form 300, ID and visit status.
+  * Location is read only while the app is open (no background tracking).
+* Field activity in Admin, for the broker of record: every agent's day with the same timeline, refused attempts in red, and which app each reading came from.
+* Geofenced showings: an agent can check in only within 150 m of the listing, from 30 minutes before the visit until 2 hours after, with a location fix accurate to 100 m. Completing the visit needs at least 10 minutes on site and a second reading at the property. The API measures the distance (PostGIS) against the listing's own location rather than trusting the device. Every refused attempt (too far, low accuracy, mock location, outside the window, too soon) is written to the audit log with its coordinates for the broker of record. Readings must come from the phone app: the API refuses web readings (allowed only in development, with `GEOFENCE_ALLOW_WEB=1`, for the app's web preview). Limits: iOS doesn't report simulated locations through Expo, and a rooted or jailbroken phone can fake GPS. Next steps are device attestation (App Attest / Play Integrity) so the API knows a reading came from the real app, and review of check-ins that cluster suspiciously.
 * Klyr Admin (`apps/admin`): the FINTRAC ID review queue for the compliance officer or broker of record. Approving or rejecting needs a note, can be done only once, and can't be done on your own file; the buyer is emailed and can then book. Other Admin modules are still listed as placeholders.
 * `packages/web-kit`: what the three Next.js apps share — the session-cookie proxy (each app has its own cookie), server-side API calls, base styles, staff sign-in and the geolocation helper.
 
 **Next, in order:**
-1. Agent role in the phone app: today's visits with check-in from native location (reports mock locations) and a push when a client books.
+1. Klyr Pro phone app, next: push when a client books or a visit changes, device attestation for check-ins, and opt-in "on shift" tracking if the brokerage wants travel logs (needs a privacy review first).
 2. Offers: build an offer (Form 100/101), conditions and their day-by-day timeline, deadline reminders, deposit with trust-account call-back.
 3. Real integrations as vendors are chosen: OREA forms + e-sign, ID verification, S3 file store with Object Lock, SES email.
 4. Saved searches with alerts, the phone map, phone passkeys (needs the klyr.ca associated domain) and Sign in with Apple/Google. Pull a shared component layer into `packages/ui`.
@@ -145,5 +158,5 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 | ID verification vendor | Pick in the compliance vendor review (action 6) |
 | E-sign provider and OREA form licensing route | Confirm with OREA before building `documents` |
 | French and other languages | Plan i18n keys from day one; ship English first |
-| Agent mobile: role in the consumer app or a separate app | Role in the consumer app; until then, Klyr Pro works in the phone browser (location needs HTTPS) |
+| Agent mobile: role in the consumer app or a separate app | Decided: a separate app, Klyr Pro (`apps/agent`) |
 | Klyr exclusive (non-MLS) listings | Supported in the schema (`source = 'klyr_exclusive'`); no UI yet |

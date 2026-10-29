@@ -6,6 +6,7 @@ import { DB, type Db } from '../db/db.module.js';
 import {
   agents, auditLog, dealParties, deals, documents, idVerifications, listings, listingViews, moveProfiles, organizations, showings, users,
 } from '../db/schema.js';
+import { config } from '../config.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 
 const MIN = 60_000, DAY = 86_400_000;
@@ -72,6 +73,7 @@ export class ProService {
    */
   async checkIn(agentId: string, showingId: string, g: GeoCheckRequest) {
     const s = await this.ownShowing(agentId, showingId);
+    await this.requirePhone(agentId, showingId, 'check_in', g);
     if (s.status !== 'confirmed') throw new ConflictException({ code: 'not_confirmed', message: 'Only confirmed visits can be checked in.' });
     if (s.checkInAt) throw new ConflictException({ code: 'already_checked_in', message: 'Already checked in.' });
     const now = Date.now();
@@ -83,13 +85,14 @@ export class ProService {
     await this.db.update(showings).set({
       checkInAt: new Date(), checkInGeom: { x: g.lng, y: g.lat }, checkInDistanceM: distance, checkInAccuracyM: Math.round(g.accuracyM),
     }).where(eq(showings.id, showingId));
-    await this.db.insert(auditLog).values({ actorId: agentId, action: 'showing_check_in', entity: 'showing', entityId: showingId, data: { distanceM: distance, accuracyM: g.accuracyM } });
+    await this.db.insert(auditLog).values({ actorId: agentId, action: 'showing_check_in', entity: 'showing', entityId: showingId, data: { distanceM: distance, accuracyM: g.accuracyM, platform: g.platform } });
     return { checkedIn: true, distanceM: distance };
   }
 
   /** Completing a visit needs a check-in, time on site, and a second reading at the property. */
   async complete(agentId: string, showingId: string, g: GeoCheckRequest) {
     const s = await this.ownShowing(agentId, showingId);
+    await this.requirePhone(agentId, showingId, 'complete', g);
     if (!s.checkInAt) throw new ConflictException({ code: 'not_checked_in', message: 'Check in at the property first.' });
     if (s.status === 'completed') throw new ConflictException({ code: 'already_completed', message: 'Already completed.' });
     if (Date.now() - s.checkInAt.getTime() < GEOFENCE.minOnSiteMinutes * MIN) {
@@ -99,7 +102,7 @@ export class ProService {
     const distance = await this.checkLocation(agentId, showingId, 'complete', g);
     await this.db.update(showings).set({ status: 'completed', checkOutAt: new Date(), checkOutGeom: { x: g.lng, y: g.lat }, checkOutDistanceM: distance })
       .where(eq(showings.id, showingId));
-    await this.db.insert(auditLog).values({ actorId: agentId, action: 'showing_complete', entity: 'showing', entityId: showingId, data: { distanceM: distance, accuracyM: g.accuracyM } });
+    await this.db.insert(auditLog).values({ actorId: agentId, action: 'showing_complete', entity: 'showing', entityId: showingId, data: { distanceM: distance, accuracyM: g.accuracyM, platform: g.platform } });
     return { completed: true, distanceM: distance };
   }
 
@@ -158,6 +161,13 @@ export class ProService {
     return s;
   }
 
+  /** Only the phone app reads native GPS and can report mock locations; a browser can't. */
+  private async requirePhone(agentId: string, showingId: string, step: 'check_in' | 'complete', g: GeoCheckRequest) {
+    if (g.platform !== 'web' || config.geofenceAllowWeb) return;
+    await this.refused(agentId, showingId, step, 'not_phone', g);
+    throw new BadRequestException({ code: 'use_phone_app', message: 'Check in with the Klyr app on your phone. It reads your location from the phone’s GPS.' });
+  }
+
   /** Accuracy, mock-location and distance checks shared by check-in and completion. Returns metres from the property. */
   private async checkLocation(agentId: string, showingId: string, step: 'check_in' | 'complete', g: GeoCheckRequest) {
     if (g.mocked) {
@@ -181,6 +191,6 @@ export class ProService {
 
   /** Every refused attempt is kept for the broker of record. */
   private refused(agentId: string, showingId: string, step: string, reason: string, g: GeoCheckRequest, distanceM?: number) {
-    return this.db.insert(auditLog).values({ actorId: agentId, action: `showing_${step}_refused`, entity: 'showing', entityId: showingId, data: { reason, lat: g.lat, lng: g.lng, accuracyM: g.accuracyM, mocked: !!g.mocked, distanceM: distanceM ?? null } });
+    return this.db.insert(auditLog).values({ actorId: agentId, action: `showing_${step}_refused`, entity: 'showing', entityId: showingId, data: { reason, lat: g.lat, lng: g.lng, accuracyM: g.accuracyM, mocked: !!g.mocked, platform: g.platform, distanceM: distanceM ?? null } });
   }
 }

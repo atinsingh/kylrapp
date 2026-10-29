@@ -51,6 +51,8 @@ export const GeoCheckRequest = z.object({
   accuracyM: z.number().nonnegative().max(100_000),
   /** Android reports locations from mock-location apps; such readings are refused. */
   mocked: z.boolean().optional(),
+  /** Check-in is from the Klyr phone app (native GPS, mock-location flag). Web readings are refused outside development. */
+  platform: z.enum(['ios', 'android', 'web']),
 });
 export type GeoCheckRequest = z.infer<typeof GeoCheckRequest>;
 

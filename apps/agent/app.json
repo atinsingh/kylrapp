@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Klyr Pro",
+    "slug": "klyr-pro",
+    "scheme": "klyrpro",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "ca.klyr.pro",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "ca.klyr.pro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Klyr Pro checks that you\u2019re at the home when you check in to a showing and when you complete it.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

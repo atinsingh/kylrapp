@@ -110,7 +110,7 @@ export class DealsService {
     if (!listing) throw new NotFoundException();
     const deal = (await this.buyDeal(userId))!;
     const [open] = await this.db.select({ id: showings.id }).from(showings)
-      .where(and(eq(showings.dealId, deal.id), eq(showings.listingId, req.listingId), ne(showings.status, 'cancelled'), gt(showings.at, new Date())));
+      .where(and(eq(showings.dealId, deal.id), eq(showings.listingId, req.listingId), inArray(showings.status, ['requested', 'confirmed']), gt(showings.at, new Date())));
     if (open) throw new ConflictException({ code: 'already_booked', message: 'You already have a visit booked for this home.' });
     const [row] = await this.db.insert(showings).values({ dealId: deal.id, listingId: req.listingId, at, note: req.note ?? null }).returning();
     await this.db.insert(auditLog).values({ actorId: userId, action: 'book_showing', entity: 'showing', entityId: row!.id, data: { listingId: req.listingId, at: req.at } });

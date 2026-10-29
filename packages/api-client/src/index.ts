@@ -77,7 +77,17 @@ export interface ProShowing {
   clientId: string; clientName: string | null; clientPhone: string | null;
 }
 export type Decision = { action: 'confirm'; note?: string } | { action: 'move'; at: string; note: string } | { action: 'decline'; note: string };
-export interface GeoReading { lat: number; lng: number; accuracyM: number; mocked?: boolean }
+/** A location reading for geofenced check-in; only the phone app's readings are accepted in production. */
+export interface GeoReading { lat: number; lng: number; accuracyM: number; mocked?: boolean; platform: 'ios' | 'android' | 'web' }
+export interface FieldEvent {
+  at: string; action: string; showingId: string; address: string; clientName: string | null;
+  reason: string | null; distanceM: number | null; accuracyM: number | null; platform: string | null; note: string | null;
+}
+export interface FieldDay {
+  agentId: string; name: string;
+  summary: { visitsCompleted: number; minutesOnSite: number; checkIns: number; refused: number; decisions: number };
+  events: FieldEvent[];
+}
 export interface ClientProgress { agreementSignedAt: string | null; idStatus: BuyingStatus['idCheck']['status']; openVisits: number }
 export interface ProClient extends ClientProgress { dealId: string; stage: string; userId: string; name: string | null; email: string; phone: string | null; since: string }
 export interface ProClientDetail extends ClientProgress {
@@ -192,17 +202,44 @@ export function createClient(opts: ClientOptions) {
       decide: (id: string, d: Decision) => post<{ id: string; status: Showing['status']; at: string }>(`/pro/showings/${encodeURIComponent(id)}/decide`, d),
       checkIn: (id: string, g: GeoReading) => post<{ checkedIn: true; distanceM: number }>(`/pro/showings/${encodeURIComponent(id)}/check-in`, g),
       complete: (id: string, g: GeoReading) => post<{ completed: true; distanceM: number }>(`/pro/showings/${encodeURIComponent(id)}/complete`, g),
+      activity: (day?: string) => get<FieldDay & { day: string }>(`/pro/activity${day ? `?day=${day}` : ''}`),
       clients: () => get<ProClient[]>('/pro/clients'),
       client: (id: string) => get<ProClientDetail>(`/pro/clients/${encodeURIComponent(id)}`),
     },
     admin: {
       idReviews: () => get<IdReview[]>('/admin/id-reviews'),
+      fieldActivity: (day?: string) => get<{ day: string; agents: FieldDay[] }>(`/admin/field-activity${day ? `?day=${day}` : ''}`),
       reviewId: (id: string, decision: 'approve' | 'reject', note: string) => post<{ id: string; status: 'verified' | 'rejected' }>(`/admin/id-reviews/${encodeURIComponent(id)}`, { decision, note }),
     },
   };
 }
 
 export type KlyrClient = ReturnType<typeof createClient>;
+
+const metres = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${m} m`);
+
+const REASONS: Record<string, string> = {
+  too_far: 'too far from the home', low_accuracy: 'GPS not accurate enough', mocked_location: 'mock location detected',
+  outside_window: 'outside the visit time', too_soon: 'less than 10 minutes on site', not_phone: 'not from the phone app',
+};
+
+/** One line per audit event, the same words in the app and in Admin. */
+export function describeFieldEvent(e: FieldEvent): { title: string; detail: string; tone: 'ok' | 'warn' | 'plain' } {
+  const where = e.distanceM !== null ? metres(e.distanceM) + ' from the home' : '';
+  if (e.action.endsWith('_refused')) {
+    const what = e.action.startsWith('showing_complete') ? 'Completion refused' : 'Check-in refused';
+    return { title: `${what}: ${REASONS[e.reason ?? ''] ?? e.reason}`, detail: [where, e.accuracyM !== null ? `GPS ±${e.accuracyM} m` : ''].filter(Boolean).join(' · '), tone: 'warn' };
+  }
+  switch (e.action) {
+    case 'showing_check_in': return { title: 'Checked in', detail: [where, e.accuracyM !== null ? `GPS ±${e.accuracyM} m` : ''].filter(Boolean).join(' · '), tone: 'ok' };
+    case 'showing_complete': return { title: 'Completed visit', detail: where, tone: 'ok' };
+    case 'showing_confirm': return { title: 'Confirmed visit', detail: e.note ? `“${e.note}”` : '', tone: 'plain' };
+    case 'showing_move': return { title: 'Moved visit', detail: e.note ? `“${e.note}”` : '', tone: 'plain' };
+    case 'showing_decline': return { title: 'Declined visit', detail: e.note ? `“${e.note}”` : '', tone: 'plain' };
+    default: return { title: e.action, detail: '', tone: 'plain' };
+  }
+}
+
 
 export function searchParams(q: SearchQuery): string {
   const p = new URLSearchParams();

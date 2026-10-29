@@ -80,6 +80,8 @@ describe('visits', () => {
     expect(h.outbox.filter(m => m.to === b.email).at(-1)!.subject).toBe('Your visit has a new time');
     expect((await h.call('POST', `/pro/showings/${visit.id}/decide`, { action: 'decline' }, agent)).status).toBe(400); // needs a note
     expect((await h.call('POST', `/pro/showings/${visit.id}/decide`, { action: 'decline', note: 'Home sold firm this morning.' }, agent)).body.status).toBe('declined');
+    // A declined visit doesn't hold the home: the buyer can pick another time.
+    expect((await h.call('POST', '/showings', { listingId, at: inMin(30 * 60) }, b.t)).status).toBe(201);
   });
 });
 
@@ -90,17 +92,19 @@ describe('geofenced check-in', () => {
     const visit = (await h.call('POST', '/showings', { listingId: listing.id, at: inMin(48 * 60) }, b.t)).body;
     const agent = await staff(b.agentEmail);
     await h.call('POST', `/pro/showings/${visit.id}/decide`, { action: 'confirm' }, agent);
-    const near = { lat: listing.lat + 0.0004, lng: listing.lng, accuracyM: 12 }; // about 45 m north
+    const near = { lat: listing.lat + 0.0004, lng: listing.lng, accuracyM: 12, platform: 'android' }; // about 45 m north
     const path = (step: string) => `/pro/showings/${visit.id}/${step}`;
 
     expect((await h.call('POST', path('check-in'), near, agent)).body.code).toBe('outside_window');
     await db.update(showings).set({ at: new Date(Date.now() + 10 * 60_000) }).where(eq(showings.id, visit.id)); // visit is now in 10 minutes
 
-    const far = await h.call('POST', path('check-in'), { lat: 43.6532, lng: -79.3832, accuracyM: 10 }, agent); // downtown Toronto
+    const far = await h.call('POST', path('check-in'), { lat: 43.6532, lng: -79.3832, accuracyM: 10, platform: 'ios' }, agent); // downtown Toronto
     expect(far.body.code).toBe('too_far');
     expect(far.body.distanceM).toBeGreaterThan(20_000);
     expect((await h.call('POST', path('check-in'), { ...near, accuracyM: 400 }, agent)).body.code).toBe('low_accuracy');
     expect((await h.call('POST', path('check-in'), { ...near, mocked: true }, agent)).body.code).toBe('mocked_location');
+    expect((await h.call('POST', path('check-in'), { ...near, platform: 'web' }, agent)).body.code).toBe('use_phone_app');
+    expect((await h.call('POST', path('check-in'), { lat: near.lat, lng: near.lng, accuracyM: 12 }, agent)).status).toBe(400); // platform is required
 
     const ok = (await h.call('POST', path('check-in'), near, agent)).body;
     expect(ok.checkedIn).toBe(true);
@@ -110,12 +114,26 @@ describe('geofenced check-in', () => {
 
     expect((await h.call('POST', path('complete'), near, agent)).body.code).toBe('too_soon');
     await db.update(showings).set({ checkInAt: new Date(Date.now() - 11 * 60_000) }).where(eq(showings.id, visit.id));
-    expect((await h.call('POST', path('complete'), { lat: 43.6532, lng: -79.3832, accuracyM: 10 }, agent)).body.code).toBe('too_far');
+    expect((await h.call('POST', path('complete'), { lat: 43.6532, lng: -79.3832, accuracyM: 10, platform: 'ios' }, agent)).body.code).toBe('too_far');
     expect((await h.call('POST', path('complete'), near, agent)).body.completed).toBe(true);
     expect((await h.call('GET', '/showings', undefined, b.t)).body.find((s: { id: string }) => s.id === visit.id).status).toBe('completed');
 
+    // The agent's day and the broker of record's view read the same audit trail.
+    const mine = (await h.call('GET', '/pro/activity', undefined, agent)).body;
+    expect(mine.summary.visitsCompleted).toBeGreaterThanOrEqual(1);
+    const ours = mine.events.filter((e: { showingId: string }) => e.showingId === visit.id).map((e: { action: string }) => e.action);
+    expect(ours.filter((a: string) => !a.endsWith('_refused'))).toEqual(['showing_confirm', 'showing_check_in', 'showing_complete']);
+    expect(ours.filter((a: string) => a.endsWith('_refused'))).toHaveLength(7);
+    expect(mine.events.find((e: { showingId: string; reason: string }) => e.showingId === visit.id && e.reason === 'too_far')).toMatchObject({ address: '9 Fern Ln', clientName: 'Test Buyer', platform: 'ios' });
+    expect((await h.call('GET', '/pro/activity?day=29-10-2026', undefined, agent)).body.code).toBe('bad_day');
+    expect((await h.call('GET', '/admin/field-activity', undefined, agent)).body.code).toBe('not_staff');
+    const broker = await staff('priya.nair@klyr.example');
+    const all = (await h.call('GET', '/admin/field-activity', undefined, broker)).body;
+    expect(all.agents.map((a: { name: string }) => a.name).sort()).toEqual(['Daniel Okafor', 'Maya Chen']);
+    expect(all.agents.find((a: { agentId: string; summary: { visitsCompleted: number } }) => a.summary.visitsCompleted >= 1)).toBeTruthy();
+
     const refused = await db.select().from(auditLog).where(and(eq(auditLog.entityId, visit.id), like(auditLog.action, '%_refused')));
-    expect(refused.map(r => (r.data as { reason: string }).reason).sort()).toEqual(['low_accuracy', 'mocked_location', 'outside_window', 'too_far', 'too_far', 'too_soon']);
+    expect(refused.map(r => (r.data as { reason: string }).reason).sort()).toEqual(['low_accuracy', 'mocked_location', 'not_phone', 'outside_window', 'too_far', 'too_far', 'too_soon']);
   });
 });
 

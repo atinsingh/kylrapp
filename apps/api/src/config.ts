@@ -29,6 +29,8 @@ export const config = {
     /** Step-up window for signing documents and payouts. */
     stepUpMinutes: 10,
   },
+  /** Lets the phone app's web preview check in, for local testing only. */
+  geofenceAllowWeb: process.env.NODE_ENV !== 'production' && process.env.GEOFENCE_ALLOW_WEB === '1',
   emailCode: { ttlMinutes: 10, maxAttempts: 5, cooldownSeconds: 30, maxPerHour: 5 },
   password: { maxFailures: 10, lockMinutes: 15 },
   /** Where listing photos are served from: CloudFront in AWS, the API's /media folder locally. */

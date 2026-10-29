@@ -5,7 +5,7 @@ import Link from 'next/link';
  * Launch Checklist owners. Served only on the corporate VPN / SSO, never to clients.
  */
 const MODULES = [
-  ['Broker of record', 'Deal review queue, agent registrations and titles, complaint escalations, multiple-representation consents'],
+  ['Broker of record', 'Field activity (showings with GPS check-in), deal review queue, agent registrations and titles, complaint escalations, multiple-representation consents'],
   ['Compliance (FINTRAC)', 'ID verification results, third-party and PEP determinations, receipt-of-funds records, 5-year retention'],
   ['Trust and payouts', 'Deposits due and received, call-back verification log, monthly reconciliation, cash-back payouts'],
   ['Listings feed', 'PropTx VOW sync status, no-display flags, Klyr exclusive listings'],
@@ -16,8 +16,8 @@ const MODULES = [
   ['Users and roles', 'Staff accounts, roles, MFA status, audit log'],
 ] as const;
 
-/** Built so far: the FINTRAC ID review queue. */
-const LIVE: Record<string, string> = { 'Compliance (FINTRAC)': '/id-reviews' };
+/** Built so far. */
+const LIVE: Record<string, string> = { 'Compliance (FINTRAC)': '/id-reviews', 'Broker of record': '/field-activity' };
 
 export default function AdminHome() {
   return (

@@ -1,4 +1,4 @@
-import { Body, Controller, ConflictException, Get, HttpCode, Inject, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, ConflictException, Get, HttpCode, Inject, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { and, asc, eq } from 'drizzle-orm';
 import { ReviewIdRequest } from '@klyr/contracts';
 import { ZodPipe } from '../common/zod.pipe.js';
@@ -7,6 +7,8 @@ import { auditLog, idVerifications, users } from '../db/schema.js';
 import { Auth, AuthGuard, type AuthContext } from '../identity/auth.guard.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 import { Roles, RolesGuard } from '../identity/roles.guard.js';
+import { FieldActivityService } from '../pro/activity.service.js';
+import { ProModule } from '../pro/pro.module.js';
 
 /** Compliance officer's queue: ID checks that need a person to decide (third party, PEP, company). */
 @Injectable()
@@ -59,5 +61,16 @@ class ComplianceReviewController {
   }
 }
 
-@Module({ controllers: [ComplianceReviewController], providers: [ComplianceReviewService] })
+/** Broker of record: every agent's field day, to supervise showings (RECO requires the broker to supervise). */
+@UseGuards(AuthGuard, RolesGuard)
+@Roles('broker_of_record')
+@Controller('admin/field-activity')
+class FieldActivityController {
+  constructor(@Inject(FieldActivityService) private readonly activity: FieldActivityService) {}
+
+  @Get()
+  day(@Query('day') day?: string) { return this.activity.days(day); }
+}
+
+@Module({ imports: [ProModule], controllers: [ComplianceReviewController, FieldActivityController], providers: [ComplianceReviewService] })
 export class AdminModule {}

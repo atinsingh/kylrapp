@@ -8,8 +8,7 @@
     "./proxy": "./src/proxy.ts",
     "./session": "./src/session.ts",
     "./styles": "./src/styles.ts",
-    "./staff-sign-in": "./src/staff-sign-in.tsx",
-    "./geo": "./src/geo.ts"
+    "./staff-sign-in": "./src/staff-sign-in.tsx"
   },
   "scripts": { "typecheck": "tsc --noEmit" },
   "dependencies": {

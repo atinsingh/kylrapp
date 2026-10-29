@@ -31,6 +31,8 @@ export const config = {
   },
   emailCode: { ttlMinutes: 10, maxAttempts: 5, cooldownSeconds: 30, maxPerHour: 5 },
   password: { maxFailures: 10, lockMinutes: 15 },
+  /** Where listing photos are served from: CloudFront in AWS, the API's /media folder locally. */
+  mediaBaseUrl: process.env.MEDIA_BASE_URL ?? `http://localhost:${process.env.API_PORT ?? 4000}`,
   mailFrom: process.env.MAIL_FROM ?? 'Klyr <no-reply@klyr.ca>',
   smtpUrl: process.env.SMTP_URL,
 };

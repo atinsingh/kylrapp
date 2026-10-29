@@ -1,7 +1,7 @@
 /** Seeds the six sample listings from design/prototype/klyr-app.js so local screens match the design. */
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { createDb } from './client.js';
-import { listings } from './schema.js';
+import { listingMedia, listings } from './schema.js';
 
 type Sample = {
   mls: string; address: string; unit?: string; city: string; hood: string;
@@ -18,13 +18,32 @@ const SAMPLE: Sample[] = [
   { mls: 'SEED-0006', address: '402 Rebecca St', unit: '305', city: 'Oakville', hood: 'Old Oakville', type: 'Condo', style: 'Apartment', beds: 2, baths: 2, sqft: 1010, built: 2016, price: 739_000, coop: '0.0250', tax: 3380, fee: 640, lat: 43.4441, lng: -79.6797 },
 ];
 
+/** The four stand-in photos from the design bundle; each listing starts on the one the prototype used. */
+const PHOTOS = [
+  'Stone two-storey house with a double garage, lit at dusk',
+  'Stone two-storey house with a double garage and front garden',
+  'Brick two-storey house with a double garage and interlock driveway',
+  'Brick two-storey house with a double garage and landscaped front yard',
+];
+const FIRST_PHOTO: Record<string, number> = { 'SEED-0001': 1, 'SEED-0002': 2, 'SEED-0003': 3, 'SEED-0004': 4, 'SEED-0005': 1, 'SEED-0006': 2 };
+
 const { db, pool } = createDb();
-await db.insert(listings).values(SAMPLE.map(l => ({
+const saved = await db.insert(listings).values(SAMPLE.map(l => ({
   mlsNumber: l.mls, source: 'seed' as const, status: 'active' as const, kind: 'sale' as const,
   listingBrokerage: 'Sample Realty Inc., Brokerage', address: l.address, unit: l.unit ?? null,
   city: l.city, neighbourhood: l.hood, propertyType: l.type, style: l.style, beds: l.beds, baths: l.baths,
   sqft: l.sqft, yearBuilt: l.built, price: l.price, coop: l.coop, annualTax: l.tax, condoFee: l.fee ?? null,
   geom: { x: l.lng, y: l.lat },
-}))).onConflictDoUpdate({ target: [listings.source, listings.mlsNumber], set: { price: sql`excluded.price` } });
+}))).onConflictDoUpdate({ target: [listings.source, listings.mlsNumber], set: { price: sql`excluded.price` } })
+  .returning({ id: listings.id, mls: listings.mlsNumber });
+
+for (const l of saved) {
+  await db.delete(listingMedia).where(eq(listingMedia.listingId, l.id));
+  const first = (FIRST_PHOTO[l.mls] ?? 1) - 1;
+  await db.insert(listingMedia).values(PHOTOS.map((_, i) => {
+    const n = (first + i) % PHOTOS.length;
+    return { listingId: l.id, kind: 'photo' as const, url: `/media/sample/home-${n + 1}-1200.jpg`, altText: PHOTOS[n]!, position: i };
+  }));
+}
 await pool.end();
 console.log(`seeded ${SAMPLE.length} listings`);

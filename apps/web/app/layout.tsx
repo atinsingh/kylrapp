@@ -29,6 +29,17 @@ button{cursor:pointer}
 .k-progress{display:flex;gap:4px}.k-progress span{flex:1;height:4px;border-radius:2px;background:rgba(118,118,128,.2)}.k-progress span.on{background:var(--brand)}
 .k-error{background:#FDECEC;color:#A11B1B;border-radius:12px;padding:10px 12px;font-size:13px}
 .k-footer{font-size:12px;color:var(--muted);text-align:center}
+.k-strip{position:relative;background:var(--bg)}
+.k-strip-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;aspect-ratio:3/2}
+.k-strip-track::-webkit-scrollbar{display:none}
+.k-strip-track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;user-select:none}
+.k-strip-nav{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--ink);font-size:22px;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.2);opacity:0;transition:opacity .15s}
+.k-strip:hover .k-strip-nav:not([disabled]),.k-strip-nav:focus-visible{opacity:1}
+@media (hover:none){.k-strip-nav{display:none}}
+.k-strip-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:5px;pointer-events:none}
+.k-strip-dots span{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55)}.k-strip-dots span.on{background:#fff}
+.k-strip-count,.k-strip-tag{position:absolute;top:10px;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:600;color:#fff;background:rgba(0,0,0,.55)}
+.k-strip-count{right:10px}.k-strip-tag{left:10px}
 `;
 
 export default function RootLayout({ children }: { children: ReactNode }) {

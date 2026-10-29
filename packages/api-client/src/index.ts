@@ -9,6 +9,9 @@ export interface ListingCard {
   id: string; mlsNumber: string; address: string; city: string; neighbourhood: string | null; type: string;
   beds: number | null; baths: number | null; sqft: number | null; price: number; lat: number; lng: number;
   listingBrokerage: string; allIn: number; cashBack: number; monthly: number;
+  photos: { url: string; alt: string }[];
+  /** True for seed data, whose photos are stand-ins and must be labelled as such. */
+  samplePhotos: boolean;
 }
 /** Session as the client sees it; web never receives the token (the proxy keeps it). */
 export type SignedIn = Omit<SessionResponse, 'session'> & { session: { token?: string; expiresAt: string; mfaRequired: boolean } };

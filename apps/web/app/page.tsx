@@ -3,12 +3,10 @@ import { money } from '@klyr/core';
 import type { Me } from '@klyr/contracts';
 import { BROKERAGE_LINE, LISTING_DATA_LINE } from '@/lib/brand';
 import { api, sessionToken } from '@/lib/session';
+import { PhotoStrip } from './photo-strip';
 import { SignOut } from './sign-out';
 
-type Card = {
-  id: string; address: string; city: string; type: string; beds: number | null; baths: number | null;
-  price: number; allIn: number; cashBack: number; monthly: number; listingBrokerage: string;
-};
+import type { ListingCard as Card } from '@klyr/api-client';
 
 /** Buyer search: the all-in cost to close is the hero number on every card. Signed-in only (VOW). */
 export default async function SearchPage() {
@@ -34,13 +32,16 @@ export default async function SearchPage() {
       {!data && <p role="alert">Can’t load homes right now. Try again in a moment.</p>}
       <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
         {data?.results.map(l => (
-          <li key={l.id} style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 0 0 .5px var(--sep)' }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)', letterSpacing: '.04em' }}>ALL-IN TO CLOSE</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--brand)' }}>{money(l.allIn)}</div>
-            <div style={{ fontWeight: 600, marginTop: 8 }}>{l.address}, {l.city}</div>
-            <div style={{ color: 'var(--muted)' }}>{money(l.price)} · {l.beds} bed · {l.baths} bath · {l.type}</div>
-            <div style={{ color: 'var(--muted)' }}>{money(l.cashBack)} cash back · {money(l.monthly)}/mo</div>
-            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>Listing brokerage: {l.listingBrokerage}</div>
+          <li key={l.id} style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', boxShadow: '0 0 0 .5px var(--sep)' }}>
+            <PhotoStrip photos={l.photos} address={l.address} sample={l.samplePhotos} />
+            <div style={{ padding: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)', letterSpacing: '.04em' }}>{l.allIn < 0 ? 'YOU GET BACK AT CLOSING' : 'ALL-IN TO CLOSE'}</div>
+              <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--brand)' }}>{money(Math.abs(l.allIn))}</div>
+              <div style={{ fontWeight: 600, marginTop: 8 }}>{l.address}, {l.city}</div>
+              <div style={{ color: 'var(--muted)' }}>{money(l.price)} · {l.beds} bed · {l.baths} bath · {l.type}</div>
+              <div style={{ color: 'var(--muted)' }}>{money(l.cashBack)} cash back · {money(l.monthly)}/mo</div>
+              <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>Listing brokerage: {l.listingBrokerage}</div>
+            </div>
           </li>
         ))}
       </ul>

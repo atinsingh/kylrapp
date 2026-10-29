@@ -8,6 +8,7 @@ import { color } from '@klyr/tokens';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 import { Card, ErrorText, sora, t } from '../components/ui';
+import { PhotoStrip } from '../components/photo-strip';
 
 /** Buyer home: every home with its all-in cost to close as the hero number. */
 export default function Home() {
@@ -42,13 +43,16 @@ export default function Home() {
         <ErrorText>{error}</ErrorText>
         {!homes && !error && <ActivityIndicator color={color.brand} style={{ marginTop: 24 }} />}
         {homes?.map(h => (
-          <Card key={h.id}>
-            <Text style={t.label}>{h.allIn < 0 ? 'YOU GET BACK AT CLOSING' : 'ALL-IN TO CLOSE'}</Text>
-            <Text style={{ ...sora(800), fontSize: 28, color: color.brand }}>{money(Math.abs(h.allIn))}</Text>
-            <Text style={{ ...sora(700), fontSize: 15 }}>{h.address}, {h.city}</Text>
-            <Text style={t.sub}>{money(h.price)} · {h.beds} bed · {h.baths} bath · {h.type}</Text>
-            <Text style={t.sub}>{money(h.cashBack)} cash back · {money(h.monthly)}/mo</Text>
-            <Text style={t.note}>Listing brokerage: {h.listingBrokerage}</Text>
+          <Card key={h.id} style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
+            <PhotoStrip photos={h.photos} address={h.address} sample={h.samplePhotos} />
+            <View style={{ padding: 14, gap: 8 }}>
+              <Text style={t.label}>{h.allIn < 0 ? 'YOU GET BACK AT CLOSING' : 'ALL-IN TO CLOSE'}</Text>
+              <Text style={{ ...sora(800), fontSize: 28, color: color.brand }}>{money(Math.abs(h.allIn))}</Text>
+              <Text style={{ ...sora(700), fontSize: 15 }}>{h.address}, {h.city}</Text>
+              <Text style={t.sub}>{money(h.price)} · {h.beds} bed · {h.baths} bath · {h.type}</Text>
+              <Text style={t.sub}>{money(h.cashBack)} cash back · {money(h.monthly)}/mo</Text>
+              <Text style={t.note}>Listing brokerage: {h.listingBrokerage}</Text>
+            </View>
           </Card>
         ))}
         <Text style={{ ...t.note, textAlign: 'center', marginTop: 12 }}>Klyr Realty Inc., Brokerage · Registered with RECO · Listing data © PropTx, used under VOW terms</Text>

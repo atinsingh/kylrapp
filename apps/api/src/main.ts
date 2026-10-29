@@ -1,8 +1,14 @@
 import 'reflect-metadata';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
 
-const app = await NestFactory.create(AppModule);
+const app = await NestFactory.create<NestExpressApplication>(AppModule);
+// Local sample photos. In AWS, listing photos are served by CloudFront from S3 (MEDIA_BASE_URL).
+const media = fileURLToPath(new URL('../media', import.meta.url));
+if (existsSync(media)) app.useStaticAssets(media, { prefix: '/media', maxAge: '1d' });
 app.enableCors({ origin: (process.env.CORS_ORIGINS ?? 'http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:8081').split(',') });
 app.enableShutdownHooks();
 await app.listen(Number(process.env.API_PORT ?? 4000));

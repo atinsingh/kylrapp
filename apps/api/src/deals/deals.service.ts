@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, gt, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import type { BookShowingRequest, VisitFeedbackRequest } from '@klyr/contracts';
 import { DB, type Db } from '../db/db.module.js';
 import {
-  agents, auditLog, dealParties, deals, documents, idVerifications, listingMedia, listings, moveProfiles, organizations, showings, signatures, users,
+  agents, auditLog, dealParties, deals, documents, idVerifications, listingMedia, listings, moveProfiles, organizations, showings, signatures, userRoles, users,
 } from '../db/schema.js';
 import { config } from '../config.js';
 import { FILE_STORE, type FileStore } from '../storage/file-store.js';
@@ -225,7 +225,10 @@ export class DealsService {
   /** Spread new buyers evenly: fewest open buy deals, then the longest-serving agent. */
   async nextAgent() {
     const open = sql<number>`(select count(*) from ${deals} d where d.agent_id = ${agents.userId} and d.side = 'buy' and d.stage not in ('closed', 'released'))`;
+    // Only people who hold the agent role now: a removed agent keeps their registration row for the record.
     const [a] = await this.db.select({ id: agents.userId }).from(agents).innerJoin(users, eq(users.id, agents.userId))
+      .innerJoin(userRoles, and(eq(userRoles.userId, agents.userId), eq(userRoles.role, 'agent')))
+      .where(isNull(users.deletedAt))
       .orderBy(asc(open), asc(users.createdAt)).limit(1);
     return a ?? null;
   }

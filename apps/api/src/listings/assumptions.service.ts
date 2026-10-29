@@ -1,9 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { DEFAULT_ASSUMPTIONS } from '@klyr/core';
 import type { Assumptions } from '@klyr/contracts';
 import { DB, type Db } from '../db/db.module.js';
-import { buyerAssumptions, moveProfiles } from '../db/schema.js';
+import { buyerAssumptions, moveProfiles, publishedSettings } from '../db/schema.js';
+
+/** The estimate defaults in force: the newest version Klyr Admin published, else the values shipped in `@klyr/core`. */
+export async function publishedAssumptions(db: Db) {
+  const [row] = await db.select().from(publishedSettings).where(eq(publishedSettings.key, 'assumptions')).orderBy(desc(publishedSettings.publishedAt)).limit(1);
+  const v = (row?.value ?? {}) as { rate?: number; downPct?: number; lawyerFee?: number };
+  return {
+    rate: v.rate ?? DEFAULT_ASSUMPTIONS.rate, downPct: v.downPct ?? DEFAULT_ASSUMPTIONS.downPct, lawyerFee: v.lawyerFee ?? DEFAULT_ASSUMPTIONS.lawyerFee,
+    asOf: row ? row.publishedAt.toISOString().slice(0, 10) : DEFAULT_ASSUMPTIONS.asOf, note: row?.note ?? 'Shipped defaults', version: row?.id ?? null,
+  };
+}
 
 /** A buyer's "How we estimate" inputs; defaults until they change them. */
 @Injectable()
@@ -32,12 +42,8 @@ export class AssumptionsService {
     const profiles = await this.db.select({ data: moveProfiles.data }).from(moveProfiles)
       .where(and(eq(moveProfiles.userId, userId)));
     const said = profiles.map(p => (p.data as { firstTime?: unknown }).firstTime).find(v => typeof v === 'boolean');
-    return {
-      rate: DEFAULT_ASSUMPTIONS.rate,
-      downPct: DEFAULT_ASSUMPTIONS.downPct,
-      firstTime: said ?? true,
-      lawyerFee: DEFAULT_ASSUMPTIONS.lawyerFee,
-    };
+    const pub = await publishedAssumptions(this.db);
+    return { rate: pub.rate, downPct: pub.downPct, firstTime: said ?? true, lawyerFee: pub.lawyerFee };
   }
 }
 

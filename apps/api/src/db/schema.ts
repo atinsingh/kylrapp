@@ -601,6 +601,31 @@ export const quotes = pgTable('quotes', {
   createdAt: created(),
 });
 
+// ── Privacy and published settings ──────────────────────────────────────────
+/** PIPEDA requests: access to, correction of, or deletion of a person's information. Answered within 30 days. */
+export const privacyRequests = pgTable('privacy_requests', {
+  id: id(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  kind: text('kind', { enum: ['access', 'correction', 'deletion'] }).notNull(),
+  details: text('details'),
+  status: text('status', { enum: ['open', 'completed', 'denied'] }).notNull().default('open'),
+  dueAt: ts('due_at').notNull(),
+  response: text('response'),
+  decidedBy: uuid('decided_by').references(() => users.id),
+  decidedAt: ts('decided_at'),
+  createdAt: created(),
+});
+
+/** Values the brokerage publishes and reviews (estimate assumptions), versioned: the newest row is in force. */
+export const publishedSettings = pgTable('published_settings', {
+  id: id(),
+  key: text('key', { enum: ['assumptions'] }).notNull(),
+  value: jsonb('value').notNull(),
+  note: text('note').notNull(),
+  publishedBy: uuid('published_by').notNull().references(() => users.id),
+  publishedAt: ts('published_at').notNull().defaultNow(),
+}, t => [index('published_settings_key_ix').on(t.key, t.publishedAt)]);
+
 // ── Messaging, AI and audit ─────────────────────────────────────────────────
 export const threads = pgTable('threads', {
   id: id(),

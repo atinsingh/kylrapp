@@ -213,8 +213,18 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * On a conditional or firm purchase, choosing a lawyer, lender or insurer fills that step of the closing checklist. The chosen provider gets the client's contact details.
   * The nine providers are seeded samples, marked "(sample)", until partner agreements are signed.
 
-**Next, in order:**
-1. Remaining Admin modules in the order the Launch Checklist owners need them: listings feed status, Klyr AI review, privacy requests, content and assumptions, users and roles.
+* Klyr Admin, the rest of the back office (screenshots `131`–`136`):
+  * Listings feed: inventory by source and status, VOW checks (no-display listings never reach clients, every listing names its brokerage), Klyr exclusive listings, and suspend/restore with a logged reason. The PropTx feed shows as not connected.
+  * Marketplace: every provider with its licence, referral agreement, quotes and fees; every chosen quote with the client's cost and whether a referral fee was acknowledged; a check that no lawyer paid a fee.
+  * Privacy (PIPEDA, privacy officer): clients ask for a copy, a correction or deletion from Security on the web. Requests are due in 30 days and overdue ones are flagged. A completed access request lets the client download a JSON copy. A completed deletion closes the account: sign-in, contact details, devices, saved searches, profiles and second factors go; FINTRAC records (5 years), trade records (6 years) and the audit log stay. Deletion waits while the person has an open deal.
+  * Content and assumptions: the estimate defaults (rate, down payment, lawyer's fee) are published as versions with a note and the publisher, reviewed at least every 90 days, and every new client starts from the newest one.
+  * Users and roles: staff, their roles, second factor and last sign-in; adding an agent needs their RECO name, title and number; the brokerage always keeps a broker of record (and you can't remove your own); an agent with open deals is reassigned first; the audit log.
+
+**Still to build** (no outside dependency, smaller follow-ups):
+* Viewings for rentals; landlord screens on the phone; tracking interest on last month's rent deposits.
+* A provider portal so lenders, lawyers, inspectors and insurers send quotes themselves, and quote imports.
+* Privacy requests on the phone (web only today); the client-facing "as of" date reading the published assumptions everywhere (the Admin value drives defaults today, the label still shows the shipped date on some screens).
+* Reassigning an agent's deals from Users and roles.
 
 **Blocked on outside parties** (built as interfaces with development stand-ins, refused in production):
 * OREA forms licence and an e-sign provider: signed records are plain-language summaries until then.
@@ -223,6 +233,10 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 * Device attestation for agent check-ins: needs Apple and Google developer accounts and real devices.
 * Phone passkeys and Sign in with Apple/Google: need the klyr.ca associated domain and developer accounts.
 * Google Maps API key for the Android map, and a commercial map tile host for web.
+* Klyr AI (and its Admin review queue): a model provider agreement, and a prompt and guardrails reviewed by the broker of record and counsel (no advice to either side under Form 326).
+* Ontario Standard Lease (2229E) generation and a tenant screening (credit report) vendor.
+* Real provider partners and their referral agreements: the nine providers are samples.
+* Pricing decisions: the $699 landlord fee is a placeholder.
 
 ## 10. Open decisions
 

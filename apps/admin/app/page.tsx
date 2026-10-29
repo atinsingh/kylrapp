@@ -17,7 +17,12 @@ const MODULES = [
 ] as const;
 
 /** Built so far. */
-const LIVE: Record<string, string> = { 'Compliance (FINTRAC)': '/id-reviews', 'Broker of record': '/field-activity', 'Trust and payouts': '/payouts' };
+const LIVE: Record<string, string> = {
+  'Compliance (FINTRAC)': '/id-reviews', 'Broker of record': '/field-activity', 'Trust and payouts': '/payouts', 'Listings feed': '/listings-feed',
+  Marketplace: '/marketplace', Privacy: '/privacy', 'Content and assumptions': '/assumptions', 'Users and roles': '/users',
+};
+/** Waiting on something outside the code. */
+const BLOCKED: Record<string, string> = { 'Klyr AI review': 'Waits on Klyr AI itself: a model provider agreement and an approved, legally reviewed prompt.' };
 
 export default function AdminHome() {
   return (
@@ -28,6 +33,7 @@ export default function AdminHome() {
           <li key={t} style={{ background: '#fff', borderRadius: 12, padding: 16 }}>
             {LIVE[t] ? <Link href={LIVE[t]}><strong>{t}</strong></Link> : <strong>{t}</strong>}
             <div style={{ color: 'var(--muted)' }}>{d}</div>
+            {BLOCKED[t] && <div style={{ color: '#A54B00', fontSize: 13, marginTop: 4 }}>{BLOCKED[t]}</div>}
           </li>
         ))}
       </ul>

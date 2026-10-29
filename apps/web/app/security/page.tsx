@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { sessionToken } from '@/lib/session';
+import { PrivacyRequests } from './privacy';
 import { Security } from './security';
 
 export const metadata = { title: 'Security and alerts · Klyr' };
@@ -13,6 +14,7 @@ export default async function SecurityPage() {
       <h1 className="k-h1">Security</h1>
       <p className="k-sub">How you sign in, and the devices that are signed in now.</p>
       <Security />
+      <PrivacyRequests />
     </main>
   );
 }

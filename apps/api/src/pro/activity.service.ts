@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, gte, inArray, like, lt, or, sql } from 'drizzle-orm';
 import { torontoInstant, torontoToday } from '@klyr/core';
 import { DB, type Db } from '../db/db.module.js';
-import { agents, auditLog, dealParties, deals, listings, showings, users } from '../db/schema.js';
+import { agents, auditLog, dealParties, deals, listings, showings, userRoles, users } from '../db/schema.js';
 
 /** What an agent did in the field, read back from the audit log (the record of truth, never edited). */
 const ACTIONS = ['showing_confirm', 'showing_move', 'showing_decline', 'showing_check_in', 'showing_complete'];
@@ -52,7 +52,9 @@ export class FieldActivityService {
       ))
       .orderBy(asc(auditLog.at));
 
+    // Current agents only: someone whose agent role was removed keeps their registration row, not a place here.
     const people = await this.db.select({ id: agents.userId, name: agents.registeredName }).from(agents)
+      .innerJoin(userRoles, and(eq(userRoles.userId, agents.userId), eq(userRoles.role, 'agent')))
       .where(agentId ? eq(agents.userId, agentId) : undefined);
     return {
       day: label,

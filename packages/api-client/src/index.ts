@@ -247,6 +247,26 @@ export type QuoteInput = { providerId: string; referralFee: number; validDays: n
   | { kind: 'lawyer'; fee: number; disbursements: number; titleInsurance: number }
   | { kind: 'inspector'; price: number; reportHours: number }
   | { kind: 'insurer'; annualPremium: number; deductible: number });
+export interface PrivacyRequest { id: string; kind: 'access' | 'correction' | 'deletion'; details: string | null; status: 'open' | 'completed' | 'denied'; dueAt: string; response: string | null; decidedAt: string | null; createdAt: string }
+export interface FeedStatus {
+  feed: { name: string; connected: boolean; note: string };
+  counts: { source: string; kind: string; status: string; n: number; last: string | null }[];
+  checks: { name: string; ok: boolean; detail: string }[];
+  klyr: { id: string; address: string; city: string; kind: string; status: string; price: number; listedAt: string | null; mls: string }[];
+}
+export interface MarketplaceAudit {
+  providers: { id: string; name: string; kind: string; registration: string | null; referralAgreement: boolean; quoted: number; chosen: number; referralFees: number }[];
+  chosen: { id: string; kind: string; provider: string; client: string | null; clientCost: number; referralFee: number; acceptedAt: string; acknowledged: boolean }[];
+  checks: { name: string; ok: boolean; detail: string }[];
+}
+export interface AssumptionsAdmin {
+  current: { rate: number; downPct: number; lawyerFee: number; asOf: string; note: string; version: string | null; reviewBy: string; overdue: boolean };
+  history: { id: string; value: { rate: number; downPct: number; lawyerFee: number }; note: string; by: string | null; at: string }[];
+}
+export interface StaffMember {
+  id: string; email: string; name: string | null; roles: string[]; mfa: { authenticator: boolean; passkeys: number }; lastSeenAt: string | null;
+  agent: { registeredName: string; title: string; recoNumber: string; openDeals: number } | null;
+}
 export interface ProListing extends Selling { clientName: string | null; clientEmail: string }
 
 export interface Assumptions { rate: number; downPct: number; firstTime: boolean; lawyerFee: number }
@@ -369,6 +389,9 @@ export function createClient(opts: ClientOptions) {
     requestQuotes: (r: QuoteRequestInput) => post<QuoteRequest[]>('/quotes/requests', r),
     cancelQuotes: (id: string) => del<QuoteRequest[]>(`/quotes/requests/${encodeURIComponent(id)}`),
     chooseQuote: (id: string, referralAcknowledged: boolean) => post<QuoteRequest[]>(`/quotes/${encodeURIComponent(id)}/choose`, { referralAcknowledged }),
+    privacyRequests: () => get<PrivacyRequest[]>('/me/privacy-requests'),
+    requestPrivacy: (kind: PrivacyRequest['kind'], details?: string) => post<PrivacyRequest[]>('/me/privacy-requests', { kind, details }),
+    privacyExport: (id: string) => get<Record<string, unknown>>(`/me/privacy-requests/${encodeURIComponent(id)}/export`),
     renting: () => get<Renting>('/renting'),
     signTenantAgreement: (typedName: string) => post<Renting>('/renting/agreement/sign', { typedName, readConfirmed: true }),
     saveTenantProfile: (p: TenantProfile) => call<Renting>('PUT', '/renting/profile', p),
@@ -428,6 +451,17 @@ export function createClient(opts: ClientOptions) {
       commissionReceived: (id: string, amount: number) => post<{ id: string; status: string; amount: number }>(`/admin/payouts/${encodeURIComponent(id)}/commission`, { amount }),
       payoutSent: (id: string, reference: string) => post<{ id: string; status: string }>(`/admin/payouts/${encodeURIComponent(id)}/sent`, { reference }),
       fieldActivity: (day?: string) => get<{ day: string; agents: FieldDay[] }>(`/admin/field-activity${day ? `?day=${day}` : ''}`),
+      listingsFeed: () => get<FeedStatus>('/admin/listings-feed'),
+      suspendListing: (id: string, reason: string) => post<FeedStatus>(`/admin/listings-feed/${encodeURIComponent(id)}/suspend`, { reason }),
+      restoreListing: (id: string) => post<FeedStatus>(`/admin/listings-feed/${encodeURIComponent(id)}/restore`),
+      marketplace: () => get<MarketplaceAudit>('/admin/marketplace'),
+      privacy: () => get<(PrivacyRequest & { email: string; name: string | null; overdue: boolean })[]>('/admin/privacy'),
+      decidePrivacy: (id: string, result: 'completed' | 'denied', response: string) => post<unknown>(`/admin/privacy/${encodeURIComponent(id)}`, { result, response }),
+      assumptions: () => get<AssumptionsAdmin>('/admin/assumptions'),
+      publishAssumptions: (a: { rate: number; downPct: number; lawyerFee: number; note: string }) => post<AssumptionsAdmin>('/admin/assumptions', a),
+      staff: () => get<StaffMember[]>('/admin/users'),
+      changeRole: (c: { email: string; role: string; action: 'grant' | 'revoke'; registeredName?: string; title?: 'Salesperson' | 'Broker'; recoNumber?: string }) => post<StaffMember[]>('/admin/users/roles', c),
+      audit: () => get<{ id: number; action: string; entity: string; entityId: string | null; actor: string | null; at: string }[]>('/admin/users/audit'),
       reviewId: (id: string, decision: 'approve' | 'reject', note: string) => post<{ id: string; status: 'verified' | 'rejected' }>(`/admin/id-reviews/${encodeURIComponent(id)}`, { decision, note }),
     },
   };

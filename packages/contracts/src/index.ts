@@ -7,3 +7,4 @@ export * from './offers.js';
 export * from './selling.js';
 export * from './renting.js';
 export * from './quotes.js';
+export * from './admin.js';

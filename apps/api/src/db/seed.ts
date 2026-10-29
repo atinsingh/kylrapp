@@ -152,6 +152,7 @@ if (!officer) [officer] = await db.insert(users).values({ email: OFFICER.email, 
 await db.insert(userRoles).values([
   { userId: officer!.id, role: 'compliance_officer', orgId: brokerage!.id },
   { userId: officer!.id, role: 'broker_of_record', orgId: brokerage!.id },
+  { userId: officer!.id, role: 'privacy_officer', orgId: brokerage!.id },
 ]).onConflictDoNothing();
 // Sample providers for the quote marketplace: placeholders until partner agreements are signed.
 // Lawyers can't pay referral fees (Law Society rules allow them only between licensees).

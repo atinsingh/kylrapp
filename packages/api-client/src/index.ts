@@ -226,6 +226,27 @@ export interface Leasing {
   })[];
 }
 export interface ProRental extends Leasing { clientName: string | null; clientEmail: string }
+export type QuoteKind = 'lender' | 'lawyer' | 'inspector' | 'insurer';
+export interface Provider { id: string; name: string; kind: QuoteKind; registration: string | null; about: string | null; paysReferral: boolean }
+export interface QuoteProvider { id: string; name: string; registration: string | null; about: string | null; phone: string | null }
+export interface Quote {
+  id: string; rank: number; provider: QuoteProvider; clientCost: number; vsBest: number; referralFee: number;
+  details: Record<string, number>; validUntil: string | null; chosen: boolean; expired: boolean;
+}
+export interface QuoteRequest {
+  id: string; kind: QuoteKind; status: 'open' | 'chosen' | 'cancelled'; details: Record<string, number>; note: string | null; createdAt: string; chosenQuoteId: string | null;
+  providers: (QuoteProvider & { quoted: boolean })[]; quotes: Quote[];
+}
+export type QuoteRequestInput =
+  | { kind: 'lender'; providerIds: string[]; loan: number; amortYears: 25 | 30; note?: string }
+  | { kind: 'lawyer'; providerIds: string[]; price: number; note?: string }
+  | { kind: 'inspector'; providerIds: string[]; note?: string }
+  | { kind: 'insurer'; providerIds: string[]; homeValue: number; note?: string };
+export type QuoteInput = { providerId: string; referralFee: number; validDays: number } & (
+  | { kind: 'lender'; rate: number; fees: number; prepaymentPct: number; approvalDays: number }
+  | { kind: 'lawyer'; fee: number; disbursements: number; titleInsurance: number }
+  | { kind: 'inspector'; price: number; reportHours: number }
+  | { kind: 'insurer'; annualPremium: number; deductible: number });
 export interface ProListing extends Selling { clientName: string | null; clientEmail: string }
 
 export interface Assumptions { rate: number; downPct: number; firstTime: boolean; lawyerFee: number }
@@ -343,6 +364,11 @@ export function createClient(opts: ClientOptions) {
     setSellPlan: (p: { plan: Selling['plan']; coop: number; listPrice: number; mortgageBalance: number }) => call<Selling>('PUT', '/selling/plan', p),
     signListing: (typedName: string) => post<Selling>('/selling/agreement/sign', { typedName, readConfirmed: true }),
     sellTask: (t: SellTaskInput) => post<Selling>('/selling/tasks', t),
+    providers: (kind: QuoteKind) => get<Provider[]>(`/providers?kind=${kind}`),
+    quotes: () => get<QuoteRequest[]>('/quotes'),
+    requestQuotes: (r: QuoteRequestInput) => post<QuoteRequest[]>('/quotes/requests', r),
+    cancelQuotes: (id: string) => del<QuoteRequest[]>(`/quotes/requests/${encodeURIComponent(id)}`),
+    chooseQuote: (id: string, referralAcknowledged: boolean) => post<QuoteRequest[]>(`/quotes/${encodeURIComponent(id)}/choose`, { referralAcknowledged }),
     renting: () => get<Renting>('/renting'),
     signTenantAgreement: (typedName: string) => post<Renting>('/renting/agreement/sign', { typedName, readConfirmed: true }),
     saveTenantProfile: (p: TenantProfile) => call<Renting>('PUT', '/renting/profile', p),
@@ -375,6 +401,8 @@ export function createClient(opts: ClientOptions) {
       listings: () => get<ProListing[]>('/pro/listings'),
       listingTask: (dealId: string, t: SellTaskInput) => post<{ ok: true }>(`/pro/listings/${encodeURIComponent(dealId)}/tasks`, t),
       rentals: () => get<ProRental[]>('/pro/rentals'),
+      quotes: () => get<(QuoteRequest & { clientName: string | null; clientEmail: string })[]>('/pro/quotes'),
+      enterQuote: (requestId: string, q: QuoteInput) => post<QuoteRequest & { clientName: string | null; clientEmail: string }>(`/pro/quotes/requests/${encodeURIComponent(requestId)}`, q),
       publishRental: (dealId: string, p: { lat: number; lng: number; photos: string[] }) => post<{ listingId: string }>(`/pro/rentals/${encodeURIComponent(dealId)}/publish`, p),
       publish: (dealId: string, p: { lat: number; lng: number; photos: string[] }) => post<{ listingId: string }>(`/pro/listings/${encodeURIComponent(dealId)}/publish`, p),
       dealTask: (dealId: string, t: DealTaskInput) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/tasks`, t),

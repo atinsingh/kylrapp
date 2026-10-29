@@ -8,6 +8,7 @@ import { HealthModule } from './health/health.module.js';
 import { IdentityModule } from './identity/identity.module.js';
 import { NotifyModule } from './notify/notify.module.js';
 import { OffersModule } from './offers/offers.module.js';
+import { QuotesModule } from './quotes/quotes.module.js';
 import { RentingModule } from './renting/renting.module.js';
 import { SellingModule } from './selling/selling.module.js';
 import { ListingsModule } from './listings/listings.module.js';
@@ -18,5 +19,5 @@ import { StorageModule } from './storage/file-store.js';
  * Modular monolith. Planned modules (docs/ARCHITECTURE.md §4):
  * money, marketplace, messaging, notifications, ai, audit.
  */
-@Module({ imports: [DbModule, StorageModule, IdentityModule, NotifyModule, HealthModule, ListingsModule, EstimatesModule, DealsModule, ComplianceModule, ProModule, AdminModule, OffersModule, SellingModule, RentingModule] })
+@Module({ imports: [DbModule, StorageModule, IdentityModule, NotifyModule, HealthModule, ListingsModule, EstimatesModule, DealsModule, ComplianceModule, ProModule, AdminModule, OffersModule, SellingModule, RentingModule, QuotesModule] })
 export class AppModule {}

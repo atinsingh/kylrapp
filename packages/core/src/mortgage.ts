@@ -55,3 +55,15 @@ export function affordFromIncome(o: AffordFromIncomeInput) {
     limitedByDown: byDown < byIncome,
   };
 }
+
+/**
+ * What a mortgage costs over its term (5 years by default): interest paid plus fees. Lender quotes are
+ * compared on this, never on the headline rate alone.
+ */
+export function termCost(loan: number, rate: number, o: { years?: number; termMonths?: number; fees?: number } = {}) {
+  const years = o.years ?? 25, months = o.termMonths ?? 60, fees = o.fees ?? 0;
+  const r = Math.pow(1 + rate / 2, 1 / 6) - 1, p = monthlyPayment(loan, rate, years);
+  let balance = loan, interest = 0;
+  for (let i = 0; i < months; i++) { const due = balance * r; interest += due; balance -= p - due; }
+  return { monthly: Math.round(p), interest: Math.round(interest), fees, total: Math.round(interest + fees), balanceAfter: Math.round(balance) };
+}

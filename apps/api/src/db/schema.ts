@@ -33,6 +33,8 @@ export const organizations = pgTable('organizations', {
   name: text('name').notNull(),
   /** RECO / LSO / FSRA registration shown wherever the org is advertised. */
   registration: text('registration'),
+  /** Providers: contact email, phone, a one-line about, and whether they may pay Klyr a referral fee. */
+  details: jsonb('details'),
   createdAt: created(),
 });
 
@@ -567,8 +569,23 @@ export const cashBackPayouts = pgTable('cash_back_payouts', {
 });
 
 // ── Provider marketplace ────────────────────────────────────────────────────
+/** A client asks 1–4 providers of one kind for a quote; their agent enters the quotes as they arrive. */
+export const quoteRequests = pgTable('quote_requests', {
+  id: id(),
+  dealId: uuid('deal_id').notNull().references(() => deals.id),
+  kind: text('kind', { enum: ['lawyer', 'lender', 'inspector', 'insurer'] }).notNull(),
+  providerIds: jsonb('provider_ids').notNull().$type<string[]>(),
+  /** Lender: loan and amortization; insurer: home value; lawyer and inspector: price and city. */
+  details: jsonb('details').notNull(),
+  note: text('note'),
+  status: text('status', { enum: ['open', 'chosen', 'cancelled'] }).notNull().default('open'),
+  chosenQuoteId: uuid('chosen_quote_id'),
+  createdAt: created(),
+});
+
 export const quotes = pgTable('quotes', {
   id: id(),
+  requestId: uuid('request_id').references(() => quoteRequests.id),
   dealId: uuid('deal_id').notNull().references(() => deals.id),
   providerOrgId: uuid('provider_org_id').notNull().references(() => organizations.id),
   kind: text('kind', { enum: ['lawyer', 'lender', 'inspector', 'insurer', 'mover', 'media'] }).notNull(),

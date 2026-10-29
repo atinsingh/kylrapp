@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { affordFromIncome, buyerEstimate, cmhcPremium, landlordNet, landTransferTax, minimumDown, money, moneyShort, moveInCost, rentControlled, sellerNet } from './index.js';
+import { affordFromIncome, buyerEstimate, cmhcPremium, landlordNet, landTransferTax, minimumDown, money, moneyShort, moveInCost, rentControlled, sellerNet, termCost } from './index.js';
 
 // Reference values computed with design/prototype/klyr-app.js, the source this engine was ported from.
 const maple = { price: 1_150_000, city: 'Mississauga', type: 'House', coop: 0.022, tax: 6960 } as const;
@@ -87,5 +87,15 @@ describe('leasing', () => {
   it('knows rent control from the first-occupied date', () => {
     expect(rentControlled('2015-06-01')).toBe(true);
     expect(rentControlled('2019-03-01')).toBe(false);
+  });
+});
+
+describe('lender quotes', () => {
+  it('compares on 5-year cost, fees included', () => {
+    const a = termCost(800_000, 0.0429), b = termCost(800_000, 0.0419, { fees: 2500 });
+    expect(a.monthly).toBe(4335);
+    expect(b.total - a.total).toBeLessThan(0);
+    expect(b.total).toBe(b.interest + 2500);
+    expect(a.balanceAfter).toBeLessThan(800_000);
   });
 });

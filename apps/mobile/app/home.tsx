@@ -74,7 +74,7 @@ export default function Home() {
         </View>
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-          {([['Visits and docs', '/visits'], ['Offers', '/offers'], ['Saved searches', '/searches'], ['Sell', '/sell'], ['Rent', '/rent'], ['What you can afford', '/afford'], ['How we estimate', '/estimate'], ...(compare.ids.length >= 2 ? [[`Compare ${compare.ids.length}`, '/compare']] : [])] as [string, '/visits' | '/offers' | '/searches' | '/sell' | '/rent' | '/afford' | '/estimate' | '/compare'][])
+          {([['Visits and docs', '/visits'], ['Offers', '/offers'], ['Saved searches', '/searches'], ['Sell', '/sell'], ['Rent', '/rent'], ['Quotes', '/quotes'], ['What you can afford', '/afford'], ['How we estimate', '/estimate'], ...(compare.ids.length >= 2 ? [[`Compare ${compare.ids.length}`, '/compare']] : [])] as [string, '/visits' | '/offers' | '/searches' | '/sell' | '/rent' | '/quotes' | '/afford' | '/estimate' | '/compare'][])
             .map(([label, href]) => (
               <Pressable key={href} accessibilityRole="link" onPress={() => router.push(href)} style={{ minHeight: 44, justifyContent: 'center' }}>
                 <Text style={{ ...sora(700), fontSize: 13, color: color.brand }}>{label} ›</Text>

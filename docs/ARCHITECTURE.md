@@ -206,9 +206,15 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * The landlord sees every applicant with the same facts (income ÷ rent, work, occupants, pets, references, credit consent) and a note on the Human Rights Code. Accepting is a signature: other applicants hear back the same day, the listing becomes leased, and both deals go firm. The Ontario Standard Lease (2229E) comes next and is prepared by the agent outside Klyr for now.
   * Not built yet: viewings for rentals, the landlord screens on the phone, generating the Standard Lease, credit reports (needs a screening vendor), and tracking interest on the last month's rent deposit.
 
+* Provider marketplace (web, phone and Klyr Pro web; screenshots `126`–`130`):
+  * A client asks up to four providers of one kind (mortgage, lawyer, inspection, insurance) for a quote. Their agent enters each quote from the provider's own system in Klyr Pro (a provider portal and imports come later).
+  * Quotes are ranked only by what the client pays: lenders by 5-year cost (interest plus fees, `termCost` in `@klyr/core`, Canadian semi-annual compounding), lawyers by fee with HST plus disbursements and title insurance, inspectors by price with HST, insurers by yearly premium. In the test run the lowest rate (Summit) wasn't the cheapest: its fees made it second.
+  * Every quote says what Klyr earns. Choosing one that pays a referral fee needs a written acknowledgement (TRESA / RECO), which is logged and repeated in the client's email. Lawyers can't pay referral fees (Law Society), and Klyr refuses a fee from a provider without a referral agreement.
+  * On a conditional or firm purchase, choosing a lawyer, lender or insurer fills that step of the closing checklist. The chosen provider gets the client's contact details.
+  * The nine providers are seeded samples, marked "(sample)", until partner agreements are signed.
+
 **Next, in order:**
-1. Provider marketplace: lawyer, lender, inspector and insurer quotes in Klyr Pro, with referral fees shown to the buyer before they choose.
-2. Remaining Admin modules in the order the Launch Checklist owners need them: listings feed status, Klyr AI review, privacy requests, content and assumptions, users and roles.
+1. Remaining Admin modules in the order the Launch Checklist owners need them: listings feed status, Klyr AI review, privacy requests, content and assumptions, users and roles.
 
 **Blocked on outside parties** (built as interfaces with development stand-ins, refused in production):
 * OREA forms licence and an e-sign provider: signed records are plain-language summaries until then.

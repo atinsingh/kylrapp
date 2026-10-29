@@ -153,5 +153,23 @@ await db.insert(userRoles).values([
   { userId: officer!.id, role: 'compliance_officer', orgId: brokerage!.id },
   { userId: officer!.id, role: 'broker_of_record', orgId: brokerage!.id },
 ]).onConflictDoNothing();
+// Sample providers for the quote marketplace: placeholders until partner agreements are signed.
+// Lawyers can't pay referral fees (Law Society rules allow them only between licensees).
+const PROVIDERS = [
+  { kind: 'law_firm', name: 'Harbourfront Real Estate Law (sample)', registration: 'LSO sample L-0001', details: { email: 'intake@harbourfront.example', phone: '416-555-0110', about: 'Residential closings across the GTA, fixed fees.', referral: false } },
+  { kind: 'law_firm', name: 'Northgate Legal (sample)', registration: 'LSO sample L-0002', details: { email: 'deals@northgate.example', phone: '905-555-0111', about: 'Purchases, sales and title insurance in Halton and Peel.', referral: false } },
+  { kind: 'lender', name: 'Maple Mortgage Co. (sample)', registration: 'FSRA sample M-0001', details: { email: 'quotes@maplemortgage.example', phone: '416-555-0120', about: 'Bank lender with 20% yearly prepayment.', referral: true } },
+  { kind: 'lender', name: 'Lakeshore Credit Union (sample)', registration: 'FSRA sample M-0002', details: { email: 'mortgages@lakeshorecu.example', phone: '905-555-0121', about: 'Credit union; members only, joining is free.', referral: false } },
+  { kind: 'lender', name: 'Summit Mortgage Brokers (sample)', registration: 'FSRA sample M-0003', details: { email: 'team@summitmb.example', phone: '647-555-0122', about: 'Brokerage comparing 30+ lenders.', referral: true } },
+  { kind: 'inspector', name: 'TrueSight Home Inspections (sample)', registration: 'OAHI member (sample)', details: { email: 'book@truesight.example', phone: '416-555-0130', about: 'Same-week inspections with thermal imaging.', referral: false } },
+  { kind: 'inspector', name: 'Brickline Inspections (sample)', registration: 'OAHI member (sample)', details: { email: 'hello@brickline.example', phone: '905-555-0131', about: 'Older homes and knob-and-tube specialists.', referral: true } },
+  { kind: 'insurer', name: 'Northern Shield Insurance (sample)', registration: 'FSRA sample I-0001', details: { email: 'quotes@northernshield.example', phone: '416-555-0140', about: 'Home and tenant insurance, binders in a day.', referral: true } },
+  { kind: 'insurer', name: 'Harbour Mutual (sample)', registration: 'FSRA sample I-0002', details: { email: 'home@harbourmutual.example', phone: '905-555-0141', about: 'Mutual insurer with water-damage cover included.', referral: false } },
+] as const;
+for (const pr of PROVIDERS) {
+  const [have] = await db.select({ id: organizations.id }).from(organizations).where(sql`${organizations.name} = ${pr.name}`);
+  if (have) await db.update(organizations).set({ details: pr.details, registration: pr.registration }).where(sql`${organizations.id} = ${have.id}`);
+  else await db.insert(organizations).values({ ...pr });
+}
 await pool.end();
-console.log(`seeded ${SAMPLE.length} listings, ${sold} sold comparables, ${AGENTS.length} agents and a compliance officer`);
+console.log(`seeded ${SAMPLE.length} listings, ${sold} sold comparables, ${AGENTS.length} agents, a compliance officer and ${PROVIDERS.length} sample providers`);

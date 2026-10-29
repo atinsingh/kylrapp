@@ -101,7 +101,21 @@ export interface Deal {
   release: { documentId: string; signedAt: string } | null;
   /** Form 120 changes, newest first. */
   amendments: Amendment[];
+  /** Closing checklist, in order; done steps carry what the buyer entered (lawyer, lender, insurer). */
+  tasks: { key: DealTaskKey; doneAt: string | null; details: Record<string, string> }[];
+  closedAt: string | null;
+  payout: { status: 'pending_commission' | 'ready' | 'sent' | 'failed' | 'reduced'; amount: number; pct: number; commissionReceived: number | null; paidAt: string | null; reference: string | null } | null;
   allIn: number; cashBack: number; landTransfer: number;
+}
+export type DealTaskKey = 'lawyer' | 'mortgage' | 'insurance' | 'adjustments' | 'walkthrough';
+export type DealTaskInput =
+  | { key: 'lawyer'; name: string; firm: string; email: string; phone?: string }
+  | { key: 'mortgage'; lender: string } | { key: 'insurance'; insurer: string; policy?: string }
+  | { key: 'adjustments' } | { key: 'walkthrough'; note?: string };
+export interface Payout {
+  id: string; dealId: string; status: 'pending_commission' | 'ready' | 'sent' | 'failed' | 'reduced'; amount: number; pct: number;
+  commissionReceived: number | null; reference: string | null; createdAt: string; paidAt: string | null; closedAt: string | null;
+  client: string | null; email: string; address: string; price: number; coop: string | null; listingBrokerage: string;
 }
 export interface Amendment {
   id: string; status: 'signed' | 'accepted' | 'rejected' | 'withdrawn';
@@ -252,6 +266,7 @@ export function createClient(opts: ClientOptions) {
     conditionNotice: (id: string, action: 'waive' | 'fulfil', typedName: string) => post<Deal>(`/deal/conditions/${encodeURIComponent(id)}`, { action, typedName, readConfirmed: true }),
     proposeAmendment: (a: { closingDate?: string; extend: { conditionId: string; until: string }[] }, typedName: string) => post<Deal>('/deal/amendments', { ...a, typedName, readConfirmed: true }),
     withdrawAmendment: (id: string) => del<Deal>(`/deal/amendments/${encodeURIComponent(id)}`),
+    dealTask: (t: DealTaskInput) => post<Deal>('/deal/tasks', t),
     signRelease: (typedName: string) => post<Deal>('/deal/release', { typedName, readConfirmed: true }),
 
     pro: {
@@ -260,6 +275,8 @@ export function createClient(opts: ClientOptions) {
       offerResult: (id: string, r: { result: 'accepted'; note?: string } | { result: 'signed_back'; price: number; irrevocableAt: string; note?: string } | { result: 'rejected'; note?: string }) =>
         post<{ id: string; status: OfferStatus; signBackId?: string }>(`/pro/offers/${encodeURIComponent(id)}/result`, r),
       deals: () => get<ProDeal[]>('/pro/deals'),
+      dealTask: (dealId: string, t: DealTaskInput) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/tasks`, t),
+      closeDeal: (dealId: string) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/close`),
       amendmentResult: (id: string, result: 'accepted' | 'rejected', note?: string) => post<{ id: string; status: string }>(`/pro/amendments/${encodeURIComponent(id)}/result`, { result, note }),
       delivered: (conditionId: string) => post<{ id: string; firm: boolean }>(`/pro/conditions/${encodeURIComponent(conditionId)}/delivered`),
       trustVerified: (dealId: string, note: string) => post<{ ok: true }>(`/pro/deals/${encodeURIComponent(dealId)}/trust-verified`, { note }),
@@ -277,6 +294,9 @@ export function createClient(opts: ClientOptions) {
     },
     admin: {
       idReviews: () => get<IdReview[]>('/admin/id-reviews'),
+      payouts: () => get<Payout[]>('/admin/payouts'),
+      commissionReceived: (id: string, amount: number) => post<{ id: string; status: string; amount: number }>(`/admin/payouts/${encodeURIComponent(id)}/commission`, { amount }),
+      payoutSent: (id: string, reference: string) => post<{ id: string; status: string }>(`/admin/payouts/${encodeURIComponent(id)}/sent`, { reference }),
       fieldActivity: (day?: string) => get<{ day: string; agents: FieldDay[] }>(`/admin/field-activity${day ? `?day=${day}` : ''}`),
       reviewId: (id: string, decision: 'approve' | 'reject', note: string) => post<{ id: string; status: 'verified' | 'rejected' }>(`/admin/id-reviews/${encodeURIComponent(id)}`, { decision, note }),
     },

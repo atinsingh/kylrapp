@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import type { Deal } from '@klyr/api-client';
+import type { Deal, DealTaskInput, DealTaskKey } from '@klyr/api-client';
 import { calendarDate, money, nextBankingDate, torontoInputValue, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
@@ -13,6 +13,14 @@ import { errorText, klyr } from '../lib/klyr';
 const when = torontoWhen;
 const longDate = (ymd: string) => new Date(ymd + 'T12:00:00Z').toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 const LABEL: Record<Deal['conditions'][number]['kind'], string> = { financing: 'Financing', inspection: 'Inspection', status_certificate: 'Status certificate', sale_of_buyer_home: 'Sale of your home', other: 'Other' };
+
+const STEPS: Record<DealTaskKey, [string, [string, string][]]> = {
+  lawyer: ['Choose your lawyer', [['name', 'Lawyer’s name'], ['firm', 'Firm'], ['email', 'Email']]],
+  mortgage: ['Mortgage instructions', [['lender', 'Lender']]],
+  insurance: ['Home insurance binder', [['insurer', 'Insurer']]],
+  adjustments: ['Review the statement of adjustments', []],
+  walkthrough: ['Final walk-through (your agent)', []],
+};
 
 type Signing = { kind: 'notice'; id: string; action: 'waive' | 'fulfil'; title: string } | { kind: 'release' }
   | { kind: 'amend'; closingDate?: string; extend: { conditionId: string; until: string }[]; summary: string };
@@ -28,6 +36,8 @@ export default function DealScreen() {
   const [name, setName] = useState('');
   const [stepUp, setStepUp] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [task, setTask] = useState<DealTaskKey | null>(null);
+  const [form, setForm] = useState<Record<string, string>>({});
   const load = useCallback(async () => { const r = await klyr.deal(); if (r.ok) setD(r.data); else setError(errorText(r.error)); }, []);
   useFocusEffect(useCallback(() => { void load(); }, [load]));
 
@@ -43,8 +53,16 @@ export default function DealScreen() {
     setSigning(null); setName(''); setD(r.data);
   }
 
+  async function saveTask(key: DealTaskKey) {
+    setBusy(true); setError('');
+    const r = await klyr.dealTask({ key, ...form } as DealTaskInput);
+    setBusy(false);
+    if (!r.ok) return setError(errorText(r.error));
+    setTask(null); setForm({}); setD(r.data);
+  }
+
   if (!d) return <Screen><Back /><ErrorText>{error}</ErrorText></Screen>;
-  const isVoid = d.status === 'void';
+  const isVoid = d.status === 'void', closed = !!d.closedAt;
   const signPanel = signing && (stepUp
     ? <StepUp reason="Signing needs a fresh check." onCancel={() => setStepUp(false)} onDone={() => { setStepUp(false); void sign(); }} />
     : (
@@ -63,15 +81,40 @@ export default function DealScreen() {
       <Back />
       <View style={{ backgroundColor: isVoid ? '#5E5E63' : color.brandInk, borderRadius: 20, padding: 18, gap: 6 }}>
         <Text style={{ ...t.label, color: isVoid ? '#E5E5EA' : '#8CC2B1' }}>{d.address.toUpperCase()} · {money(d.price)}</Text>
-        <Text style={{ ...sora(800), fontSize: 28, color: '#fff' }}>{isVoid ? 'Ended' : d.stage === 'firm' ? 'Firm' : 'Conditional'}</Text>
+        <Text style={{ ...sora(800), fontSize: 28, color: '#fff' }}>{isVoid ? 'Ended' : closed ? 'Welcome home' : d.stage === 'firm' ? 'Firm' : 'Conditional'}</Text>
         <Text style={{ ...sora(), fontSize: 13, color: isVoid ? '#E5E5EA' : '#C9DDD6' }}>
-          {isVoid ? 'A condition wasn’t met in time, so the agreement is void. Your deposit comes back in full.' : `Closing ${longDate(d.closingDate)} · cash back ${money(d.cashBack)}`}
+          {isVoid ? 'A condition wasn’t met in time, so the agreement is void. Your deposit comes back in full.' : closed ? `Closed ${when(d.closedAt!)}. The keys are yours.` : `Closing ${longDate(d.closingDate)} · cash back ${money(d.cashBack)}`}
         </Text>
       </View>
       {isVoid && (d.release
         ? <Card><Text style={t.label}>MUTUAL RELEASE · FORM 122</Text><Text style={t.body}>✓ Signed {when(d.release.signedAt)}. {d.deposit?.returnedAt ? 'Your deposit is on its way back.' : 'Your agent gets the seller’s signature, then your deposit comes back.'}</Text></Card>
         : signing?.kind === 'release' ? signPanel
           : <Card><Text style={sora(700)}>Sign the release to get your deposit back</Text><Button title="Sign the release" onPress={() => setSigning({ kind: 'release' })} /></Card>)}
+      {d.payout && (
+        <Card style={{ borderWidth: 2, borderColor: color.brand }}>
+          <Text style={t.label}>YOUR CASH BACK · {d.payout.pct}% OF THE COMMISSION</Text>
+          <Text style={{ ...sora(800), fontSize: 24 }}>{money(d.payout.amount)}</Text>
+          <Text style={t.body}>{d.payout.status === 'sent' ? `Sent by EFT ${when(d.payout.paidAt!)} · reference ${d.payout.reference}.` : 'Paid by EFT after Klyr receives its commission, usually within a few business days of closing.'}</Text>
+        </Card>
+      )}
+      {!isVoid && !closed && (
+        <Card>
+          <Text style={t.label}>CLOSING · {d.tasks.filter(x => x.doneAt).length} OF {d.tasks.length} DONE</Text>
+          {d.tasks.map(x => (
+            <View key={x.key} style={{ gap: 6, paddingVertical: 6 }}>
+              <Text style={sora(700)}>{x.doneAt ? '✓ ' : ''}{STEPS[x.key][0]}</Text>
+              {x.doneAt && <Text style={t.note}>{x.details.name ? `${x.details.name}, ${x.details.firm}` : x.details.lender ?? x.details.insurer ?? 'Done'}</Text>}
+              {!x.doneAt && x.key !== 'walkthrough' && (task === x.key ? (
+                <View style={{ gap: 6 }}>
+                  {STEPS[x.key][1].map(([f, label]) => <Field key={f} label={label} value={form[f] ?? ''} onChangeText={v => setForm(y => ({ ...y, [f]: v }))} autoCapitalize={f === 'email' ? 'none' : 'words'} keyboardType={f === 'email' ? 'email-address' : 'default'} />)}
+                  <Button title={x.key === 'adjustments' ? 'Confirm' : 'Save'} busy={busy} onPress={() => saveTask(x.key)} />
+                  <Button title="Back" alt onPress={() => setTask(null)} />
+                </View>
+              ) : <Button title={x.key === 'adjustments' ? 'I’ve reviewed it' : 'Add details'} alt onPress={() => { setTask(x.key); setForm({}); }} />)}
+            </View>
+          ))}
+        </Card>
+      )}
       {d.deposit && (
         <Card style={d.deposit.receivedAt || isVoid ? undefined : { borderWidth: 2, borderColor: '#A54B00' }}>
           <Text style={{ ...t.label, color: d.deposit.receivedAt || isVoid ? color.textSecondary : '#A54B00' }}>
@@ -105,7 +148,7 @@ export default function DealScreen() {
         })}
         {d.conditions.length > 0 && !isVoid && <Text style={t.note}>Each ends at 11:59 pm on its last banking day. Your notice counts once your agent delivers it before then.</Text>}
       </Card>
-      {!isVoid && (
+      {!isVoid && !closed && (
         <Card>
           <Text style={t.label}>CHANGES TO THE AGREEMENT · FORM 120</Text>
           {d.amendments.map(a => (

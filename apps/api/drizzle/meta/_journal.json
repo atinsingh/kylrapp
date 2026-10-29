@@ -71,6 +71,13 @@
       "when": 1793288844259,
       "tag": "0009_amendments",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793289453988,
+      "tag": "0010_closing",
+      "breakpoints": true
     }
   ]
 }

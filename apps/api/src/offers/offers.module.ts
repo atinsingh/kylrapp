@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Inject, Module, NotFoundException, Param, ParseUUIDPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { AmendmentRequest, AmendmentResultRequest, ConditionNoticeRequest, OfferResultRequest, OfferTerms, ReviewOfferRequest, SignBackResponse, SignOfferRequest, TrustVerifiedRequest } from '@klyr/contracts';
+import { AmendmentRequest, AmendmentResultRequest, ConditionNoticeRequest, DealTaskRequest, OfferResultRequest, OfferTerms, ReviewOfferRequest, SignBackResponse, SignOfferRequest, TrustVerifiedRequest } from '@klyr/contracts';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { DealsModule } from '../deals/deals.module.js';
 import { assertFreshMfa, Auth, AuthGuard, StepUp, type AuthContext } from '../identity/auth.guard.js';
@@ -67,6 +67,10 @@ class OffersController {
   @Delete('deal/amendments/:id')
   withdrawAmendment(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string) { return this.progress.withdrawAmendment(a.userId, id); }
 
+  /** A closing-checklist step: lawyer, mortgage, insurance, statement of adjustments. */
+  @Post('deal/tasks') @HttpCode(200)
+  task(@Auth() a: AuthContext, @Body(new ZodPipe(DealTaskRequest)) body: DealTaskRequest) { return this.progress.buyerTask(a.userId, body); }
+
   /** Mutual release (Form 122) after the agreement went void. */
   @Post('deal/release') @HttpCode(200) @StepUp()
   release(@Auth() a: AuthContext, @Body(new ZodPipe(SignOfferRequest)) body: SignOfferRequest, @Req() req: Request) {
@@ -113,6 +117,15 @@ class ProOffersController {
   amendmentResult(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(AmendmentResultRequest)) body: AmendmentResultRequest) {
     return this.progress.amendmentResult(a.userId, id, body.result, body.note);
   }
+
+  @Post('deals/:id/tasks') @HttpCode(200)
+  dealTask(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(DealTaskRequest)) body: DealTaskRequest) {
+    return this.progress.agentTask(a.userId, id, body);
+  }
+
+  /** Keys released. */
+  @Post('deals/:id/close') @HttpCode(200)
+  close(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string) { return this.progress.close(a.userId, id); }
 
   @Post('deals/:id/deposit-returned') @HttpCode(200)
   returned(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string) { return this.progress.depositReturned(a.userId, id); }

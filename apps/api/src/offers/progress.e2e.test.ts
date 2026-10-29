@@ -1,8 +1,8 @@
 import { and, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { nextBankingDate, torontoInputValue } from '@klyr/core';
+import { nextBankingDate, torontoInputValue, torontoToday } from '@klyr/core';
 import { createDb } from '../db/client.js';
-import { conditions, deposits } from '../db/schema.js';
+import { conditions, deals, deposits } from '../db/schema.js';
 import { startApp } from '../test/harness.js';
 import { inMin, people, resetStaff } from '../test/people.js';
 import { DealProgressService } from './progress.service.js';
@@ -157,5 +157,47 @@ describe('after acceptance', () => {
     const id4 = (await amend({ extend: [{ conditionId: fin.id, until: dayAfter(fin.dueAt, 2) }] })).body.amendments[0].id;
     await db.update(conditions).set({ dueAt: new Date(Date.now() - 60_000) }).where(eq(conditions.id, fin.id));
     expect((await h.call('POST', `/pro/amendments/${id4}/result`, { result: 'accepted' }, agent)).body.code).toBe('agreement_void');
+  });
+
+  it('runs the closing checklist, closes on the closing date, and records the cash back through to payment', async () => {
+    const { b, agent, deal, house } = await acceptedDeal(1);
+    const task = (body: object, t = b.t) => h.call('POST', '/deal/tasks', body, t);
+    expect((await task({ key: 'lawyer', name: 'Ana Lee', firm: 'Harbour Law', email: 'not-an-email' })).status).toBe(400);
+    expect((await task({ key: 'lawyer', name: 'Ana Lee', firm: 'Harbour Law', email: 'ana@harbourlaw.example' })).body.tasks[0]).toMatchObject({ key: 'lawyer', details: { firm: 'Harbour Law' } });
+    expect((await task({ key: 'walkthrough' })).body.code).toBe('agent_only');
+    await task({ key: 'mortgage', lender: 'Northern Credit Union' });
+    await task({ key: 'insurance', insurer: 'Maple Mutual' });
+    await task({ key: 'adjustments' });
+    expect((await h.call('POST', `/pro/deals/${deal.dealId}/tasks`, { key: 'walkthrough', note: 'All appliances present.' }, agent)).status).toBe(200);
+    expect((await h.call('GET', '/deal', undefined, b.t)).body.tasks.every((t: { doneAt: string | null }) => t.doneAt)).toBe(true);
+
+    expect((await h.call('POST', `/pro/deals/${deal.dealId}/close`, undefined, agent)).body.code).toBe('not_firm');
+    await p.stepUp(b.t, b.email);
+    for (const c of deal.conditions) {
+      await h.call('POST', `/deal/conditions/${c.id}`, { ...sign, action: 'waive' }, b.t);
+      await h.call('POST', `/pro/conditions/${c.id}/delivered`, undefined, agent);
+    }
+    expect((await h.call('POST', `/pro/deals/${deal.dealId}/close`, undefined, agent)).body.code).toBe('before_closing');
+    const [y, m, d] = torontoToday();
+    await db.update(deals).set({ closingDate: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}` }).where(eq(deals.id, deal.dealId));
+    expect((await h.call('POST', `/pro/deals/${deal.dealId}/close`, undefined, agent)).body.code).toBe('deposit_missing');
+    await h.call('POST', `/pro/deals/${deal.dealId}/deposit-received`, undefined, agent);
+    expect((await h.call('POST', `/pro/deals/${deal.dealId}/close`, undefined, agent)).status).toBe(200);
+    expect(mail(b.email).subject).toBe(`Welcome home · ${house.address}`);
+    const closed = (await h.call('GET', '/deal', undefined, b.t)).body;
+    expect(closed).toMatchObject({ stage: 'closed', payout: { status: 'pending_commission', pct: 60 } });
+    expect(closed.closedAt).not.toBeNull();
+
+    // Klyr Admin: the broker of record records the commission, then the EFT.
+    expect((await h.call('GET', '/admin/payouts', undefined, agent)).body.code).toBe('not_staff');
+    const broker = await p.staff('priya.nair@klyr.example');
+    const row = (await h.call('GET', '/admin/payouts', undefined, broker)).body.find((x: { dealId: string }) => x.dealId === deal.dealId);
+    expect(row).toMatchObject({ status: 'pending_commission', address: house.address, client: 'Test Buyer' });
+    expect((await h.call('POST', `/admin/payouts/${row.id}/sent`, { reference: 'EFT-1' }, broker)).body.code).toBe('not_ready');
+    expect((await h.call('POST', `/admin/payouts/${row.id}/commission`, { amount: 25_000 }, broker)).body).toMatchObject({ status: 'ready', amount: 15_000 });
+    expect((await h.call('POST', `/admin/payouts/${row.id}/sent`, { reference: 'x' }, broker)).status).toBe(400);
+    expect((await h.call('POST', `/admin/payouts/${row.id}/sent`, { reference: 'EFT-20261029-0042' }, broker)).body.status).toBe('sent');
+    expect(mail(b.email).subject).toBe('Your cash back is on its way');
+    expect((await h.call('GET', '/deal', undefined, b.t)).body.payout).toMatchObject({ status: 'sent', amount: 15_000, reference: 'EFT-20261029-0042' });
   });
 });

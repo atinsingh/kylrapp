@@ -274,6 +274,8 @@ export const deals = pgTable('deals', {
   /** Form 326 signed: Klyr AI stops giving price and negotiation advice. */
   multipleRepresentation: boolean('multiple_representation').notNull().default(false),
   closingDate: date('closing_date'),
+  /** Keys released, recorded by the agent. */
+  closedAt: ts('closed_at'),
   createdAt: created(),
 }, t => [index('deals_agent_stage_ix').on(t.agentId, t.stage)]);
 
@@ -344,6 +346,15 @@ export const amendments = pgTable('amendments', {
   createdAt: created(),
   decidedAt: ts('decided_at'),
 }, t => [index('amendments_deal_ix').on(t.dealId)]);
+
+/** The closing checklist after acceptance: one row per finished step, with what the buyer told us. */
+export const dealTasks = pgTable('deal_tasks', {
+  dealId: uuid('deal_id').notNull().references(() => deals.id),
+  key: text('key', { enum: ['lawyer', 'mortgage', 'insurance', 'adjustments', 'walkthrough'] }).notNull(),
+  details: jsonb('details').notNull().default({}),
+  doneAt: ts('done_at').notNull().defaultNow(),
+  doneBy: uuid('done_by').notNull().references(() => users.id),
+}, t => [primaryKey({ columns: [t.dealId, t.key] })]);
 
 /** Visits a buyer books; the listing brokerage confirms. */
 export const showings = pgTable('showings', {
@@ -462,6 +473,11 @@ export const cashBackPayouts = pgTable('cash_back_payouts', {
   bankAccountVerifiedAt: ts('bank_account_verified_at'),
   lenderLetterDocumentId: uuid('lender_letter_document_id').references(() => documents.id),
   status: text('status', { enum: ['pending_commission', 'ready', 'sent', 'failed', 'reduced'] }).notNull(),
+  /** Share of the commission paid back, frozen from Form 300 (e.g. 60). */
+  pct: integer('pct').notNull().default(60),
+  /** The EFT reference from the bank, once paid. */
+  reference: text('reference'),
+  createdAt: ts('created_at').notNull().defaultNow(),
   paidAt: ts('paid_at'),
 });
 

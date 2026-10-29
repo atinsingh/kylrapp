@@ -18,7 +18,7 @@ export default function Deals() {
   const [refreshing, setRefreshing] = useState(false);
   const load = useCallback(async () => { const r = await klyr.pro.deals(); if (r.ok) { setDeals(r.data); setError(''); } else setError(errorText(r.error)); }, []);
   useFocusEffect(useCallback(() => { void load(); }, [load]));
-  const open = (deals ?? []).filter(d => !(d.status === 'void' && d.deposit?.returnedAt));
+  const open = (deals ?? []).filter(d => !(d.status === 'void' && d.deposit?.returnedAt) && !d.closedAt);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: color.surfaceGrouped }} edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 48 }} keyboardShouldPersistTaps="handled"
@@ -82,6 +82,14 @@ function DealCard({ d, onChange }: { d: ProDeal; onChange: () => Promise<void> }
           </View>
         </View>
       ))}
+      {!isVoid && !d.closedAt && (
+        <View style={{ gap: 6, borderTopWidth: 0.5, borderTopColor: color.separator, paddingTop: 8 }}>
+          <Text style={t.note}>Closing checklist · {d.tasks.filter(x => x.doneAt).length} of {d.tasks.length} done</Text>
+          {!d.tasks.find(x => x.key === 'walkthrough')?.doneAt && <Button title="Final walk-through done" alt busy={busy} onPress={() => run(() => klyr.pro.dealTask(d.dealId, { key: 'walkthrough' }))} />}
+          {d.stage === 'firm' && <Button title="Closed: keys released" busy={busy} onPress={() => run(() => klyr.pro.closeDeal(d.dealId))} />}
+        </View>
+      )}
+      {d.closedAt && <Text style={{ ...sora(600), color: '#2B7A4B' }}>Closed {torontoWhen(d.closedAt)}</Text>}
       {isVoid && <Text style={t.note}>{d.release ? 'Client signed the mutual release.' : 'Waiting for the client’s mutual release (Form 122).'}</Text>}
       {isVoid && d.release && dep && !dep.returnedAt && <Button title="Deposit returned to client" busy={busy} onPress={() => run(() => klyr.pro.depositReturned(d.dealId))} />}
       <ErrorText>{error}</ErrorText>

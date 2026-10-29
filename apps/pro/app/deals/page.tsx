@@ -9,8 +9,9 @@ export default async function DealsPage() {
   const me = await requireAgent();
   const deals = (await api<ProDeal[]>('/pro/deals')).data ?? [];
   const groups: [string, ProDeal[]][] = [
-    ['CONDITIONAL', deals.filter(d => d.status === 'accepted' && d.stage !== 'firm')],
-    ['FIRM', deals.filter(d => d.status === 'accepted' && d.stage === 'firm')],
+    ['CONDITIONAL', deals.filter(d => d.status === 'accepted' && d.stage === 'conditional')],
+    ['FIRM · TO CLOSE', deals.filter(d => d.status === 'accepted' && d.stage === 'firm')],
+    ['CLOSED', deals.filter(d => d.stage === 'closed')],
     ['ENDED · RELEASE AND DEPOSIT', deals.filter(d => d.status === 'void' && !d.deposit?.returnedAt)],
     ['CLOSED OUT', deals.filter(d => d.status === 'void' && !!d.deposit?.returnedAt)],
   ];

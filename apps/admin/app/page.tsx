@@ -17,7 +17,7 @@ const MODULES = [
 ] as const;
 
 /** Built so far. */
-const LIVE: Record<string, string> = { 'Compliance (FINTRAC)': '/id-reviews', 'Broker of record': '/field-activity' };
+const LIVE: Record<string, string> = { 'Compliance (FINTRAC)': '/id-reviews', 'Broker of record': '/field-activity', 'Trust and payouts': '/payouts' };
 
 export default function AdminHome() {
   return (

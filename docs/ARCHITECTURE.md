@@ -173,12 +173,25 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * Tapping a push opens the deal, offers or visits.
   * Lock-screen text never includes prices or amounts, on either app.
 
+* Closing:
+  * Checklist on the web and phone: the buyer records their lawyer (name, firm, email), lender and insurer, and confirms the statement of adjustments. The agent records the final walk-through.
+  * The agent records "Closed: keys released" (Klyr Pro web or agent app) on or after the closing date, once the deal is firm and the deposit receipt is recorded.
+  * The cash-back record starts at the plan share frozen in Form 300.
+* Trust and payouts in Klyr Admin (broker of record): record the commission actually received (the cash back becomes the plan share of it), then the EFT reference once paid from Klyr Realty's bank. The buyer sees each step and gets an email and push. Klyr keeps the record and does not move money. Lender disclosure of cash back stays with the buyer's lawyer and lender for now.
+
 **Next, in order:**
-1. Klyr Pro phone app, next: device attestation for check-ins (App Attest / Play Integrity through a config plugin and a development build), and opt-in "on shift" tracking if the brokerage wants travel logs (needs a privacy review first).
-2. Closing: checklist (lawyer, mortgage instructions, insurance binder, statement of adjustments, final walk-through, keys), the deal closing in Klyr Pro, and the cash-back payout record for Admin's trust and payouts module.
-3. Real integrations as vendors are chosen: OREA forms + e-sign, ID verification, S3 file store with Object Lock, SES email.
-4. Saved searches with alerts, the phone map, phone passkeys (needs the klyr.ca associated domain) and Sign in with Apple/Google. Pull a shared component layer into `packages/ui`.
-5. Provider quote builders in Klyr Pro, then the Admin modules in the order the Launch Checklist owners need them.
+1. Saved searches with alerts (worker job, email and push), and the map on the phone.
+2. Selling (App Core `s_*` screens): plan and listing agreement (Form 200), listing prep, showing requests and feedback, offers received with net proceeds, and accepting through the same deal flow.
+3. Renting and leasing out (`t_*`, `l_*`): tenant profile and Form 400 offers to lease (with Form 346), and landlord listing and applicants.
+4. Provider marketplace: lawyer, lender, inspector and insurer quotes in Klyr Pro, with referral fees shown to the buyer before they choose.
+5. Remaining Admin modules in the order the Launch Checklist owners need them: listings feed status, Klyr AI review, privacy requests, content and assumptions, users and roles.
+
+**Blocked on outside parties** (built as interfaces with development stand-ins, refused in production):
+* OREA forms licence and an e-sign provider: signed records are plain-language summaries until then.
+* ID verification vendor, S3 with Object Lock, SES: chosen in the vendor review.
+* PropTx VOW feed: listings are seed data until the agreement is signed.
+* Device attestation for agent check-ins: needs Apple and Google developer accounts and real devices.
+* Phone passkeys and Sign in with Apple/Google: need the klyr.ca associated domain and developer accounts.
 
 ## 10. Open decisions
 

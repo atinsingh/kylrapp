@@ -1,9 +1,11 @@
 import { Body, Controller, ConflictException, Get, HttpCode, Inject, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
-import { and, asc, eq } from 'drizzle-orm';
-import { ReviewIdRequest } from '@klyr/contracts';
+import { and, asc, desc, eq, sql } from 'drizzle-orm';
+import { CommissionReceivedRequest, PayoutSentRequest, ReviewIdRequest } from '@klyr/contracts';
+import { z } from 'zod';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { DB, type Db } from '../db/db.module.js';
-import { auditLog, idVerifications, users } from '../db/schema.js';
+import { auditLog, cashBackPayouts, dealParties, deals, idVerifications, listings, offers, users } from '../db/schema.js';
+import { NotifyService } from '../notify/notify.service.js';
 import { Auth, AuthGuard, type AuthContext } from '../identity/auth.guard.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 import { Roles, RolesGuard } from '../identity/roles.guard.js';
@@ -72,5 +74,76 @@ class FieldActivityController {
   day(@Query('day') day?: string) { return this.activity.days(day); }
 }
 
-@Module({ imports: [ProModule], controllers: [ComplianceReviewController, FieldActivityController], providers: [ComplianceReviewService] })
+/**
+ * Trust and payouts: after closing, the brokerage records the commission the listing brokerage paid, then the
+ * cash-back EFT sent from its own bank. Klyr doesn't move money; it keeps the record and tells the buyer.
+ */
+@Injectable()
+export class PayoutsService {
+  constructor(@Inject(DB) private readonly db: Db, @Inject(MAILER) private readonly mail: Mailer, @Inject(NotifyService) private readonly notify: NotifyService) {}
+
+  list() {
+    return this.db.select({
+      id: cashBackPayouts.id, dealId: cashBackPayouts.dealId, status: cashBackPayouts.status, amount: cashBackPayouts.amount, pct: cashBackPayouts.pct,
+      commissionReceived: cashBackPayouts.commissionReceived, reference: cashBackPayouts.reference, createdAt: cashBackPayouts.createdAt, paidAt: cashBackPayouts.paidAt,
+      closedAt: deals.closedAt, client: users.legalName, email: users.email,
+      address: sql<string>`case when ${listings.unit} is null then ${listings.address} else ${listings.address} || ' #' || ${listings.unit} end`,
+      price: offers.price, coop: listings.coop, listingBrokerage: listings.listingBrokerage,
+    }).from(cashBackPayouts)
+      .innerJoin(deals, eq(deals.id, cashBackPayouts.dealId))
+      .innerJoin(dealParties, and(eq(dealParties.dealId, deals.id), eq(dealParties.role, 'client')))
+      .innerJoin(users, eq(users.id, dealParties.userId))
+      .innerJoin(offers, and(eq(offers.dealId, deals.id), eq(offers.status, 'accepted')))
+      .innerJoin(listings, eq(listings.id, offers.listingId))
+      .orderBy(desc(cashBackPayouts.createdAt));
+  }
+
+  /** The commission arrived: the cash back is the plan's share of what was actually received. */
+  async commission(actorId: string, id: string, amount: number) {
+    const [p] = await this.db.select().from(cashBackPayouts).where(eq(cashBackPayouts.id, id));
+    if (!p) throw new NotFoundException();
+    if (p.status !== 'pending_commission') throw new ConflictException({ code: 'not_pending', message: 'The commission was already recorded.' });
+    const payout = Math.round((amount * p.pct) / 100);
+    await this.db.update(cashBackPayouts).set({ commissionReceived: amount, amount: payout, status: 'ready' }).where(eq(cashBackPayouts.id, id));
+    await this.db.insert(auditLog).values({ actorId, action: 'commission_received', entity: 'payout', entityId: id, data: { commission: amount, payout } });
+    return { id, status: 'ready', amount: payout };
+  }
+
+  async sent(actorId: string, id: string, reference: string) {
+    const [p] = await this.db.select().from(cashBackPayouts).where(eq(cashBackPayouts.id, id));
+    if (!p) throw new NotFoundException();
+    if (p.status !== 'ready') throw new ConflictException({ code: 'not_ready', message: 'Record the commission first.' });
+    await this.db.update(cashBackPayouts).set({ status: 'sent', paidAt: new Date(), reference }).where(eq(cashBackPayouts.id, id));
+    await this.db.insert(auditLog).values({ actorId, action: 'payout_sent', entity: 'payout', entityId: id, data: { amount: p.amount, reference } });
+    const [c] = await this.db.select({ id: users.id, email: users.email }).from(dealParties).innerJoin(users, eq(users.id, dealParties.userId))
+      .where(and(eq(dealParties.dealId, p.dealId), eq(dealParties.role, 'client')));
+    if (c) {
+      await this.mail.send({ to: c.email, subject: 'Your cash back is on its way', text: `We sent your cash back of $${p.amount.toLocaleString('en-CA')} by EFT (reference ${reference}). It usually arrives within 2 business days.\n\nKlyr Realty Inc., Brokerage` });
+      await this.notify.toUser(c.id, 'consumer', { title: 'Your cash back is on its way', body: 'Sent by EFT', data: { screen: 'deal' } });
+    }
+    return { id, status: 'sent' };
+  }
+}
+
+@UseGuards(AuthGuard, RolesGuard)
+@Roles('broker_of_record')
+@Controller('admin/payouts')
+class PayoutsController {
+  constructor(@Inject(PayoutsService) private readonly payouts: PayoutsService) {}
+
+  @Get()
+  list() { return this.payouts.list(); }
+
+  @Post(':id/commission') @HttpCode(200)
+  commission(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(CommissionReceivedRequest)) body: z.infer<typeof CommissionReceivedRequest>) {
+    return this.payouts.commission(a.userId, id, body.amount);
+  }
+
+  @Post(':id/sent') @HttpCode(200)
+  sent(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(PayoutSentRequest)) body: z.infer<typeof PayoutSentRequest>) {
+    return this.payouts.sent(a.userId, id, body.reference);
+  }
+}
+
+@Module({ imports: [ProModule], controllers: [ComplianceReviewController, FieldActivityController, PayoutsController], providers: [ComplianceReviewService, PayoutsService] })
 export class AdminModule {}

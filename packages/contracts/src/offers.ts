@@ -97,3 +97,19 @@ export const AmendmentResultRequest = z.object({
   note: z.string().trim().max(1000).optional(),
 });
 export type AmendmentResultRequest = z.infer<typeof AmendmentResultRequest>;
+
+/** The buyer's closing checklist. The agent marks the final walk-through. */
+const text = (max = 200) => z.string().trim().min(1).max(max);
+export const DealTaskRequest = z.discriminatedUnion('key', [
+  z.object({ key: z.literal('lawyer'), name: text(), firm: text(), email: z.string().trim().email(), phone: z.string().trim().max(40).optional() }),
+  z.object({ key: z.literal('mortgage'), lender: text() }),
+  z.object({ key: z.literal('insurance'), insurer: text(), policy: z.string().trim().max(100).optional() }),
+  z.object({ key: z.literal('adjustments') }),
+  z.object({ key: z.literal('walkthrough'), note: z.string().trim().max(500).optional() }),
+]);
+export type DealTaskRequest = z.infer<typeof DealTaskRequest>;
+export const DEAL_TASKS = ['lawyer', 'mortgage', 'insurance', 'adjustments', 'walkthrough'] as const;
+
+/** Klyr Admin records the commission the listing brokerage paid, then the cash-back EFT. */
+export const CommissionReceivedRequest = z.object({ amount: z.number().int().positive() });
+export const PayoutSentRequest = z.object({ reference: z.string().trim().min(3, 'Add the bank’s EFT reference').max(100) });

@@ -6,6 +6,7 @@ import { money, torontoWhen } from '@klyr/core';
 import { AppHeader } from '@/components/app-header';
 import { api, sessionToken } from '@/lib/session';
 import { Amendments } from './amendments';
+import { ClosingChecklist } from './closing';
 import { ConditionActions, ReleaseCard } from './deal-actions';
 
 export const metadata = { title: 'Your deal · Klyr' };
@@ -32,7 +33,7 @@ export default async function DealPage() {
   const [me, res, buying] = await Promise.all([api<Me>('/auth/me'), api<Deal>('/deal'), api<BuyingStatus>('/buying')]);
   if (me.status === 401) redirect('/welcome');
   const d = res.data, agent = buying.data?.agent?.name ?? 'Your agent', legalName = me.data?.legalName ?? '';
-  const isVoid = d?.status === 'void';
+  const isVoid = d?.status === 'void', closed = !!d?.closedAt;
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px 48px' }}>
       <AppHeader me={me.data} current="offers" />
@@ -47,14 +48,27 @@ export default async function DealPage() {
           <>
             <section className="k-card" style={{ background: isVoid ? '#5E5E63' : 'var(--ink)', color: '#fff', borderRadius: 20, padding: 18 }}>
               <div className="k-label" style={{ color: isVoid ? '#E5E5EA' : '#8CC2B1' }}>{d.address.toUpperCase()}, {d.city.toUpperCase()} · {money(d.price)}</div>
-              <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>{isVoid ? 'Ended' : d.stage === 'firm' ? 'Firm' : 'Conditional'}</div>
+              <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>{isVoid ? 'Ended' : closed ? 'Welcome home' : d.stage === 'firm' ? 'Firm' : 'Conditional'}</div>
               <div style={{ fontSize: 13, color: isVoid ? '#E5E5EA' : '#C9DDD6' }}>
                 {isVoid ? 'A condition wasn’t met in time, so the agreement is void. Your deposit comes back in full.'
+                  : closed ? `Closed ${when(d.closedAt!)}. The keys are yours.`
                   : `Accepted ${when(d.acceptedAt)} · closing ${longDate(d.closingDate)} · all-in ${money(d.allIn)} · cash back ${money(d.cashBack)}`}
               </div>
             </section>
 
             {isVoid && <ReleaseCard deal={d} legalName={legalName} agent={agent} />}
+
+            {d.payout && (
+              <section className="k-card" aria-label="Cash back" style={{ boxShadow: '0 0 0 2px var(--brand) inset' }}>
+                <div className="k-label">YOUR CASH BACK · {d.payout.pct}% OF THE COMMISSION</div>
+                <strong style={{ fontSize: 26 }}>{money(d.payout.amount)}</strong>
+                <span style={{ fontSize: 14 }}>
+                  {d.payout.status === 'sent' ? `Sent by EFT ${when(d.payout.paidAt!)} · reference ${d.payout.reference}. It usually arrives within 2 business days.`
+                    : d.payout.status === 'ready' ? 'Klyr received its commission. Your cash back goes out by EFT within a few business days.'
+                      : 'Estimated. Paid by EFT after Klyr receives its commission from the listing brokerage, usually within a few business days of closing.'}
+                </span>
+              </section>
+            )}
 
             {d.deposit && (
               <section className="k-card" aria-label="Deposit" style={d.deposit.receivedAt || isVoid ? undefined : { boxShadow: '0 0 0 2px #A54B00 inset' }}>
@@ -103,15 +117,14 @@ export default async function DealPage() {
               {d.conditions.length > 0 && !isVoid && <span className="k-note">Each condition ends at 11:59 pm on its last banking day. Your signed waiver or notice counts once {agent} delivers it to the seller’s brokerage before then; if not, the agreement ends and your deposit comes back.</span>}
             </section>
 
-            {!isVoid && <Amendments deal={d} legalName={legalName} agent={agent} />}
+            {!isVoid && !closed && <ClosingChecklist deal={d} agent={agent} />}
 
-            {!isVoid && (
-              <section className="k-card">
-                <div className="k-label">NEXT</div>
-                <span style={{ fontSize: 14 }}>Choose your lawyer, send your lender the agreement, and book the inspection. {agent} walks you through each one.</span>
-                <Link href="/documents" style={{ fontWeight: 700, fontSize: 14 }}>Your signed documents ›</Link>
-              </section>
-            )}
+            {!isVoid && !closed && <Amendments deal={d} legalName={legalName} agent={agent} />}
+
+            <section className="k-card">
+              <div className="k-label">DOCUMENTS</div>
+              <Link href="/documents" style={{ fontWeight: 700, fontSize: 14 }}>Your signed offer, notices and amendments ›</Link>
+            </section>
           </>
         )}
       </div>

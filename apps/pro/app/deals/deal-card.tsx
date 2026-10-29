@@ -84,6 +84,19 @@ export function DealCard({ d }: { d: ProDeal }) {
           </div>
         </div>
       ))}
+      {!isVoid && !d.closedAt && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: '.5px solid var(--sep)', paddingTop: 6 }}>
+          <span className="k-note">
+            Closing checklist · {d.tasks.filter(t => t.doneAt).length} of {d.tasks.length} done
+            {d.tasks.find(t => t.key === 'lawyer' && t.doneAt) ? ` · lawyer ${d.tasks.find(t => t.key === 'lawyer')!.details.name} (${d.tasks.find(t => t.key === 'lawyer')!.details.email})` : ' · no lawyer yet'}
+          </span>
+          <div className="p-row">
+            {!d.tasks.find(t => t.key === 'walkthrough')?.doneAt && <button className="k-btn k-alt" disabled={busy} onClick={() => run(() => klyr.pro.dealTask(d.dealId, { key: 'walkthrough' }))}>Final walk-through done</button>}
+            {d.stage === 'firm' && <button className="k-btn" disabled={busy} onClick={() => run(() => klyr.pro.closeDeal(d.dealId))}>Closed: keys released</button>}
+          </div>
+        </div>
+      )}
+      {d.closedAt && <div className="p-fence">Closed {torontoWhen(d.closedAt)}{d.payout ? ` · cash back ${money(d.payout.amount)} (${d.payout.status.replace('_', ' ')})` : ''}</div>}
       {isVoid && (
         <div className="p-fence">
           {d.release ? `Client signed the mutual release ${torontoWhen(d.release.signedAt)}.` : 'Waiting for your client to sign the mutual release (Form 122).'}

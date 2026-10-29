@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, gt, inArray, isNull, lt, lte } from 'drizzle-orm';
-import type { AmendmentRequest } from '@klyr/contracts';
+import { DEAL_TASKS, type AmendmentRequest, type DealTaskRequest } from '@klyr/contracts';
 import { buyerEstimate, calendarDate, nextBankingDate, torontoInstant, torontoToday, torontoWhen } from '@klyr/core';
 import { DB, type Db } from '../db/db.module.js';
-import { agents, amendments, auditLog, conditions, dealParties, deals, deposits, documents, offers, users } from '../db/schema.js';
+import { agents, amendments, auditLog, cashBackPayouts, conditions, dealTasks, dealParties, deals, deposits, documents, offers, users } from '../db/schema.js';
 import { DealsService } from '../deals/deals.service.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 import { AssumptionsService, engineOptions } from '../listings/assumptions.service.js';
@@ -40,8 +40,16 @@ export class DealProgressService {
   /** The buyer's deal: the accepted offer (or the one that went void), deposit, conditions, release. */
   async forBuyer(userId: string) {
     await this.lapseDue();
-    const deal = await this.deals.buyDeal(userId);
+    const deal = await this.deals.buyDeal(userId) ?? await this.closedDeal(userId);
     return deal ? this.view(deal.id, userId) : null;
+  }
+
+  /** After keys, the deal is closed but the buyer still sees it (and their cash back). */
+  private async closedDeal(userId: string) {
+    const [r] = await this.db.select({ deal: deals }).from(deals)
+      .innerJoin(dealParties, and(eq(dealParties.dealId, deals.id), eq(dealParties.userId, userId), eq(dealParties.role, 'client')))
+      .where(and(eq(deals.side, 'buy'), eq(deals.stage, 'closed'))).orderBy(desc(deals.closedAt)).limit(1);
+    return r?.deal ?? null;
   }
 
   /** Deals with an accepted or void offer, for the agent. */
@@ -69,6 +77,8 @@ export class DealProgressService {
     const conds = await this.db.select().from(conditions).where(eq(conditions.dealId, dealId)).orderBy(asc(conditions.dueAt));
     const release = o.status === 'void' ? await this.releaseDoc(dealId, o.decidedAt!) : null;
     const amends = await this.db.select().from(amendments).where(eq(amendments.offerId, o.id)).orderBy(desc(amendments.createdAt));
+    const tasks = await this.db.select().from(dealTasks).where(eq(dealTasks.dealId, dealId));
+    const [payout] = await this.db.select().from(cashBackPayouts).where(eq(cashBackPayouts.dealId, dealId));
     const est = buyerEstimate({ price: o.price, city: home.city, type: home.type, coop: home.coop, tax: home.annualTax, fee: home.condoFee ?? undefined },
       { ...engineOptions(await this.assumptions.get(clientId)), price: o.price });
     const iso = (d: Date | null) => d?.toISOString() ?? null;
@@ -86,8 +96,68 @@ export class DealProgressService {
       })),
       release: release ? { documentId: release.id, signedAt: release.createdAt.toISOString() } : null,
       amendments: amends.map(a => ({ id: a.id, status: a.status, changes: a.changes as Changes, documentId: a.documentId, agentNote: a.agentNote, createdAt: a.createdAt.toISOString(), decidedAt: iso(a.decidedAt) })),
+      tasks: DEAL_TASKS.map(key => { const t = tasks.find(x => x.key === key); return { key, doneAt: iso(t?.doneAt ?? null), details: (t?.details ?? {}) as Record<string, string> }; }),
+      closedAt: iso(deal.closedAt),
+      payout: payout ? { status: payout.status, amount: payout.amount, pct: payout.pct, commissionReceived: payout.commissionReceived, paidAt: iso(payout.paidAt), reference: payout.reference } : null,
       allIn: est.allIn, cashBack: est.cashBack, landTransfer: est.ltt.total,
     };
+  }
+
+  // ── Closing ──────────────────────────────────────────────────────────────
+
+  /** A closing-checklist step. The buyer does all but the walk-through; the agent can do any. */
+  async task(actorId: string, dealId: string, req: DealTaskRequest, asAgent: boolean) {
+    const [o] = await this.db.select({ id: offers.id }).from(offers).where(and(eq(offers.dealId, dealId), eq(offers.status, 'accepted')));
+    if (!o) throw new ConflictException({ code: 'no_agreement', message: 'There’s no accepted agreement.' });
+    if (req.key === 'walkthrough' && !asAgent) throw new ConflictException({ code: 'agent_only', message: 'Your agent records the final walk-through.' });
+    const { key, ...details } = req;
+    await this.db.insert(dealTasks).values({ dealId, key, details, doneBy: actorId })
+      .onConflictDoUpdate({ target: [dealTasks.dealId, dealTasks.key], set: { details, doneBy: actorId, doneAt: new Date() } });
+    await this.db.insert(auditLog).values({ actorId, action: `task_${key}`, entity: 'deal', entityId: dealId, data: details });
+    const [deal] = await this.db.select({ agentId: deals.agentId }).from(deals).where(eq(deals.id, dealId));
+    if (!asAgent && key === 'lawyer') {
+      await this.notify.toUser(deal!.agentId, 'agent', { title: 'Your client chose a lawyer', body: 'Send the agreement and amendments to them', data: { screen: 'deals', dealId } });
+    }
+  }
+
+  async buyerTask(userId: string, req: DealTaskRequest) {
+    const deal = await this.deals.buyDeal(userId);
+    if (!deal) throw new NotFoundException();
+    await this.task(userId, deal.id, req, false);
+    return this.forBuyer(userId);
+  }
+
+  async agentTask(agentId: string, dealId: string, req: DealTaskRequest) {
+    await this.ownDeal(agentId, dealId);
+    await this.task(agentId, dealId, req, true);
+    return { ok: true };
+  }
+
+  /**
+   * Keys released: the deal is closed on or after its closing date, once firm and with the deposit in trust.
+   * The cash-back record starts waiting for the commission (Form 300's share, frozen when it was signed).
+   */
+  async close(agentId: string, dealId: string) {
+    const deal = await this.ownDeal(agentId, dealId);
+    const [o] = await this.db.select().from(offers).where(and(eq(offers.dealId, dealId), eq(offers.status, 'accepted')));
+    if (!o || deal.stage !== 'firm') throw new ConflictException({ code: 'not_firm', message: 'Only a firm deal can close.' });
+    const [y, m, d] = torontoToday();
+    const today = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    if (!deal.closingDate || deal.closingDate > today) throw new ConflictException({ code: 'before_closing', message: `Closing is ${deal.closingDate ? calendarDate(deal.closingDate) : 'not set'}.` });
+    const [dep] = await this.db.select().from(deposits).where(eq(deposits.dealId, dealId));
+    if (dep && !dep.receivedAt) throw new ConflictException({ code: 'deposit_missing', message: 'The deposit receipt hasn’t been recorded.' });
+    const home = await loadHome(this.db, o.listingId);
+    const pct = Number((deal.plan as { cashBackPct?: number }).cashBackPct ?? 60);
+    const amount = Math.round((o.price * home.coop * pct) / 100);
+    await this.db.update(deals).set({ stage: 'closed', closedAt: new Date() }).where(eq(deals.id, dealId));
+    await this.db.insert(cashBackPayouts).values({ dealId, amount, pct, status: 'pending_commission' });
+    await this.db.insert(auditLog).values({ actorId: agentId, action: 'deal_closed', entity: 'deal', entityId: dealId, data: { price: o.price, cashBackEstimate: amount } });
+    const buyer = await this.client(dealId);
+    if (buyer) {
+      await this.mail.send({ to: buyer.email, subject: `Welcome home · ${home.address}`, text: `Your purchase of ${home.address} has closed and the keys are yours.\n\nYour cash back (${pct}% of the commission Klyr receives) is paid by EFT after Klyr Realty receives its commission from the listing brokerage, usually within a few business days of closing. We’ll email you when it’s sent.\n\n${SIGN}` });
+      await this.notify.toUser(buyer.id, 'consumer', { title: 'Welcome home', body: 'Your purchase has closed', data: { screen: 'deal' } });
+    }
+    return { ok: true };
   }
 
   // ── Buyer ────────────────────────────────────────────────────────────────

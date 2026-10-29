@@ -43,6 +43,13 @@
       "when": 1793279112239,
       "tag": "0005_staff_and_geofence",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793282465762,
+      "tag": "0006_push_and_reminders",
+      "breakpoints": true
     }
   ]
 }

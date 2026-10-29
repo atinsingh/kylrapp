@@ -139,13 +139,21 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * Activity: the agent's day (visits done, time on site, check-ins, refused attempts and a timeline) from the audit trail.
   * Clients: each buyer's Form 300, ID and visit status.
   * Location is read only while the app is open (no background tracking).
+* Push to the agent's phone (Klyr Pro app, `expo-notifications`):
+  * "New visit request" when a client books, and "Visit cancelled by your client" when they cancel.
+  * "Visit at 2:00 p.m." about 45 minutes before a confirmed visit, from the worker (`visit-reminders`, every minute). A visit is marked when its reminder goes out, so it is sent once even with two workers.
+  * Payloads carry only the address and time, since lock screens are public, never client names or contact details.
+  * Each phone's token is tied to the sign-in that registered it: signing out, revoking or expiry stops the pushes. Tokens reported as uninstalled are switched off.
+  * Tapping a push opens Today.
+  * Sent through Expo's push service (`PUSH_PROVIDER=expo`, relayed to APNs and FCM); locally pushes go to the log.
+  * Needs the app linked to an EAS project (`eas init`) for push tokens.
 * Field activity in Admin, for the broker of record: every agent's day with the same timeline, refused attempts in red, and which app each reading came from.
 * Geofenced showings: an agent can check in only within 150 m of the listing, from 30 minutes before the visit until 2 hours after, with a location fix accurate to 100 m. Completing the visit needs at least 10 minutes on site and a second reading at the property. The API measures the distance (PostGIS) against the listing's own location rather than trusting the device. Every refused attempt (too far, low accuracy, mock location, outside the window, too soon) is written to the audit log with its coordinates for the broker of record. Readings must come from the phone app: the API refuses web readings (allowed only in development, with `GEOFENCE_ALLOW_WEB=1`, for the app's web preview). Limits: iOS doesn't report simulated locations through Expo, and a rooted or jailbroken phone can fake GPS. Next steps are device attestation (App Attest / Play Integrity) so the API knows a reading came from the real app, and review of check-ins that cluster suspiciously.
 * Klyr Admin (`apps/admin`): the FINTRAC ID review queue for the compliance officer or broker of record. Approving or rejecting needs a note, can be done only once, and can't be done on your own file; the buyer is emailed and can then book. Other Admin modules are still listed as placeholders.
 * `packages/web-kit`: what the three Next.js apps share — the session-cookie proxy (each app has its own cookie), server-side API calls, base styles, staff sign-in and the geolocation helper.
 
 **Next, in order:**
-1. Klyr Pro phone app, next: push when a client books or a visit changes, device attestation for check-ins, and opt-in "on shift" tracking if the brokerage wants travel logs (needs a privacy review first).
+1. Klyr Pro phone app, next: device attestation for check-ins (App Attest / Play Integrity through a config plugin and a development build), and opt-in "on shift" tracking if the brokerage wants travel logs (needs a privacy review first).
 2. Offers: build an offer (Form 100/101), conditions and their day-by-day timeline, deadline reminders, deposit with trust-account call-back.
 3. Real integrations as vendors are chosen: OREA forms + e-sign, ID verification, S3 file store with Object Lock, SES email.
 4. Saved searches with alerts, the phone map, phone passkeys (needs the klyr.ca associated domain) and Sign in with Apple/Google. Pull a shared component layer into `packages/ui`.
@@ -158,5 +166,6 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 | ID verification vendor | Pick in the compliance vendor review (action 6) |
 | E-sign provider and OREA form licensing route | Confirm with OREA before building `documents` |
 | French and other languages | Plan i18n keys from day one; ship English first |
+| Push delivery: Expo push service or SNS (APNs/FCM) from ca-central-1 | Expo push for now (payloads hold no personal information); move to SNS if privacy review asks for no US relay |
 | Agent mobile: role in the consumer app or a separate app | Decided: a separate app, Klyr Pro (`apps/agent`) |
 | Klyr exclusive (non-MLS) listings | Supported in the schema (`source = 'klyr_exclusive'`); no UI yet |

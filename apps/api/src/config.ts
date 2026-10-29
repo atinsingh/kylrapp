@@ -35,6 +35,12 @@ export const config = {
   password: { maxFailures: 10, lockMinutes: 15 },
   /** Where listing photos are served from: CloudFront in AWS, the API's /media folder locally. */
   mediaBaseUrl: process.env.MEDIA_BASE_URL ?? `http://localhost:${process.env.API_PORT ?? 4000}`,
+  /**
+   * 'expo' sends through Expo's push service (which relays to APNs and FCM). Payloads carry only
+   * an address and a time, never client names or contact details. Locally, pushes go to the log.
+   */
+  pushProvider: process.env.PUSH_PROVIDER as 'expo' | undefined,
+  expoAccessToken: process.env.EXPO_ACCESS_TOKEN,
   mailFrom: process.env.MAIL_FROM ?? 'Klyr <no-reply@klyr.ca>',
   smtpUrl: process.env.SMTP_URL,
 };

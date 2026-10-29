@@ -8,6 +8,7 @@ import { AppModule } from '../app.module.js';
 import { config } from '../config.js';
 import { createDb } from '../db/client.js';
 import { MAILER, type Mail } from '../identity/mailer.js';
+import { PUSH, type PushMessage } from '../notify/push.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Json = any;
@@ -19,8 +20,14 @@ export async function startApp() {
   (config.emailCode as { cooldownSeconds: number }).cooldownSeconds = 0;
 
   const outbox: Mail[] = [];
+  /** Pushes sent; tokens in `gone` answer as uninstalled. */
+  const pushes: PushMessage[] = [];
+  const gone = new Set<string>();
   const mod = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(MAILER).useValue({ send: async (m: Mail) => { outbox.push(m); } })
+    .overrideProvider(PUSH).useValue({
+      send: async (ms: PushMessage[]) => ms.map(m => (gone.has(m.to) ? { ok: false, gone: true, error: 'DeviceNotRegistered' } : (pushes.push(m), { ok: true }))),
+    })
     .compile();
   const app: INestApplication = mod.createNestApplication();
   await app.listen(0);
@@ -43,5 +50,5 @@ export async function startApp() {
     return (await call('POST', '/auth/email/verify', { email, code })).body.session.token;
   }
 
-  return { app, call, signedIn, outbox };
+  return { app, call, signedIn, outbox, pushes, gone };
 }

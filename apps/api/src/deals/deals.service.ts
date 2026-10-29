@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, gt, inArray, ne, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, inArray, sql } from 'drizzle-orm';
 import type { BookShowingRequest } from '@klyr/contracts';
 import { DB, type Db } from '../db/db.module.js';
 import {
@@ -7,6 +7,8 @@ import {
 } from '../db/schema.js';
 import { config } from '../config.js';
 import { FILE_STORE, type FileStore } from '../storage/file-store.js';
+import { NotifyService } from '../notify/notify.service.js';
+import { visitNotes } from '../notify/visit-notes.js';
 
 const DAY = 86_400_000;
 /** Form 300 terms Klyr offers. Placeholders until legal review (Launch Checklist action 3). */
@@ -16,9 +18,11 @@ const VISIT_MIN_LEAD_MS = 60 * 60_000, VISIT_MAX_AHEAD_DAYS = 14;
 const torontoDate = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
 const longDate = (iso: string) => new Date(iso + 'T12:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
 
+const ADDRESS = sql<string>`case when ${listings.unit} is null then ${listings.address} else ${listings.address} || ' #' || ${listings.unit} end`;
+
 @Injectable()
 export class DealsService {
-  constructor(@Inject(DB) private readonly db: Db, @Inject(FILE_STORE) private readonly files: FileStore) {}
+  constructor(@Inject(DB) private readonly db: Db, @Inject(FILE_STORE) private readonly files: FileStore, @Inject(NotifyService) private readonly notify: NotifyService) {}
 
   // ── Buying status ────────────────────────────────────────────────────────
   /** What stands between this buyer and a first visit. */
@@ -105,7 +109,7 @@ export class DealsService {
     if (at.getTime() < now + VISIT_MIN_LEAD_MS || at.getTime() > now + VISIT_MAX_AHEAD_DAYS * DAY) {
       throw new BadRequestException({ code: 'bad_time', message: `Pick a time between one hour and ${VISIT_MAX_AHEAD_DAYS} days from now.` });
     }
-    const [listing] = await this.db.select({ id: listings.id }).from(listings)
+    const [listing] = await this.db.select({ id: listings.id, address: ADDRESS }).from(listings)
       .where(and(eq(listings.id, req.listingId), eq(listings.status, 'active'), eq(listings.internetDisplay, true)));
     if (!listing) throw new NotFoundException();
     const deal = (await this.buyDeal(userId))!;
@@ -114,6 +118,7 @@ export class DealsService {
     if (open) throw new ConflictException({ code: 'already_booked', message: 'You already have a visit booked for this home.' });
     const [row] = await this.db.insert(showings).values({ dealId: deal.id, listingId: req.listingId, at, note: req.note ?? null }).returning();
     await this.db.insert(auditLog).values({ actorId: userId, action: 'book_showing', entity: 'showing', entityId: row!.id, data: { listingId: req.listingId, at: req.at } });
+    if (deal.agentId) await this.notify.toUser(deal.agentId, 'agent', visitNotes.requested(listing.address, at, row!.id));
     return row!;
   }
 
@@ -122,7 +127,7 @@ export class DealsService {
     if (!deal) return [];
     const rows = await this.db.select({
       id: showings.id, at: showings.at, status: showings.status, note: showings.note, agentNote: showings.agentNote, listingId: listings.id,
-      address: sql<string>`case when ${listings.unit} is null then ${listings.address} else ${listings.address} || ' #' || ${listings.unit} end`,
+      address: ADDRESS,
       city: listings.city, listingBrokerage: listings.listingBrokerage,
     }).from(showings).innerJoin(listings, eq(listings.id, showings.listingId))
       .where(eq(showings.dealId, deal.id)).orderBy(asc(showings.at));
@@ -138,10 +143,12 @@ export class DealsService {
     const deal = await this.buyDeal(userId);
     if (!deal) throw new NotFoundException();
     const r = await this.db.update(showings).set({ status: 'cancelled', cancelledAt: new Date() })
-      .where(and(eq(showings.id, id), eq(showings.dealId, deal.id), ne(showings.status, 'cancelled'), gt(showings.at, new Date())))
-      .returning({ id: showings.id });
+      .where(and(eq(showings.id, id), eq(showings.dealId, deal.id), inArray(showings.status, ['requested', 'confirmed']), gt(showings.at, new Date())))
+      .returning({ id: showings.id, at: showings.at, listingId: showings.listingId });
     if (!r.length) throw new NotFoundException();
     await this.db.insert(auditLog).values({ actorId: userId, action: 'cancel_showing', entity: 'showing', entityId: id });
+    const [home] = await this.db.select({ address: ADDRESS }).from(listings).where(eq(listings.id, r[0]!.listingId));
+    if (deal.agentId && home) await this.notify.toUser(deal.agentId, 'agent', visitNotes.cancelled(home.address, r[0]!.at, id));
     return { ok: true };
   }
 

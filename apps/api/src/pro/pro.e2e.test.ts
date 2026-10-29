@@ -1,7 +1,9 @@
 import { and, eq, inArray, like } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDb } from '../db/client.js';
-import { auditLog, emailCodes, showings, totpCredentials, users } from '../db/schema.js';
+import { auditLog, emailCodes, pushDevices, sessions, showings, totpCredentials, users } from '../db/schema.js';
+import { NotifyService } from '../notify/notify.service.js';
+import { sendVisitReminders } from '../notify/visit-notes.js';
 import { totpAt, totpStep } from '../identity/crypto.js';
 import { startApp } from '../test/harness.js';
 
@@ -151,5 +153,47 @@ describe('compliance review', () => {
     expect((await h.call('POST', `/admin/id-reviews/${item.id}`, { decision: 'reject', note: 'again' }, officer)).body.code).toBe('already_reviewed');
     expect(h.outbox.filter(m => m.to === b.email).at(-1)!.subject).toBe('Your ID check is complete');
     expect((await h.call('POST', '/showings', { listingId, at: inMin(24 * 60) }, b.t)).status).toBe(201);
+  });
+});
+
+describe('push to the agent’s phone', () => {
+  it('tells the agent about new and cancelled visits, reminds before confirmed ones, and stops at sign-out', async () => {
+    const b = await readyBuyer();
+    const agent = await staff(b.agentEmail);
+    const token = `ExponentPushToken[test-${Date.now()}]`;
+    expect((await h.call('POST', '/pro/devices', { token: 'not-a-token', platform: 'ios' }, agent)).status).toBe(400);
+    expect((await h.call('POST', '/pro/devices', { token, platform: 'ios' }, agent)).status).toBe(200);
+    const mine = () => h.pushes.filter(p => p.to === token);
+
+    const listingId = (await h.call('GET', '/listings', undefined, b.t)).body.results[1].id;
+    const visit = (await h.call('POST', '/showings', { listingId, at: inMin(24 * 60) }, b.t)).body;
+    expect(mine().at(-1)).toMatchObject({ title: 'New visit request', data: { screen: 'today', showingId: visit.id } });
+    expect(mine().at(-1)!.body).not.toContain('Test Buyer'); // lock screens are public
+    await h.call('DELETE', `/showings/${visit.id}`, undefined, b.t);
+    expect(mine().at(-1)!.title).toBe('Visit cancelled by your client');
+
+    // Reminder: once, about 45 minutes before a confirmed visit.
+    const v2 = (await h.call('POST', '/showings', { listingId, at: inMin(25 * 60) }, b.t)).body;
+    await h.call('POST', `/pro/showings/${v2.id}/decide`, { action: 'confirm' }, agent);
+    await db.update(showings).set({ at: new Date(Date.now() + 40 * 60_000) }).where(eq(showings.id, v2.id));
+    const notify = h.app.get(NotifyService);
+    const sentBefore = mine().length;
+    expect(await sendVisitReminders(db, notify)).toBeGreaterThanOrEqual(1); // other phones of this agent may count too
+    expect(mine().length).toBe(sentBefore + 1);
+    expect(mine().at(-1)!.title).toMatch(/^Visit at /);
+    expect(mine().at(-1)!.body).toMatch(/Check in opens at .* within 150 m/);
+    expect(await sendVisitReminders(db, notify)).toBe(0);
+
+    // An uninstalled app is switched off; a signed-out session gets nothing.
+    const before = mine().length;
+    h.gone.add(token);
+    await h.call('POST', '/showings', { listingId: (await h.call('GET', '/listings', undefined, b.t)).body.results[2].id, at: inMin(26 * 60) }, b.t);
+    expect((await db.select().from(pushDevices).where(eq(pushDevices.token, token)))[0]!.disabledAt).not.toBeNull();
+    h.gone.delete(token);
+    expect((await h.call('POST', '/pro/devices', { token, platform: 'ios' }, agent)).status).toBe(200); // reinstalled
+    const [device] = await db.select().from(pushDevices).where(eq(pushDevices.token, token));
+    await db.update(sessions).set({ revokedAt: new Date() }).where(eq(sessions.id, device!.sessionId));
+    await h.call('POST', '/showings', { listingId: (await h.call('GET', '/listings', undefined, b.t)).body.results[3].id, at: inMin(27 * 60) }, b.t);
+    expect(mine().length).toBe(before);
   });
 });

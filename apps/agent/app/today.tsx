@@ -10,6 +10,7 @@ import { Nav } from '../components/nav';
 import { Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
 import { errorText, klyr } from '../lib/klyr';
 import { metres, metresBetween, readLocation, useLivePosition } from '../lib/location';
+import { usePushState } from '../lib/push-context';
 
 const MIN = 60_000;
 const time = (iso: string | number) => new Date(iso).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: TORONTO });
@@ -35,6 +36,7 @@ export default function Today() {
   const [visits, setVisits] = useState<ProShowing[] | null>(null);
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const push = usePushState();
 
   const load = useCallback(async () => {
     const r = await klyr.pro.showings();
@@ -55,6 +57,13 @@ export default function Today() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 48 }} keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
         <Nav current="today" />
+        {push.state === 'off' && (
+          <Card style={{ backgroundColor: '#FBEBDD' }}>
+            <Text style={{ ...sora(700), color: '#A54B00' }}>Notifications are off</Text>
+            <Text style={{ ...t.note, color: '#A54B00' }}>Turn them on to hear about new visit requests and get a reminder before each visit.</Text>
+            <Button title="Open Settings" alt onPress={push.openSettings} />
+          </Card>
+        )}
         <ErrorText>{error}</ErrorText>
         {live && posError ? <ErrorText>{posError}</ErrorText> : null}
         {visits?.length === 0 && <Card><Text style={sora(700)}>No visits yet</Text><Text style={t.note}>When your clients book a visit, it shows up here for you to confirm.</Text></Card>}

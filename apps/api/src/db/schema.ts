@@ -325,9 +325,28 @@ export const showings = pgTable('showings', {
   checkOutAt: ts('check_out_at'),
   checkOutGeom: geometry('check_out_geom', { type: 'point', mode: 'xy', srid: 4326 }),
   checkOutDistanceM: integer('check_out_distance_m'),
+  /** When the agent's "visit soon" push went out, so the worker sends it once. */
+  reminderSentAt: ts('reminder_sent_at'),
   createdAt: created(),
   cancelledAt: ts('cancelled_at'),
 }, t => [index('showings_deal_ix').on(t.dealId, t.at)]);
+
+/**
+ * A phone that receives push for a signed-in user. Tied to the session that registered it: when the
+ * session is signed out, revoked or expires, that phone stops getting notifications.
+ */
+export const pushDevices = pgTable('push_devices', {
+  id: id(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  sessionId: uuid('session_id').notNull().references(() => sessions.id),
+  /** Expo push token ("ExponentPushToken[…]"). */
+  token: text('token').notNull(),
+  platform: text('platform', { enum: ['ios', 'android'] }).notNull(),
+  app: text('app', { enum: ['agent', 'consumer'] }).notNull(),
+  createdAt: created(),
+  /** Set when the push service reports the token is no longer valid (app uninstalled). */
+  disabledAt: ts('disabled_at'),
+}, t => [uniqueIndex('push_devices_token_uq').on(t.token), index('push_devices_user_ix').on(t.userId)]);
 
 // ── Documents and e-sign ────────────────────────────────────────────────────
 export const documents = pgTable('documents', {

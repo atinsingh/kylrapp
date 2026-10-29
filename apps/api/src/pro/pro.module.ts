@@ -1,8 +1,9 @@
 import { Body, Controller, Get, HttpCode, Inject, Module, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
-import { DecideShowingRequest, GeoCheckRequest } from '@klyr/contracts';
+import { DecideShowingRequest, GeoCheckRequest, RegisterDeviceRequest } from '@klyr/contracts';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { Auth, AuthGuard, type AuthContext } from '../identity/auth.guard.js';
 import { Roles, RolesGuard } from '../identity/roles.guard.js';
+import { NotifyService } from '../notify/notify.service.js';
 import { FieldActivityService } from './activity.service.js';
 import { ProService } from './pro.service.js';
 
@@ -11,10 +12,21 @@ import { ProService } from './pro.service.js';
 @Roles('agent')
 @Controller('pro')
 class ProController {
-  constructor(@Inject(ProService) private readonly pro: ProService, @Inject(FieldActivityService) private readonly activity: FieldActivityService) {}
+  constructor(
+    @Inject(ProService) private readonly pro: ProService,
+    @Inject(FieldActivityService) private readonly activity: FieldActivityService,
+    @Inject(NotifyService) private readonly notify: NotifyService,
+  ) {}
 
   @Get('me')
   me(@Auth() a: AuthContext) { return this.pro.me(a.userId); }
+
+  /** This phone gets visit pushes while this session lasts. */
+  @Post('devices') @HttpCode(200)
+  async registerDevice(@Auth() a: AuthContext, @Body(new ZodPipe(RegisterDeviceRequest)) body: RegisterDeviceRequest) {
+    await this.notify.register(a.userId, a.session.id, body.token, body.platform, 'agent');
+    return { ok: true };
+  }
 
   @Get('showings')
   showings(@Auth() a: AuthContext) { return this.pro.showings(a.userId); }

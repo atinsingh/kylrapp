@@ -202,6 +202,7 @@ export function createClient(opts: ClientOptions) {
       decide: (id: string, d: Decision) => post<{ id: string; status: Showing['status']; at: string }>(`/pro/showings/${encodeURIComponent(id)}/decide`, d),
       checkIn: (id: string, g: GeoReading) => post<{ checkedIn: true; distanceM: number }>(`/pro/showings/${encodeURIComponent(id)}/check-in`, g),
       complete: (id: string, g: GeoReading) => post<{ completed: true; distanceM: number }>(`/pro/showings/${encodeURIComponent(id)}/complete`, g),
+      registerDevice: (token: string, platform: 'ios' | 'android') => post<{ ok: true }>('/pro/devices', { token, platform }),
       activity: (day?: string) => get<FieldDay & { day: string }>(`/pro/activity${day ? `?day=${day}` : ''}`),
       clients: () => get<ProClient[]>('/pro/clients'),
       client: (id: string) => get<ProClientDetail>(`/pro/clients/${encodeURIComponent(id)}`),

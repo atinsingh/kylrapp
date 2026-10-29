@@ -58,3 +58,10 @@ export type GeoCheckRequest = z.infer<typeof GeoCheckRequest>;
 
 /** Geofence rules, shared so the app can explain them. */
 export const GEOFENCE = { radiusM: 150, maxAccuracyM: 100, earlyMinutes: 30, lateMinutes: 120, minOnSiteMinutes: 10 } as const;
+
+/** A phone registering for push (Expo push token). */
+export const RegisterDeviceRequest = z.object({
+  token: z.string().regex(/^Expo(nent)?PushToken\[[^\]]+\]$/, 'Not a push token'),
+  platform: z.enum(['ios', 'android']),
+});
+export type RegisterDeviceRequest = z.infer<typeof RegisterDeviceRequest>;

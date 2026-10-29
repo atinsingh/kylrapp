@@ -7,7 +7,7 @@ import { GEOFENCE } from '@klyr/contracts';
 import { TORONTO, torontoTime, visitSlots } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
-import { display, Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
+import { display, Button, Card, Chip, ErrorText, Field, sf, t } from '../components/ui';
 import { errorText, klyr } from '../lib/klyr';
 import { metres, metresBetween, readLocation, useLivePosition } from '../lib/location';
 import { usePushState } from '../lib/push-context';
@@ -24,8 +24,8 @@ const dayLabel = (iso: string) => {
 const phone = (p: string) => p.replace(/^\+1(\d{3})(\d{3})(\d{4})$/, '+1 $1-$2-$3');
 
 const STATUS: Record<ProShowing['status'], [string, string, string]> = {
-  requested: ['Requested', '#FBEBDD', '#A54B00'],
-  confirmed: ['Confirmed', '#E3F2E8', '#2B7A4B'],
+  requested: ['Requested', '#FFF2E5', '#C93400'],
+  confirmed: ['Confirmed', '#E8F6EC', '#248A3D'],
   declined: ['Declined', '#F2F2F7', '#5E5E63'],
   cancelled: ['Cancelled by client', '#F2F2F7', '#5E5E63'],
   completed: ['Visited', '#E8EEF9', '#2A4D8F'],
@@ -58,15 +58,15 @@ export default function Today() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
         <Nav current="today" sub={visits ? `${waiting.length ? `${waiting.length} to answer · ` : ''}${scheduled.filter(v => v.status === 'confirmed').length} confirmed` : undefined} />
         {push.state === 'off' && (
-          <Card style={{ backgroundColor: '#FBEBDD' }}>
-            <Text style={{ ...sora(700), color: '#A54B00' }}>Notifications are off</Text>
-            <Text style={{ ...t.note, color: '#A54B00' }}>Turn them on to hear about new visit requests and get a reminder before each visit.</Text>
+          <Card style={{ backgroundColor: '#FFF2E5' }}>
+            <Text style={{ ...sf(700), color: '#C93400' }}>Notifications are off</Text>
+            <Text style={{ ...t.note, color: '#C93400' }}>Turn them on to hear about new visit requests and get a reminder before each visit.</Text>
             <Button title="Open Settings" alt onPress={push.openSettings} />
           </Card>
         )}
         <ErrorText>{error}</ErrorText>
         {live && posError ? <ErrorText>{posError}</ErrorText> : null}
-        {visits?.length === 0 && <Card><Text style={sora(700)}>No visits yet</Text><Text style={t.note}>When your clients book a visit, it shows up here for you to confirm.</Text></Card>}
+        {visits?.length === 0 && <Card><Text style={sf(700)}>No visits yet</Text><Text style={t.note}>When your clients book a visit, it shows up here for you to confirm.</Text></Card>}
         {waiting.length > 0 && <Text style={t.label}>NEEDS YOUR ANSWER · {waiting.length}</Text>}
         {waiting.map(v => <VisitCard key={v.id} v={v} pos={pos} onChange={load} />)}
         {days.map(d => (
@@ -134,17 +134,17 @@ function VisitCard({ v, pos, onChange }: { v: ProShowing; pos: { lat: number; ln
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Text style={{ ...display(600), fontSize: 24, letterSpacing: -0.6 }}>{time(v.at)}</Text>
         {v.status === 'requested' && <Text style={t.note}>{dayLabel(v.at).toLowerCase()}</Text>}
-        <Text style={{ ...sora(700), fontSize: 12, marginLeft: 'auto', backgroundColor: bg, color: fg, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 2, overflow: 'hidden' }}>{label}</Text>
+        <Text style={{ ...sf(700), fontSize: 12, marginLeft: 'auto', backgroundColor: bg, color: fg, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 2, overflow: 'hidden' }}>{label}</Text>
       </View>
       <View>
-        <Text style={sora(700)}>{v.address}, {v.city}</Text>
+        <Text style={sf(700)}>{v.address}, {v.city}</Text>
         <Text style={t.note}>Listed by {v.listingBrokerage}</Text>
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
         <Text style={t.body}>{v.clientName ?? 'Client'}</Text>
         {v.clientPhone && (
           <Pressable accessibilityRole="link" accessibilityLabel={`Call ${v.clientName ?? 'client'}`} onPress={() => Linking.openURL(`tel:${v.clientPhone}`)} style={{ minHeight: 32, justifyContent: 'center' }}>
-            <Text style={{ ...sora(600), color: color.brand }}> · {phone(v.clientPhone)}</Text>
+            <Text style={{ ...sf(600), color: color.brand }}> · {phone(v.clientPhone)}</Text>
           </Pressable>
         )}
       </View>
@@ -154,11 +154,11 @@ function VisitCard({ v, pos, onChange }: { v: ProShowing; pos: { lat: number; ln
       {v.status === 'confirmed' && !v.checkInAt && (
         <>
           <View style={{ backgroundColor: color.brandTint, borderRadius: 12, padding: 10, gap: 2 }}>
-            <Text style={{ ...sora(600), fontSize: 13, color: color.brandInk }}>
+            <Text style={{ ...sf(600), fontSize: 13, color: color.brandInk }}>
               {away === null ? `Check in opens at ${time(opensAt)}, within ${GEOFENCE.radiusM} m of the home.`
                 : away <= GEOFENCE.radiusM ? `You’re at the home (${metres(away)}).` : `You’re ${metres(away)} away. Check in within ${GEOFENCE.radiusM} m.`}
             </Text>
-            {away !== null && <Text style={{ ...sora(), fontSize: 12, color: color.brandInk }}>Opens at {time(opensAt)}{pos ? ` · GPS ±${Math.round(pos.accuracyM)} m` : ''}</Text>}
+            {away !== null && <Text style={{ ...sf(), fontSize: 12, color: color.brandInk }}>Opens at {time(opensAt)}{pos ? ` · GPS ±${Math.round(pos.accuracyM)} m` : ''}</Text>}
           </View>
           <Button title="Check in at the property" busy={busy} onPress={() => geo('checkIn')} />
           <Button title="Directions" alt onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${v.lat},${v.lng}`)} />
@@ -167,7 +167,7 @@ function VisitCard({ v, pos, onChange }: { v: ProShowing; pos: { lat: number; ln
       {v.status === 'confirmed' && v.checkInAt && (
         <>
           <View style={{ backgroundColor: color.brandTint, borderRadius: 12, padding: 10 }}>
-            <Text accessibilityRole="text" style={{ ...sora(600), fontSize: 13, color: color.brandInk }}>
+            <Text accessibilityRole="text" style={{ ...sf(600), fontSize: 13, color: color.brandInk }}>
               Checked in at {time(v.checkInAt)}, {metres(v.checkInDistanceM ?? 0)} from the home. Complete from {time(completeFrom)}, still at the property.
             </Text>
           </View>

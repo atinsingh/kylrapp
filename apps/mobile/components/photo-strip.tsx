@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FlatList, Image, Pressable, Text, View } from 'react-native';
 import { color } from '@klyr/tokens';
-import { sora } from './ui';
+import { sf } from './ui';
 
 type Photo = { url: string; alt: string };
 
@@ -37,7 +37,7 @@ export function PhotoStrip({ photos, address, sample, onPress }: { photos: Photo
         />
       )}
       {width > 0 && !photos.length && (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text style={{ ...sora(), color: color.textSecondary }}>No photos yet</Text></View>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text style={{ ...sf(), color: color.textSecondary }}>No photos yet</Text></View>
       )}
       {photos.length > 1 && (
         <>
@@ -55,7 +55,7 @@ export function PhotoStrip({ photos, address, sample, onPress }: { photos: Photo
 function Pill({ children, style }: { children: string; style: { left?: number; right?: number; bottom?: number } }) {
   return (
     <View pointerEvents="none" style={{ position: 'absolute', ...(style.bottom == null ? { top: 10 } : {}), borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3, backgroundColor: 'rgba(0,0,0,.55)', ...style }}>
-      <Text style={{ ...sora(600), fontSize: 12, color: '#fff' }}>{children}</Text>
+      <Text style={{ ...sf(600), fontSize: 12, color: '#fff' }}>{children}</Text>
     </View>
   );
 }

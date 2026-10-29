@@ -32,7 +32,7 @@ export function SavedSearches({ list }: { list: SavedSearch[] }) {
             <option value="daily">Daily email</option>
             <option value="off">No alerts</option>
           </select>
-          <button onClick={() => act(() => klyr.deleteSearch(s.id))} aria-label={`Delete ${s.name}`} style={{ border: 0, background: 'none', color: '#A11B1B', fontWeight: 700, fontSize: 13, minHeight: 44 }}>Delete</button>
+          <button onClick={() => act(() => klyr.deleteSearch(s.id))} aria-label={`Delete ${s.name}`} style={{ border: 0, background: 'none', color: 'var(--accent)', fontWeight: 700, fontSize: 13, minHeight: 44 }}>Delete</button>
         </div>
       ))}
       {error && <div className="k-error" role="alert">{error}</div>}

@@ -10,7 +10,7 @@ export const metadata = { title: 'Field activity · Klyr Admin' };
 const time = (iso: string) => torontoTime(iso);
 const ymd = (ms: number) => new Date(ms).toLocaleDateString('en-CA', { timeZone: TORONTO });
 const PLATFORM: Record<string, string> = { ios: 'iPhone app', android: 'Android app', web: 'web preview (testing only)' };
-const TONE = { ok: '#2B7A4B', warn: '#A11B1B', plain: 'var(--muted)' } as const;
+const TONE = { ok: 'var(--money)', warn: 'var(--accent)', plain: 'var(--muted)' } as const;
 
 /** Broker of record: each agent's showings for a day — decisions, GPS check-ins, completions and refused attempts. */
 export default async function FieldActivityPage({ searchParams }: { searchParams: Promise<{ day?: string }> }) {
@@ -43,7 +43,7 @@ export default async function FieldActivityPage({ searchParams }: { searchParams
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
             <strong style={{ fontSize: 17 }}>{a.name}</strong>
             <span className="k-note">{a.summary.visitsCompleted} completed · {a.summary.minutesOnSite} min on site · {a.summary.checkIns} check-ins · {a.summary.decisions} decisions</span>
-            {a.summary.refused > 0 && <span className="a-flag" style={{ background: '#FDECEC', color: '#A11B1B' }}>{a.summary.refused} refused</span>}
+            {a.summary.refused > 0 && <span className="a-flag" style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}>{a.summary.refused} refused</span>}
           </div>
           {!a.events.length && <span className="k-note">Nothing recorded.</span>}
           {a.events.length > 0 && (

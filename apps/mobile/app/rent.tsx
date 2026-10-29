@@ -6,7 +6,7 @@ import { money, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
-import { display, Button, Card, Check, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { display, Button, Card, Check, ErrorText, Field, Screen, sf, t, Title } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 
@@ -42,21 +42,21 @@ export default function Rent() {
       )}
       {r.viewings.map(v => (
         <Card key={v.id}>
-          <Text style={sora(700)}>Viewing · {v.address}</Text>
+          <Text style={sf(700)}>Viewing · {v.address}</Text>
           <Text style={t.note}>{torontoWhen(v.at)} · {v.status === 'completed' ? (v.feedback ? 'viewed · feedback sent' : 'viewed · open it to tell us how it went') : v.status}</Text>
         </Card>
       ))}
-      {r.applications.map(a => <Card key={a.id}><Text style={sora(700)}>{a.address}</Text><Text style={t.note}>{money(a.rent)}/month · {STATUS[a.status]}{a.status === 'accepted' ? ` · next: sign the Ontario Standard Lease and pay ${money(a.moveIn.total)} (first and last month)` : ''}</Text></Card>)}
+      {r.applications.map(a => <Card key={a.id}><Text style={sf(700)}>{a.address}</Text><Text style={t.note}>{money(a.rent)}/month · {STATUS[a.status]}{a.status === 'accepted' ? ` · next: sign the Ontario Standard Lease and pay ${money(a.moveIn.total)} (first and last month)` : ''}</Text></Card>)}
       {rentals.map(x => (
         <Pressable key={x.id} accessibilityRole="link" accessibilityLabel={`${x.address}, ${money(x.rent)} a month`} onPress={() => router.push(`/rental/${x.id}`)}
           style={{ backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden' }}>
           {x.photo && <Image source={{ uri: x.photo.url }} accessibilityLabel={x.photo.alt} style={{ width: '100%', height: 160 }} />}
           <View style={{ padding: 14, gap: 4 }}>
             <Text style={{ ...display(600), fontSize: 24, letterSpacing: -0.6 }}>{money(x.rent)}<Text style={t.note}> /month</Text></Text>
-            <Text style={sora(600)}>{x.address}, {x.city}</Text>
+            <Text style={sf(600)}>{x.address}, {x.city}</Text>
             <Text style={t.note}>{x.beds} bd · {x.baths} ba · move-in {money(x.moveIn.total)} (first and last month)</Text>
-            <Text style={{ ...sora(600), fontSize: 12, color: x.rentControlled ? '#2B7A4B' : '#A54B00' }}>{rentControl(x)}</Text>
-            {applied.has(x.id) && <Text style={{ ...sora(700), fontSize: 12, color: color.brand }}>You applied · {STATUS[applied.get(x.id)!]}</Text>}
+            <Text style={{ ...sf(600), fontSize: 12, color: x.rentControlled ? '#248A3D' : '#C93400' }}>{rentControl(x)}</Text>
+            {applied.has(x.id) && <Text style={{ ...sf(700), fontSize: 12, color: color.brand }}>You applied · {STATUS[applied.get(x.id)!]}</Text>}
             <Text style={t.note}>Listing brokerage: {x.listingBrokerage}</Text>
           </View>
         </Pressable>
@@ -83,7 +83,7 @@ function Agreement({ legalName, onDone }: { legalName: string; onDone: (r: Renti
   return (
     <Card>
       <Text style={t.label}>● RULE · OREA FORM 346</Text>
-      <Text style={sora(700)}>Your tenant agreement · $0 to you</Text>
+      <Text style={sf(700)}>Your tenant agreement · $0 to you</Text>
       <Text style={t.note}>60 days. Klyr is paid by the landlord. We find rentals, prepare your application and explain the Ontario Standard Lease.</Text>
       <Check on={read} onPress={() => setRead(!read)}>I’ve read the summary. The standard OREA terms apply in full.</Check>
       <Field label={`Type your full name to sign (${legalName})`} value={name} onChangeText={setName} autoComplete="name" />

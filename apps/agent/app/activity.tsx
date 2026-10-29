@@ -6,7 +6,7 @@ import type { FieldDay } from '@klyr/api-client';
 import { TORONTO, torontoTime } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
-import { display, Card, Chip, ErrorText, sora, t } from '../components/ui';
+import { display, Card, Chip, ErrorText, sf, t } from '../components/ui';
 import { describeFieldEvent as describe } from '@klyr/api-client';
 import { errorText, klyr } from '../lib/klyr';
 
@@ -16,7 +16,7 @@ const DAYS = [0, 1, 2, 3, 4, 5, 6].map(i => {
   const ms = Date.now() - i * 86_400_000;
   return { day: ymd(ms), label: i === 0 ? 'Today' : i === 1 ? 'Yesterday' : new Date(ms).toLocaleDateString('en-CA', { weekday: 'short', timeZone: TORONTO }) };
 });
-const TONE = { ok: '#2B7A4B', warn: '#A11B1B', plain: color.textSecondary } as const;
+const TONE = { ok: '#248A3D', warn: '#D70015', plain: color.textSecondary } as const;
 
 /** The agent's field day, read from the brokerage's audit trail: what the broker of record also sees. */
 export default function Activity() {
@@ -52,7 +52,7 @@ export default function Activity() {
           {tiles.map(([k, v]) => (
             <View key={k} style={{ flexGrow: 1, flexBasis: '45%', backgroundColor: color.surface, borderRadius: 14, padding: 12 }} accessibilityLabel={`${k}: ${v}`}>
               <Text style={t.note}>{k}</Text>
-              <Text style={{ ...display(600), fontSize: 26, letterSpacing: -0.6, color: k === 'Refused' && v !== '0' ? '#A11B1B' : color.text }}>{v}</Text>
+              <Text style={{ ...display(600), fontSize: 26, letterSpacing: -0.6, color: k === 'Refused' && v !== '0' ? '#D70015' : color.text }}>{v}</Text>
             </View>
           ))}
         </View>
@@ -63,10 +63,10 @@ export default function Activity() {
             const d = describe(e);
             return (
               <View key={i} style={{ flexDirection: 'row', gap: 10, paddingVertical: 8, borderTopWidth: i ? 0.5 : 0, borderTopColor: color.separator }}>
-                <Text style={{ ...sora(600), fontSize: 13, width: 64, color: color.textSecondary }}>{time(e.at)}</Text>
+                <Text style={{ ...sf(600), fontSize: 13, width: 64, color: color.textSecondary }}>{time(e.at)}</Text>
                 <View style={{ width: 8, height: 8, borderRadius: 4, marginTop: 6, backgroundColor: TONE[d.tone] }} />
                 <View style={{ flex: 1, gap: 1 }}>
-                  <Text style={{ ...sora(700), fontSize: 14, color: d.tone === 'warn' ? TONE.warn : color.text }}>{d.title}</Text>
+                  <Text style={{ ...sf(700), fontSize: 14, color: d.tone === 'warn' ? TONE.warn : color.text }}>{d.title}</Text>
                   <Text style={t.note}>{e.address}{e.clientName ? ` · ${e.clientName}` : ''}</Text>
                   {d.detail ? <Text style={t.note}>{d.detail}</Text> : null}
                 </View>

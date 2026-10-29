@@ -5,7 +5,7 @@ import type { Provider, Quote, QuoteKind, QuoteRequest, QuoteRequestInput } from
 import { money } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
-import { Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { Button, Card, Check, Chip, ErrorText, Field, Screen, sf, t, Title } from '../components/ui';
 import { errorText, klyr } from '../lib/klyr';
 
 const n = (v: string) => Number(v.replace(/\D/g, '')) || 0;
@@ -81,13 +81,13 @@ export default function Quotes() {
           {r.quotes.length === 0 && <Text style={t.note}>Your agent adds each quote as it arrives.</Text>}
           {r.quotes.map(q => (
             <View key={q.id} style={{ gap: 4, paddingVertical: 8, borderTopWidth: 0.5, borderTopColor: color.separator }}>
-              <Text style={sora(700)}>{q.rank}. {q.provider.name} · {money(q.clientCost)}{r.kind === 'lender' ? ' over 5 years' : r.kind === 'insurer' ? '/year' : ''}</Text>
+              <Text style={sf(700)}>{q.rank}. {q.provider.name} · {money(q.clientCost)}{r.kind === 'lender' ? ' over 5 years' : r.kind === 'insurer' ? '/year' : ''}</Text>
               <Text style={t.note}>{line(r.kind, q)}{q.vsBest ? ` · ${money(q.vsBest)} more than the lowest` : ' · lowest'}</Text>
-              <Text style={{ ...sora(600), fontSize: 13, color: q.referralFee ? '#A54B00' : color.textSecondary }}>{q.referralFee ? `Klyr earns ${money(q.referralFee)} if you choose this` : 'Klyr earns nothing from this quote'}</Text>
-              {q.chosen && <Text style={{ ...sora(700), color: color.brand }}>✓ You chose this</Text>}
+              <Text style={{ ...sf(600), fontSize: 13, color: q.referralFee ? '#C93400' : color.textSecondary }}>{q.referralFee ? `Klyr earns ${money(q.referralFee)} if you choose this` : 'Klyr earns nothing from this quote'}</Text>
+              {q.chosen && <Text style={{ ...sf(700), color: color.brand }}>✓ You chose this</Text>}
               {r.status === 'open' && !q.expired && (disclose === q.id ? (
-                <View style={{ gap: 6, backgroundColor: '#FBEBDD', padding: 12, borderRadius: 12 }}>
-                  <Text style={sora(700)}>Referral fee disclosure</Text>
+                <View style={{ gap: 6, backgroundColor: '#FFF2E5', padding: 12, borderRadius: 12 }}>
+                  <Text style={sf(700)}>Referral fee disclosure</Text>
                   <Text style={t.body}>{q.provider.name} pays Klyr {money(q.referralFee)} if you go ahead. It doesn’t change your price or how quotes were ranked.</Text>
                   <Check on={ack} onPress={() => setAck(!ack)}>I’ve read this disclosure.</Check>
                   <Button title={`Choose ${q.provider.name}`} busy={busy} disabled={!ack} onPress={() => choose(q, true)} />

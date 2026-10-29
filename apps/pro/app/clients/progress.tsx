@@ -17,7 +17,7 @@ export function Progress({ p }: { p: ClientProgress }) {
   return (
     <div className="p-row" style={{ gap: 6 }}>
       {steps.map(([t, on]) => (
-        <span key={t} className="p-pill" style={{ background: on ? '#E3F2E8' : '#F2F2F7', color: on ? '#2B7A4B' : '#5E5E63', fontWeight: 600 }}>{on ? '✓ ' : ''}{t}</span>
+        <span key={t} className="p-pill" style={{ background: on ? 'var(--money-tint)' : '#F2F2F7', color: on ? 'var(--money)' : '#5E5E63', fontWeight: 600 }}>{on ? '✓ ' : ''}{t}</span>
       ))}
     </div>
   );

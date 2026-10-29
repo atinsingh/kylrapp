@@ -45,9 +45,9 @@ export default async function OfferPage({ params }: { params: Promise<{ id: stri
           </section>
         )}
         {d?.status === 'returned' && d.agentNote && (
-          <section className="k-card" role="status" style={{ background: '#FBEBDD' }}>
-            <strong style={{ color: '#A54B00' }}>Your agent sent this back</strong>
-            <span style={{ color: '#A54B00', fontSize: 14 }}>“{d.agentNote}”</span>
+          <section className="k-card" role="status" style={{ background: 'var(--warn-tint)' }}>
+            <strong style={{ color: 'var(--warn)' }}>Your agent sent this back</strong>
+            <span style={{ color: 'var(--warn)', fontSize: 14 }}>“{d.agentNote}”</span>
           </section>
         )}
         {b.canBookVisits && start.data.consent && !(start.data.consent.buyerSignedAt && start.data.consent.sellerSignedAt)

@@ -5,7 +5,7 @@ import type { RentalDetail, Renting, VisitFeedback } from '@klyr/api-client';
 import { money, torontoInstant, torontoToday, torontoWhen } from '@klyr/core';
 import { Back } from '../../components/back';
 import { StepUp } from '../../components/step-up';
-import { Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../../components/ui';
+import { Button, Card, Check, Chip, ErrorText, Field, Screen, sf, t, Title } from '../../components/ui';
 import { useAuth } from '../../lib/auth';
 import { errorText, klyr } from '../../lib/klyr';
 import { rentControl, STATUS } from '../rent';
@@ -80,7 +80,7 @@ export default function RentalScreen() {
       <Card>
         <Text style={t.label}>TO MOVE IN · {money(r.moveIn.total)}</Text>
         <Text style={t.note}>First month {money(r.moveIn.firstMonth)} + last month’s rent deposit {money(r.moveIn.lastMonth)}. In Ontario that’s the only deposit allowed, and it earns interest.</Text>
-        <Text style={{ ...sora(600), fontSize: 13, color: r.rentControlled ? '#2B7A4B' : '#A54B00' }}>{rentControl(r)}</Text>
+        <Text style={{ ...sf(600), fontSize: 13, color: r.rentControlled ? '#248A3D' : '#C93400' }}>{rentControl(r)}</Text>
         {r.description && <Text style={t.body}>{r.description}</Text>}
         <Text style={t.note}>Listing brokerage: {r.listingBrokerage}</Text>
       </Card>
@@ -89,7 +89,7 @@ export default function RentalScreen() {
           <Text style={t.label}>VIEWINGS</Text>
           {r.viewings.map(v => (
             <View key={v.id} style={{ gap: 6 }}>
-              <Text style={sora(600)}>{torontoWhen(v.at)} · {v.status === 'completed' ? 'viewed' : v.status}</Text>
+              <Text style={sf(600)}>{torontoWhen(v.at)} · {v.status === 'completed' ? 'viewed' : v.status}</Text>
               {v.agentNote && <Text style={t.note}>Your agent: “{v.agentNote}”</Text>}
               {v.status === 'completed' && !v.feedback && (
                 <>
@@ -112,13 +112,13 @@ export default function RentalScreen() {
         </Card>
       )}
       {r.application && r.application.status !== 'withdrawn' ? (
-        <Card><Text style={t.label}>YOUR APPLICATION</Text><Text style={sora(700)}>{STATUS[r.application.status]}</Text><Text style={t.note}>{money(r.application.rent)}/month from {r.application.startDate} · sent {torontoWhen(r.application.createdAt)}</Text></Card>
+        <Card><Text style={t.label}>YOUR APPLICATION</Text><Text style={sf(700)}>{STATUS[r.application.status]}</Text><Text style={t.note}>{money(r.application.rent)}/month from {r.application.startDate} · sent {torontoWhen(r.application.createdAt)}</Text></Card>
       ) : !mine.agreement || !mine.profile ? (
-        <Card><Text style={sora(700)}>{!mine.agreement ? 'Sign your tenant agreement ($0) first' : 'Fill in your rental profile first'}</Text><Text style={t.note}>Go back to Rent a home.</Text></Card>
+        <Card><Text style={sf(700)}>{!mine.agreement ? 'Sign your tenant agreement ($0) first' : 'Fill in your rental profile first'}</Text><Text style={t.note}>Go back to Rent a home.</Text></Card>
       ) : consentOpen ? (
         <Card>
           <Text style={t.label}>● KLYR LISTING · OREA FORM 326</Text>
-          <Text style={sora(700)}>{r.consent!.buyerSignedAt ? 'Waiting for the landlord' : 'Klyr represents this landlord too'}</Text>
+          <Text style={sf(700)}>{r.consent!.buyerSignedAt ? 'Waiting for the landlord' : 'Klyr represents this landlord too'}</Text>
           {r.consent!.buyerSignedAt ? <Text style={t.note}>You can apply once the landlord signs; we’ll let you know.</Text> : (
             <>
               <Text style={t.note}>Before you apply, you and the landlord both consent in writing. Klyr won’t tell the landlord the most rent you’d pay.</Text>

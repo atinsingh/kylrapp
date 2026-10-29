@@ -10,9 +10,9 @@ import { VisitFeedbackForm } from './visit-feedback';
 export const metadata = { title: 'Your visits · Klyr' };
 
 const STATUS: Record<Showing['status'], [string, string, string]> = {
-  requested: ['Waiting for your agent to confirm', '#FBEBDD', '#A54B00'],
-  confirmed: ['Confirmed', '#E3F2E8', '#2B7A4B'],
-  declined: ['Can’t go ahead', '#FDECEC', '#A11B1B'],
+  requested: ['Waiting for your agent to confirm', 'var(--warn-tint)', 'var(--warn)'],
+  confirmed: ['Confirmed', 'var(--money-tint)', 'var(--money)'],
+  declined: ['Can’t go ahead', 'var(--accent-tint)', 'var(--accent)'],
   cancelled: ['Cancelled', '#F2F2F7', '#5E5E63'],
   completed: ['Visited', '#F2F2F7', '#5E5E63'],
 };

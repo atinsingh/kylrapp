@@ -16,7 +16,7 @@ const longDate = (ymd: string) => new Date(ymd + 'T12:00:00Z').toLocaleDateStrin
 export function RentControl({ r }: { r: Pick<Rental, 'rentControlled' | 'guideline'> }) {
   if (r.rentControlled == null) return null;
   return (
-    <span style={{ display: 'inline-block', borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 600, background: r.rentControlled ? '#E3F2E8' : '#FBEBDD', color: r.rentControlled ? '#2B7A4B' : '#A54B00' }}>
+    <span style={{ display: 'inline-block', borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 600, background: r.rentControlled ? 'var(--money-tint)' : 'var(--warn-tint)', color: r.rentControlled ? 'var(--money)' : 'var(--warn)' }}>
       {r.rentControlled ? `Rent-controlled · increases capped at ${r.guideline.pct}% in ${r.guideline.year}` : 'Not rent-controlled · first occupied after Nov 15, 2018'}
     </span>
   );

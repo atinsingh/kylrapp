@@ -16,13 +16,13 @@ export default async function FeedPage() {
     <main className="a-wrap">
       <AdminNav current="listings-feed" />
       <h1 className="k-h1">Listings feed</h1>
-      <section className="k-card" style={{ background: s.feed.connected ? undefined : '#FBEBDD' }}>
+      <section className="k-card" style={{ background: s.feed.connected ? undefined : 'var(--warn-tint)' }}>
         <strong>{s.feed.name} · {s.feed.connected ? 'Connected' : 'Not connected'}</strong>
         <span className="k-note">{s.feed.note}</span>
       </section>
       <section className="k-card" aria-label="Checks">
         <div className="k-label">VOW RULES</div>
-        {s.checks.map(c => <div key={c.name}><strong style={{ color: c.ok ? '#2B7A4B' : '#A11B1B' }}>{c.ok ? '✓' : '✗'} {c.name}</strong><div className="k-note">{c.detail}</div></div>)}
+        {s.checks.map(c => <div key={c.name}><strong style={{ color: c.ok ? 'var(--money)' : 'var(--accent)' }}>{c.ok ? '✓' : '✗'} {c.name}</strong><div className="k-note">{c.detail}</div></div>)}
       </section>
       <section className="k-card" aria-label="Inventory">
         <div className="k-label">INVENTORY BY SOURCE</div>

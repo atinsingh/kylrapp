@@ -7,7 +7,7 @@ import { calendarDate, money, sellerNet, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
-import { display, Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { display, Button, Card, Check, Chip, ErrorText, Field, Screen, sf, t, Title } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 
@@ -110,10 +110,10 @@ function PlanSign({ s, legalName, idVerified, onDone }: { s: Selling; legalName:
   }
 
   const hero = (
-    <View style={{ backgroundColor: color.brandInk, borderRadius: 20, padding: 18, gap: 6 }} accessibilityLabel={`You keep about ${money(cur.net)}`}>
-      <Text style={{ ...t.label, color: '#8CC2B1' }}>{s.property.address.toUpperCase()} · YOU KEEP ABOUT</Text>
+    <View style={{ backgroundColor: color.panel, borderRadius: 20, padding: 18, gap: 6 }} accessibilityLabel={`You keep about ${money(cur.net)}`}>
+      <Text style={{ ...t.label, color: '#98989D' }}>{s.property.address.toUpperCase()} · YOU KEEP ABOUT</Text>
       <Text style={{ ...display(600), fontSize: 38, letterSpacing: -0.6, color: '#fff' }}>{money(cur.net)}</Text>
-      <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>Fee {money(cur.fee)} · buyer’s brokerage {money(cur.coop)} · about {money(cur.vsTraditional)} more than 2.5%</Text>
+      <Text style={{ ...sf(), fontSize: 13, color: '#AEAEB2' }}>Fee {money(cur.fee)} · buyer’s brokerage {money(cur.coop)} · about {money(cur.vsTraditional)} more than 2.5%</Text>
     </View>
   );
 
@@ -124,13 +124,13 @@ function PlanSign({ s, legalName, idVerified, onDone }: { s: Selling; legalName:
       <Card>
         {[['Term', '90 days, 60-day holdover.'], ['Klyr’s fee', plan === 'flat' ? `${money(s.fees.flat)} + HST, Self-directed.` : `${s.fees.percentPct}% + HST, Assisted.`],
           ['Buyer’s brokerage', `${pct(coop)} + HST. You chose this.`], ['Offers', 'You decide on every offer.']].map(([k, v], i) => (
-          <View key={k} style={{ paddingVertical: 8, borderTopWidth: i ? 0.5 : 0, borderTopColor: color.separator, gap: 2 }}><Text style={t.note}>{k}</Text><Text style={sora(600)}>{v}</Text></View>
+          <View key={k} style={{ paddingVertical: 8, borderTopWidth: i ? 0.5 : 0, borderTopColor: color.separator, gap: 2 }}><Text style={t.note}>{k}</Text><Text style={sf(600)}>{v}</Text></View>
         ))}
       </Card>
       {!idVerified ? (
         <Card>
           <Text style={t.label}>● RULE · BEFORE YOU SIGN</Text>
-          <Text style={sora(700)}>Verify your ID first</Text>
+          <Text style={sf(700)}>Verify your ID first</Text>
           <Button title="Verify my ID" onPress={() => router.push('/id-check')} />
         </Card>
       ) : stepUp ? (
@@ -185,10 +185,10 @@ function Prep({ s, legalName, onDone }: { s: Selling; legalName: string; onDone:
   }
   return (
     <>
-      <View style={{ backgroundColor: color.brandInk, borderRadius: 20, padding: 18, gap: 6 }}>
-        <Text style={{ ...t.label, color: '#8CC2B1' }}>{s.property.address.toUpperCase()} · {money(s.listPrice)}</Text>
+      <View style={{ backgroundColor: color.panel, borderRadius: 20, padding: 18, gap: 6 }}>
+        <Text style={{ ...t.label, color: '#98989D' }}>{s.property.address.toUpperCase()} · {money(s.listPrice)}</Text>
         <Text accessibilityRole="header" style={{ ...display(600), fontSize: 34, letterSpacing: -0.6, color: '#fff' }}>{s.sale ? (s.sale.closedAt ? 'Sold' : s.sale.stage === 'conditional' ? 'Conditional sale' : 'Sold firm') : live ? 'You’re live' : 'Getting ready'}</Text>
-        <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>{s.sale ? `Accepted at ${money(s.sale.price)} · closing ${s.sale.closingDate ? calendarDate(s.sale.closingDate) : 'to be set'} · you keep about ${money(s.sale.net)}` : live ? `Listed ${torontoWhen(s.publishedAt!)}. Showing requests and offers come here.` : `You keep about ${money(s.net.net)}.`}</Text>
+        <Text style={{ ...sf(), fontSize: 13, color: '#AEAEB2' }}>{s.sale ? `Accepted at ${money(s.sale.price)} · closing ${s.sale.closingDate ? calendarDate(s.sale.closingDate) : 'to be set'} · you keep about ${money(s.sale.net)}` : live ? `Listed ${torontoWhen(s.publishedAt!)}. Showing requests and offers come here.` : `You keep about ${money(s.net.net)}.`}</Text>
       </View>
       {live && s.listingId && <Button title="See your listing" alt onPress={() => router.push(`/listing/${s.listingId}`)} />}
       {live && <Market s={s} legalName={legalName} onDone={onDone} />}
@@ -199,7 +199,7 @@ function Prep({ s, legalName, onDone }: { s: Selling; legalName: string; onDone:
           const agentStep = x.key === 'photos' || x.key === 'inspection';
           return (
             <View key={x.key} style={{ paddingVertical: 8, borderTopWidth: i ? 0.5 : 0, borderTopColor: color.separator, gap: 6 }}>
-              <Text style={sora(700)}>{x.doneAt ? '✓ ' : ''}{title}</Text>
+              <Text style={sf(700)}>{x.doneAt ? '✓ ' : ''}{title}</Text>
               <Text style={t.note}>{x.doneAt ? `Done ${torontoWhen(x.doneAt)}` : agentStep ? `${s.agent?.name ?? 'Your agent'} books this.` : 'To do'}</Text>
               {!live && !agentStep && open !== x.key && <Button title={x.doneAt ? 'Change' : x.key === 'approve' ? 'Review and approve' : 'Add details'} alt onPress={() => { setOpen(x.key); setError(''); setForm(x.key === 'payout' ? { balance: String(s.mortgageBalance) } : {}); }} />}
               {open === x.key && (
@@ -261,7 +261,7 @@ function Market({ s, legalName, onDone }: { s: Selling; legalName: string; onDon
       {s.consents.filter(c => !c.sellerSignedAt).map(c => (
         <Card key={c.id}>
           <Text style={t.label}>● ACTION · OREA FORM 326</Text>
-          <Text style={sora(700)}>A Klyr buyer wants to make an offer</Text>
+          <Text style={sf(700)}>A Klyr buyer wants to make an offer</Text>
           <Text style={t.note}>{c.buyer} is also a Klyr client. They can offer once you consent to Klyr representing both of you. Klyr won’t tell the buyer the least you’d take.</Text>
           {open?.id === c.id ? signBox('Sign consent') : <Button title="Review and sign" onPress={() => { setOpen({ id: c.id, action: 'consent' }); setRead(false); setName(''); }} />}
         </Card>
@@ -270,7 +270,7 @@ function Market({ s, legalName, onDone }: { s: Selling; legalName: string; onDon
       {s.offers.map(o => (
         <Card key={o.id}>
           <Text style={{ ...display(600), fontSize: 26, letterSpacing: -0.6 }}>{money(o.price)}</Text>
-          <Text style={sora(700)}>You’d keep about {money(o.net)}</Text>
+          <Text style={sf(700)}>You’d keep about {money(o.net)}</Text>
           <Text style={t.note}>{STATUS[o.status] ?? o.status} · deposit {money(o.deposit)} · {o.conditions.length ? o.conditions.join(' · ') : 'no conditions'} · closing {calendarDate(o.closingDate)}</Text>
           {o.signBack && <Text style={t.note}>Your sign-back: {money(o.signBack.price)} · {STATUS[o.signBack.status] ?? o.signBack.status}</Text>}
           {o.status === 'registered' && (open?.id === o.id ? (

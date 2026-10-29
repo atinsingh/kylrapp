@@ -121,9 +121,9 @@ function PlanAndSign({ s, legalName, idVerified }: { s: Selling; legalName: stri
 
   const hero = (
     <section className="k-card" style={{ background: 'var(--ink)', color: '#fff', borderRadius: 20, padding: 18 }} aria-label={`You keep about ${money(cur.net)}`}>
-      <div className="k-label" style={{ color: '#8CC2B1' }}>{s.property.address.toUpperCase()}, {s.property.city.toUpperCase()} · YOU KEEP ABOUT</div>
+      <div className="k-label" style={{ color: '#98989D' }}>{s.property.address.toUpperCase()}, {s.property.city.toUpperCase()} · YOU KEEP ABOUT</div>
       <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: '-.02em' }}>{money(cur.net)}</div>
-      <div style={{ fontSize: 13, color: '#C9DDD6' }}>About {money(cur.vsTraditional)} more than a traditional 2.5% listing side</div>
+      <div style={{ fontSize: 13, color: '#AEAEB2' }}>About {money(cur.vsTraditional)} more than a traditional 2.5% listing side</div>
     </section>
   );
   const rows: [string, number][] = [['Sale price', cur.price], ['Klyr fee incl. HST', -cur.fee], [`Buyer’s brokerage ${pct(coop)} incl. HST`, -cur.coop], ['Lawyer, estimate', -cur.lawyer], ['Mortgage payout', -cur.mortgage]];
@@ -226,9 +226,9 @@ function Prep({ s, legalName }: { s: Selling; legalName: string }) {
   return (
     <>
       <section className="k-card" style={{ background: 'var(--ink)', color: '#fff', borderRadius: 20, padding: 18 }}>
-        <div className="k-label" style={{ color: '#8CC2B1' }}>{s.property.address.toUpperCase()}, {s.property.city.toUpperCase()} · {money(s.listPrice)}</div>
+        <div className="k-label" style={{ color: '#98989D' }}>{s.property.address.toUpperCase()}, {s.property.city.toUpperCase()} · {money(s.listPrice)}</div>
         <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>{sale ? (sale.closedAt ? 'Sold' : sale.stage === 'conditional' ? 'Conditional sale' : 'Sold firm') : live ? 'You’re live' : 'Getting ready'}</div>
-        <div style={{ fontSize: 13, color: '#C9DDD6' }}>
+        <div style={{ fontSize: 13, color: '#AEAEB2' }}>
           {sale ? `Accepted at ${money(sale.price)}${sale.acceptedAt ? ` on ${torontoWhen(sale.acceptedAt)}` : ''} · closing ${sale.closingDate ? calendarDate(sale.closingDate) : 'to be set'} · you keep about ${money(sale.net)}${sale.stage === 'conditional' ? '. The buyer’s conditions are still open; we’ll tell you as each is removed.' : ''}`
             : live ? `Listed ${torontoWhen(s.publishedAt!)} as a Klyr listing. Showing requests and offers come here.`
             : `Agreement signed ${torontoWhen(s.agreement!.signedAt)} · ${s.plan === 'flat' ? 'Self-directed' : 'Assisted'} · ${pct(s.coop)} to the buyer’s brokerage · you keep about ${money(s.net.net)}`}
@@ -243,7 +243,7 @@ function Prep({ s, legalName }: { s: Selling; legalName: string }) {
           const agentStep = t.key === 'photos' || t.key === 'inspection';
           return (
             <div key={t.key} style={{ display: 'flex', gap: 10, padding: '8px 0', borderTop: i ? '.5px solid var(--sep)' : 0 }} aria-label={title}>
-              <span className="k-dot" aria-hidden style={t.doneAt ? { background: '#2B7A4B', borderColor: '#2B7A4B' } : undefined}>{t.doneAt ? '✓' : ''}</span>
+              <span className="k-dot" aria-hidden style={t.doneAt ? { background: 'var(--money)', borderColor: 'var(--money)' } : undefined}>{t.doneAt ? '✓' : ''}</span>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <div><strong>{title}</strong>{t.doneAt && <span className="k-note"> · {done(t.key, t.details)} · {torontoWhen(t.doneAt)}</span>}<div className="k-note">{agentStep ? sub.replace('Your agent', agent) : sub}</div></div>
                 {!live && !agentStep && open !== t.key && (

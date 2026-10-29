@@ -7,7 +7,7 @@ import type { Me } from '@klyr/contracts';
 import { color } from '@klyr/tokens';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
-import { Row as LinkRow, Button, Card, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { List, Row as LinkRow, tile, Button, Card, ErrorText, Field, Screen, sf, t, Title } from '../components/ui';
 
 type Pending = { label: string; run: () => Promise<Result<unknown>> };
 
@@ -71,23 +71,23 @@ export default function Security() {
   return (
     <Screen>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 4 }}>
-        <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: color.brandInk, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ ...sora(800), fontSize: 20, color: '#fff' }}>{(me.legalName ?? me.email).split(' ').slice(0, 2).map(w => w[0]!.toUpperCase()).join('')}</Text>
+        <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: '#8E8E93', alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ ...sf(800), fontSize: 20, color: '#fff' }}>{(me.legalName ?? me.email).split(' ').slice(0, 2).map(w => w[0]!.toUpperCase()).join('')}</Text>
         </View>
         <View style={{ flex: 1 }}>
           <Text accessibilityRole="header" style={t.h1}>{me.legalName ?? 'Account'}</Text>
           <Text style={t.note}>{me.email}</Text>
         </View>
       </View>
-      <View>
-        <LinkRow icon="pricetag-outline" title="Sell your home" sub="What you keep, your listing and offers" onPress={() => router.push('/sell')} />
-        <LinkRow icon="key-outline" title="Rent a home" sub="No fee to you" onPress={() => router.push('/rent')} />
-        <LinkRow icon="business-outline" title="Lease out a home" sub="Applicants on the same terms" onPress={() => router.push('/lease')} />
-        <LinkRow icon="calculator-outline" title="Quotes" sub="Lenders, lawyers, inspectors, insurers" onPress={() => router.push('/quotes')} />
-      </View>
+      <List>
+        <LinkRow icon="pricetag" tint={tile.orange} title="Sell your home" sub="What you keep, your listing and offers" onPress={() => router.push('/sell')} />
+        <LinkRow icon="key" tint={tile.blue} title="Rent a home" sub="No fee to you" onPress={() => router.push('/rent')} />
+        <LinkRow icon="business" tint={tile.indigo} title="Lease out a home" sub="Applicants on the same terms" onPress={() => router.push('/lease')} />
+        <LinkRow icon="calculator" tint={tile.teal} title="Quotes" sub="Lenders, lawyers, inspectors, insurers" onPress={() => router.push('/quotes')} last />
+      </List>
       <Title sub="How you sign in, and the devices that are signed in now.">Security</Title>
       <ErrorText>{error}</ErrorText>
-      {note ? <Card style={{ backgroundColor: color.brandTint }}><Text accessibilityLiveRegion="polite" style={{ ...sora(600), color: color.brand }}>{note}</Text></Card> : null}
+      {note ? <Card style={{ backgroundColor: color.brandTint }}><Text accessibilityLiveRegion="polite" style={{ ...sf(600), color: color.brand }}>{note}</Text></Card> : null}
 
       {pending && (
         <Section title="Confirm it’s you" sub={`${pending.label} needs a fresh check.`}>
@@ -130,7 +130,7 @@ export default function Security() {
             <Text style={t.note}>Open your authenticator app with the button, or copy the key into it. Then enter the 6-digit code it shows.</Text>
             <Button title="Open authenticator app" alt onPress={() => Linking.openURL(totp.url).catch(() => setError('No authenticator app found. Copy the key instead.'))} />
             <Pressable accessibilityRole="button" accessibilityLabel="Copy setup key" onPress={async () => { await Clipboard.setStringAsync(totp.secret); setNote('Key copied.'); }}>
-              <Text style={{ ...sora(600), fontSize: 13, textAlign: 'center', letterSpacing: 1 }}>{totp.secret.match(/.{1,4}/g)?.join(' ')}  ·  Copy</Text>
+              <Text style={{ ...sf(600), fontSize: 13, textAlign: 'center', letterSpacing: 1 }}>{totp.secret.match(/.{1,4}/g)?.join(' ')}  ·  Copy</Text>
             </Pressable>
             <Field label="Code" value={totpCode} onChangeText={v => setTotpCode(v.replace(/\D/g, '').slice(0, 6))} keyboardType="number-pad" textContentType="oneTimeCode" />
             <Button title="Turn on" disabled={totpCode.length !== 6} onPress={enableTotp} />
@@ -152,20 +152,20 @@ export default function Security() {
 }
 
 function Section({ title, sub, children }: { title: string; sub: string; children: ReactNode }) {
-  return <Card><Text accessibilityRole="header" style={{ ...sora(700), fontSize: 17 }}>{title}</Text><Text style={t.note}>{sub}</Text>{children}</Card>;
+  return <Card><Text accessibilityRole="header" style={{ ...sf(700), fontSize: 17 }}>{title}</Text><Text style={t.note}>{sub}</Text>{children}</Card>;
 }
 
 function Row({ title, sub, action }: { title: string; sub: string; action?: ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderTopWidth: 0.5, borderTopColor: color.separator }}>
-      <View style={{ flex: 1 }}><Text style={sora(600)}>{title}</Text><Text style={t.note}>{sub}</Text></View>
+      <View style={{ flex: 1 }}><Text style={sf(600)}>{title}</Text><Text style={t.note}>{sub}</Text></View>
       {action}
     </View>
   );
 }
 
 function LinkBtn({ onPress, children }: { onPress: () => void; children: string }) {
-  return <Pressable accessibilityRole="button" onPress={onPress} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={{ ...sora(700), fontSize: 13, color: color.brand }}>{children}</Text></Pressable>;
+  return <Pressable accessibilityRole="button" onPress={onPress} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={{ ...sf(700), fontSize: 13, color: color.brand }}>{children}</Text></Pressable>;
 }
 
 const day = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });

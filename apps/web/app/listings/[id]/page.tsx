@@ -75,7 +75,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
               ['Property tax', money(e.monthlyTax) + '/mo'],
               ...(l.condoFee ? [['Condo fee', money(l.condoFee) + '/mo'] as [string, string]] : []),
             ]} />
-            {e.downRaised && <p className="k-note" style={{ margin: 0, color: '#A54B00' }}>Your usual down payment is below the minimum for this price, so this uses the minimum, {money(e.down)}.</p>}
+            {e.downRaised && <p className="k-note" style={{ margin: 0, color: 'var(--warn)' }}>Your usual down payment is below the minimum for this price, so this uses the minimum, {money(e.down)}.</p>}
           </Section>
 
           {(l.openHouse || l.offerDate) && (

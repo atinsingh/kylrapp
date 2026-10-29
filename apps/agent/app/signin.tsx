@@ -4,7 +4,7 @@ import * as Clipboard from 'expo-clipboard';
 import { color } from '@klyr/tokens';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
-import { Button, Card, ErrorText, Field, Screen, sora, t } from '../components/ui';
+import { Button, Card, ErrorText, Field, Screen, sf, t } from '../components/ui';
 
 type Step = 'email' | 'code';
 
@@ -29,7 +29,7 @@ export default function SignIn() {
   }, [auth.status, setup]);
 
   const digits = (v: string) => v.replace(/\D/g, '').slice(0, 6);
-  const header = <Text style={{ ...sora(800), fontSize: 18, color: color.brand }}>Klyr Pro</Text>;
+  const header = <Text style={{ ...sf(800), fontSize: 18, color: color.brand }}>Klyr Pro</Text>;
 
   if (auth.status === 'notAgent') return (
     <Screen>
@@ -65,7 +65,7 @@ export default function SignIn() {
         <Card>
           <Button title="Add to my authenticator app" alt onPress={() => Linking.openURL(setup.url).catch(() => setError('No authenticator app found. Copy the key instead.'))} />
           <Pressable accessibilityRole="button" accessibilityLabel="Copy setup key" onPress={async () => { await Clipboard.setStringAsync(setup.secret); setNote('Key copied.'); }} style={{ minHeight: 44, justifyContent: 'center' }}>
-            <Text testID="totp-secret" style={{ ...sora(600), fontSize: 13, textAlign: 'center', letterSpacing: 1 }}>{setup.secret.match(/.{1,4}/g)?.join(' ')}  ·  Copy</Text>
+            <Text testID="totp-secret" style={{ ...sf(600), fontSize: 13, textAlign: 'center', letterSpacing: 1 }}>{setup.secret.match(/.{1,4}/g)?.join(' ')}  ·  Copy</Text>
           </Pressable>
           <Field label="Code from the app" value={totp} onChangeText={v => setTotp(digits(v))} keyboardType="number-pad" textContentType="oneTimeCode" />
         </Card>

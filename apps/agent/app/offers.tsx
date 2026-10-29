@@ -6,7 +6,7 @@ import type { ProOffer } from '@klyr/api-client';
 import { money, TORONTO, torontoInstant, torontoToday, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
-import { display, Button, Card, Chip, ErrorText, Field, sora, t } from '../components/ui';
+import { display, Button, Card, Chip, ErrorText, Field, sf, t } from '../components/ui';
 import { errorText, klyr } from '../lib/klyr';
 
 const when = (iso: string) => torontoWhen(iso);
@@ -37,7 +37,7 @@ export default function Offers() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
         <Nav current="offers" />
         <ErrorText>{error}</ErrorText>
-        {list && !open.length && <Card><Text style={sora(700)}>No open offers</Text><Text style={t.note}>When a client signs an offer, it appears here for your review.</Text></Card>}
+        {list && !open.length && <Card><Text style={sf(700)}>No open offers</Text><Text style={t.note}>When a client signs an offer, it appears here for your review.</Text></Card>}
         {GROUPS.map(([label, test]) => {
           const g = (list ?? []).filter(test);
           return g.length > 0 && (
@@ -84,12 +84,12 @@ function OfferCard({ o, onChange }: { o: ProOffer; onChange: () => Promise<void>
         <Text style={{ ...display(600), fontSize: 24, letterSpacing: -0.6 }}>{money(o.price)}</Text>
         <Text style={t.note}>asking {money(o.askingPrice)}</Text>
       </View>
-      <Text style={sora(700)}>{o.address}, {o.city}</Text>
+      <Text style={sf(700)}>{o.address}, {o.city}</Text>
       <Text style={t.note}>{o.clientName ?? o.clientEmail} · listed by {o.listingBrokerage}</Text>
       <Text style={t.body}>Deposit {money(o.deposit)} · {conds.length ? conds.join(', ') : 'no conditions'} · open until {when(o.irrevocableAt)}</Text>
       {tm.noteToAgent ? <Text style={[t.note, { color: color.text }]}>Client: “{tm.noteToAgent}”</Text> : null}
       {o.signBack && <Text style={{ ...t.note, color: '#2A4D8F' }}>Signed back at {money(o.signBack.price)} · {o.signBack.status === 'signed_back' ? `waiting for your client until ${when(o.signBack.irrevocableAt)}` : o.signBack.status}</Text>}
-      {dep && <Text style={{ ...sora(600), fontSize: 13, color: dep.receivedAt ? '#2B7A4B' : '#A54B00' }}>{dep.receivedAt ? `Deposit received ${when(dep.receivedAt)}` : `Deposit ${money(dep.amount)} due ${when(dep.dueAt)}`}</Text>}
+      {dep && <Text style={{ ...sf(600), fontSize: 13, color: dep.receivedAt ? '#248A3D' : '#C93400' }}>{dep.receivedAt ? `Deposit received ${when(dep.receivedAt)}` : `Deposit ${money(dep.amount)} due ${when(dep.dueAt)}`}</Text>}
 
       {!mode && o.status === 'sent' && <>
         <Button title="Registered with listing brokerage" onPress={() => setMode('register')} />

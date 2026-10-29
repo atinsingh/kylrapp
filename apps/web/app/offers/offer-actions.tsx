@@ -62,7 +62,7 @@ export function OfferActions({ offer: o, legalName }: { offer: Offer; legalName:
       )}
       {(o.status === 'sent' || o.status === 'registered') && (mode === 'withdraw' ? (
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="k-btn" style={{ background: '#A11B1B' }} disabled={busy} onClick={() => run(() => klyr.withdrawOffer(o.id))}>Withdraw this offer</button>
+          <button className="k-btn" style={{ background: 'var(--accent)' }} disabled={busy} onClick={() => run(() => klyr.withdrawOffer(o.id))}>Withdraw this offer</button>
           <button className="k-btn k-alt" onClick={() => setMode(null)}>Keep it</button>
         </div>
       ) : <button className="k-btn k-alt" onClick={() => setMode('withdraw')}>Withdraw</button>)}

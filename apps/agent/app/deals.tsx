@@ -6,7 +6,7 @@ import type { ProDeal } from '@klyr/api-client';
 import { calendarDate, money, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Nav } from '../components/nav';
-import { Button, Card, ErrorText, Field, sora, t } from '../components/ui';
+import { Button, Card, ErrorText, Field, sf, t } from '../components/ui';
 import { errorText, klyr } from '../lib/klyr';
 
 const LABEL = { financing: 'Financing', inspection: 'Inspection', status_certificate: 'Status certificate', sale_of_buyer_home: 'Sale of buyer’s home', other: 'Other' } as const;
@@ -25,7 +25,7 @@ export default function Deals() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
         <Nav current="deals" />
         <ErrorText>{error}</ErrorText>
-        {deals && !open.length && <Card><Text style={sora(700)}>No open deals</Text><Text style={t.note}>Accepted offers show up here.</Text></Card>}
+        {deals && !open.length && <Card><Text style={sf(700)}>No open deals</Text><Text style={t.note}>Accepted offers show up here.</Text></Card>}
         {open.map(d => <DealCard key={d.dealId} d={d} onChange={load} />)}
       </ScrollView>
     </SafeAreaView>
@@ -48,10 +48,10 @@ function DealCard({ d, onChange }: { d: ProDeal; onChange: () => Promise<void> }
   const dep = d.deposit, isVoid = d.status === 'void';
   return (
     <Card>
-      <Text style={sora(700)}>{d.address}, {d.city}</Text>
+      <Text style={sf(700)}>{d.address}, {d.city}</Text>
       <Text style={t.note}>{money(d.price)} · {d.clientName ?? d.clientEmail} · {isVoid ? 'void' : d.stage}</Text>
       {dep && (
-        <Text style={{ ...sora(600), fontSize: 13, color: dep.receivedAt || isVoid ? color.text : '#A54B00' }}>
+        <Text style={{ ...sf(600), fontSize: 13, color: dep.receivedAt || isVoid ? color.text : '#C93400' }}>
           Deposit {money(dep.amount)} · {dep.returnedAt ? 'returned' : dep.receivedAt ? 'received' : `due ${torontoWhen(dep.dueAt)}`}{dep.trustVerifiedAt ? ' · trust account confirmed' : ''}
         </Text>
       )}
@@ -66,7 +66,7 @@ function DealCard({ d, onChange }: { d: ProDeal; onChange: () => Promise<void> }
         const signed = c.waivedAt ?? c.fulfilledAt;
         return (
           <View key={c.id} style={{ borderTopWidth: 0.5, borderTopColor: color.separator, paddingTop: 8, gap: 6 }}>
-            <Text style={sora(700)}>{LABEL[c.kind]}</Text>
+            <Text style={sf(700)}>{LABEL[c.kind]}</Text>
             <Text style={t.note}>{c.deliveredAt ? `✓ Delivered ${torontoWhen(c.deliveredAt)}` : c.lapsedAt ? '× Lapsed' : isVoid ? 'Ended with the agreement' : signed ? `Client signed · deliver before ${torontoWhen(c.dueAt)}` : `Open until ${torontoWhen(c.dueAt)}`}</Text>
             {signed && !c.deliveredAt && !c.lapsedAt && !isVoid && <Button title="Delivered to the listing brokerage" busy={busy} onPress={() => run(() => klyr.pro.delivered(c.id))} />}
           </View>
@@ -74,7 +74,7 @@ function DealCard({ d, onChange }: { d: ProDeal; onChange: () => Promise<void> }
       })}
       {d.amendments.filter(a => a.status === 'signed').map(a => (
         <View key={a.id} style={{ backgroundColor: '#E8EEF9', borderRadius: 12, padding: 10, gap: 6 }}>
-          <Text style={{ ...sora(700), color: '#2A4D8F' }}>Amendment to present (Form 120)</Text>
+          <Text style={{ ...sf(700), color: '#2A4D8F' }}>Amendment to present (Form 120)</Text>
           <Text style={t.body}>{[...(a.changes.closingDate ? [`Closing to ${calendarDate(a.changes.closingDate)}`] : []), ...(a.changes.extend ?? []).map(e => `${LABEL[e.kind]} to ${torontoWhen(e.until)}`)].join(' · ')}</Text>
           <View style={{ flexDirection: 'row', gap: 6 }}>
             <View style={{ flex: 1 }}><Button title="Seller agreed" busy={busy} onPress={() => run(() => klyr.pro.amendmentResult(a.id, 'accepted'))} /></View>
@@ -89,7 +89,7 @@ function DealCard({ d, onChange }: { d: ProDeal; onChange: () => Promise<void> }
           {d.stage === 'firm' && <Button title="Closed: keys released" busy={busy} onPress={() => run(() => klyr.pro.closeDeal(d.dealId))} />}
         </View>
       )}
-      {d.closedAt && <Text style={{ ...sora(600), color: '#2B7A4B' }}>Closed {torontoWhen(d.closedAt)}</Text>}
+      {d.closedAt && <Text style={{ ...sf(600), color: '#248A3D' }}>Closed {torontoWhen(d.closedAt)}</Text>}
       {isVoid && <Text style={t.note}>{d.release ? 'Client signed the mutual release.' : 'Waiting for the client’s mutual release (Form 122).'}</Text>}
       {isVoid && d.release && dep && !dep.returnedAt && <Button title="Deposit returned to client" busy={busy} onPress={() => run(() => klyr.pro.depositReturned(d.dealId))} />}
       <ErrorText>{error}</ErrorText>

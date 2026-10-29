@@ -52,7 +52,7 @@ function Step({ done, title, sub, rule, children }: { done: boolean; title: stri
     <section className="k-card" aria-label={title}>
       <div className="k-label">{rule}</div>
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-        <span className="k-dot" aria-hidden style={done ? { background: '#2B7A4B', borderColor: '#2B7A4B' } : undefined}>{done ? '✓' : ''}</span>
+        <span className="k-dot" aria-hidden style={done ? { background: 'var(--money)', borderColor: 'var(--money)' } : undefined}>{done ? '✓' : ''}</span>
         <div><strong>{title}</strong><div className="k-note">{sub}</div></div>
       </div>
       {children}

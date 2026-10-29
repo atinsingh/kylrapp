@@ -22,7 +22,7 @@ export default async function MarketplacePage() {
       <p className="k-sub">Providers, their quotes, and referral fees. Quotes are ranked by the client’s cost only; every fee is disclosed before the client chooses. {money(total)} in referral fees from chosen quotes.</p>
       <section className="k-card" aria-label="Checks">
         {[...m.checks, { name: 'Every referral fee acknowledged in writing', ok: m.chosen.every(c => c.acknowledged), detail: `${m.chosen.filter(c => c.referralFee > 0).length} chosen quote(s) with a fee.` }].map(c => (
-          <div key={c.name}><strong style={{ color: c.ok ? '#2B7A4B' : '#A11B1B' }}>{c.ok ? '✓' : '✗'} {c.name}</strong><div className="k-note">{c.detail}</div></div>
+          <div key={c.name}><strong style={{ color: c.ok ? 'var(--money)' : 'var(--accent)' }}>{c.ok ? '✓' : '✗'} {c.name}</strong><div className="k-note">{c.detail}</div></div>
         ))}
       </section>
       <section className="k-card" aria-label="Providers">

@@ -4,7 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import type { SavedSearch } from '@klyr/api-client';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
-import { Card, Chip, ErrorText, Screen, sora, t, Title } from '../components/ui';
+import { Card, Chip, ErrorText, Screen, sf, t, Title } from '../components/ui';
 import { errorText, klyr } from '../lib/klyr';
 
 const ALERTS: [SavedSearch['alert'], string][] = [['instant', 'Right away'], ['daily', 'Daily'], ['off', 'Off']];
@@ -21,17 +21,17 @@ export default function Searches() {
       <Back />
       <Title sub="We tell you about new listings and price drops that match.">Saved searches</Title>
       <ErrorText>{error}</ErrorText>
-      {list?.length === 0 && <Card><Text style={sora(700)}>No saved searches</Text><Text style={t.note}>Pick cities and a budget on Search, then “Save this search”.</Text></Card>}
+      {list?.length === 0 && <Card><Text style={sf(700)}>No saved searches</Text><Text style={t.note}>Pick cities and a budget on Search, then “Save this search”.</Text></Card>}
       {list?.map(s => (
         <Card key={s.id}>
-          <Text style={sora(700)}>{s.name}</Text>
+          <Text style={sf(700)}>{s.name}</Text>
           <Text style={t.note}>{s.matches} home{s.matches === 1 ? '' : 's'} now</Text>
           <Text style={t.label}>ALERTS</Text>
           <View style={{ flexDirection: 'row', gap: 6 }}>
             {ALERTS.map(([v, label]) => <Chip key={v} flex label={label} on={s.alert === v} onPress={() => act(() => klyr.setSearchAlert(s.id, v))} />)}
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={`Delete ${s.name}`} onPress={() => act(() => klyr.deleteSearch(s.id))} style={{ minHeight: 44, justifyContent: 'center' }}>
-            <Text style={{ ...sora(700), fontSize: 13, color: '#A11B1B' }}>Delete</Text>
+            <Text style={{ ...sf(700), fontSize: 13, color: '#D70015' }}>Delete</Text>
           </Pressable>
         </Card>
       ))}

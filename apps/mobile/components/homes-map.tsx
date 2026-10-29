@@ -3,7 +3,7 @@ import MapView, { Marker } from 'react-native-maps';
 import type { ListingCard } from '@klyr/api-client';
 import { money, moneyShort } from '@klyr/core';
 import { color } from '@klyr/tokens';
-import { sora } from './ui';
+import { sf } from './ui';
 
 /** The all-in on each pin, as on web. Apple Maps on iOS; Google Maps on Android (needs its API key in app.json). */
 export function pinLabel(h: ListingCard) {
@@ -24,7 +24,7 @@ export function HomesMap({ homes, onOpen }: { homes: ListingCard[]; onOpen: (id:
         {homes.map(h => (
           <Marker key={h.id} coordinate={{ latitude: h.lat, longitude: h.lng }} onPress={() => onOpen(h.id)} accessibilityLabel={`${h.address}, all-in ${money(h.allIn)}`}>
             <Pressable style={{ backgroundColor: color.brand, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }}>
-              <Text style={{ ...sora(800), fontSize: 12, color: '#fff' }}>{pinLabel(h)}</Text>
+              <Text style={{ ...sf(800), fontSize: 12, color: '#fff' }}>{pinLabel(h)}</Text>
             </Pressable>
           </Marker>
         ))}

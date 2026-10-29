@@ -39,8 +39,8 @@ export function AffordCalculator({ rate, initialDownPct }: { rate: number; initi
             </div>
           ))}
         </dl>
-        {r.limitedByDown && <div className="k-note" style={{ color: '#A54B00' }}>Your down payment, not your income, sets this limit: at this price you need at least {money(r.minDown)}.</div>}
-        {r.maxPrice >= 1_500_000 && downPct < 20 && <div className="k-note" style={{ color: '#A54B00' }}>At $1.5M and up you need 20% down. Insured mortgages are only available under $1.5M.</div>}
+        {r.limitedByDown && <div className="k-note" style={{ color: 'var(--warn)' }}>Your down payment, not your income, sets this limit: at this price you need at least {money(r.minDown)}.</div>}
+        {r.maxPrice >= 1_500_000 && downPct < 20 && <div className="k-note" style={{ color: 'var(--warn)' }}>At $1.5M and up you need 20% down. Insured mortgages are only available under $1.5M.</div>}
       </section>
 
       <section className="k-card" style={{ fontSize: 13 }}>

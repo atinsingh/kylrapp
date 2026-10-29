@@ -4,7 +4,7 @@ import type { ConsumerPlan } from '@klyr/contracts';
 import { color } from '@klyr/tokens';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
-import { Button, Card, Check, Chip, ErrorText, Field, Progress, Screen, sora, t, Title } from '../components/ui';
+import { Button, Card, Check, Chip, ErrorText, Field, Progress, Screen, sf, t, Title } from '../components/ui';
 import { CodeEntry } from '../components/code-entry';
 
 const PLANS: [ConsumerPlan, string, string][] = [
@@ -76,8 +76,8 @@ export default function Start() {
             {PLANS.map(([k, title, d]) => (
               <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: plan === k }} onPress={() => setPlan(k)}
                 style={{ borderRadius: 18, padding: 16, gap: 3, backgroundColor: plan === k ? color.brand : color.surface }}>
-                <Text style={{ ...sora(700), fontSize: 18, color: plan === k ? '#fff' : color.text }}>{title}</Text>
-                <Text style={{ ...sora(), fontSize: 13, color: plan === k ? 'rgba(255,255,255,.85)' : color.textSecondary }}>{d}</Text>
+                <Text style={{ ...sf(700), fontSize: 18, color: plan === k ? '#fff' : color.text }}>{title}</Text>
+                <Text style={{ ...sf(), fontSize: 13, color: plan === k ? 'rgba(255,255,255,.85)' : color.textSecondary }}>{d}</Text>
               </Pressable>
             ))}
           </View>
@@ -137,18 +137,18 @@ export default function Start() {
         <>
           <Title sub="Ontario law requires a few things before an agent can work for you.">Before we give advice</Title>
           <Card>
-            <Text style={sora(700)}>RECO Information Guide</Text>
+            <Text style={sf(700)}>RECO Information Guide</Text>
             <Text style={t.note}>Explains being a client versus self-represented. 6 min read.</Text>
-            <Text accessibilityRole="link" onPress={() => Linking.openURL('https://www.reco.on.ca/')} style={{ ...sora(700), fontSize: 13, color: color.brand, textDecorationLine: 'underline' }}>Read the guide</Text>
-            <Text style={{ ...sora(700), fontSize: 12, color: color.brand }}>● Rule · before any service</Text>
+            <Text accessibilityRole="link" onPress={() => Linking.openURL('https://www.reco.on.ca/')} style={{ ...sf(700), fontSize: 13, color: color.brand, textDecorationLine: 'underline' }}>Read the guide</Text>
+            <Text style={{ ...sf(700), fontSize: 12, color: color.brand }}>● Rule · before any service</Text>
           </Card>
           <Card>
-            <Text style={sora(700)}>Your representation agreement</Text>
+            <Text style={sf(700)}>Your representation agreement</Text>
             <Text style={t.note}>Form 300 to buy, Form 200 to sell, Form 346 to rent, Form 210 to lease out. You sign it before your first visit or listing, not now.</Text>
-            <Text style={{ ...sora(700), fontSize: 12, color: color.brand }}>● Rule · before showings, offers or listing</Text>
+            <Text style={{ ...sf(700), fontSize: 12, color: color.brand }}>● Rule · before showings, offers or listing</Text>
           </Card>
           <Card>
-            <Text style={sora(700)}>What to expect</Text>
+            <Text style={sf(700)}>What to expect</Text>
             {['Until you sign, tips in the app are general information.', 'Cash back is paid on the commission Klyr actually receives.', 'Any fee Klyr earns from a lender, lawyer or insurer is shown on the quote.']
               .map(x => <Text key={x} style={{ ...t.body, fontSize: 13 }}>· {x}</Text>)}
           </Card>

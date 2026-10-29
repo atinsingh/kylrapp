@@ -92,10 +92,10 @@ export function QuotesBoard({ requests, providers }: { requests: QuoteRequest[];
                 <strong>{money(q.clientCost)}{r.kind === 'lender' ? ' over 5 years' : r.kind === 'insurer' ? ' a year' : ''}</strong>
               </div>
               <span className="k-note">{quoteLine(r.kind, q)}{q.vsBest ? ` · ${money(q.vsBest)} more than the lowest` : ' · lowest'}</span>
-              <span className="k-note" style={{ color: q.referralFee ? '#A54B00' : 'var(--muted)', fontWeight: 600 }}>{q.referralFee ? `Klyr earns ${money(q.referralFee)} if you choose this` : 'Klyr earns nothing from this quote'}</span>
+              <span className="k-note" style={{ color: q.referralFee ? 'var(--warn)' : 'var(--muted)', fontWeight: 600 }}>{q.referralFee ? `Klyr earns ${money(q.referralFee)} if you choose this` : 'Klyr earns nothing from this quote'}</span>
               {q.chosen && <span style={{ fontWeight: 700, color: 'var(--brand)' }}>✓ You chose this</span>}
               {r.status === 'open' && !q.expired && (disclose?.id === q.id ? (
-                <div className="k-card" style={{ background: '#FBEBDD', gap: 8 }} role="dialog" aria-label="Referral fee disclosure">
+                <div className="k-card" style={{ background: 'var(--warn-tint)', gap: 8 }} role="dialog" aria-label="Referral fee disclosure">
                   <strong>Referral fee disclosure</strong>
                   <span style={{ fontSize: 14 }}>{q.provider.name} pays Klyr Realty Inc., Brokerage {money(q.referralFee)} if you go ahead. It doesn’t change your price, and it played no part in how these quotes were ranked. You’re free to choose any provider, including one not listed.</span>
                   <label style={{ display: 'flex', gap: 8 }}><input type="checkbox" checked={ack} onChange={e => setAck(e.target.checked)} /> I’ve read this disclosure.</label>

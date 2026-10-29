@@ -47,9 +47,9 @@ export default async function DealPage() {
         ) : (
           <>
             <section className="k-card" style={{ background: isVoid ? '#5E5E63' : 'var(--ink)', color: '#fff', borderRadius: 20, padding: 18 }}>
-              <div className="k-label" style={{ color: isVoid ? '#E5E5EA' : '#8CC2B1' }}>{d.address.toUpperCase()}, {d.city.toUpperCase()} · {money(d.price)}</div>
+              <div className="k-label" style={{ color: isVoid ? '#E5E5EA' : '#98989D' }}>{d.address.toUpperCase()}, {d.city.toUpperCase()} · {money(d.price)}</div>
               <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>{isVoid ? 'Ended' : closed ? 'Welcome home' : d.stage === 'firm' ? 'Firm' : 'Conditional'}</div>
-              <div style={{ fontSize: 13, color: isVoid ? '#E5E5EA' : '#C9DDD6' }}>
+              <div style={{ fontSize: 13, color: isVoid ? '#E5E5EA' : '#AEAEB2' }}>
                 {isVoid ? 'A condition wasn’t met in time, so the agreement is void. Your deposit comes back in full.'
                   : closed ? `Closed ${when(d.closedAt!)}. The keys are yours.`
                   : `Accepted ${when(d.acceptedAt)} · closing ${longDate(d.closingDate)} · all-in ${money(d.allIn)} · cash back ${money(d.cashBack)}`}
@@ -71,8 +71,8 @@ export default async function DealPage() {
             )}
 
             {d.deposit && (
-              <section className="k-card" aria-label="Deposit" style={d.deposit.receivedAt || isVoid ? undefined : { boxShadow: '0 0 0 2px #A54B00 inset' }}>
-                <div className="k-label" style={d.deposit.receivedAt || isVoid ? undefined : { color: '#A54B00' }}>
+              <section className="k-card" aria-label="Deposit" style={d.deposit.receivedAt || isVoid ? undefined : { boxShadow: '0 0 0 2px var(--warn) inset' }}>
+                <div className="k-label" style={d.deposit.receivedAt || isVoid ? undefined : { color: 'var(--warn)' }}>
                   {d.deposit.returnedAt ? 'DEPOSIT RETURNED' : d.deposit.receivedAt ? 'DEPOSIT RECEIVED' : isVoid ? 'DEPOSIT' : `DEPOSIT DUE · ${left(d.deposit.dueAt).toUpperCase()}`}
                 </div>
                 <strong style={{ fontSize: 26 }}>{money(d.deposit.amount)}</strong>
@@ -83,10 +83,10 @@ export default async function DealPage() {
                       : `To ${d.deposit.holder} in trust, by ${when(d.deposit.dueAt)}, by bank draft or wire.`}
                 </span>
                 {d.deposit.trustVerifiedAt && (
-                  <span className="k-note" style={{ color: '#2B7A4B', fontWeight: 600 }}>✓ Trust account details confirmed by phone · {when(d.deposit.trustVerifiedAt)} · {d.deposit.trustVerifiedBy}</span>
+                  <span className="k-note" style={{ color: 'var(--money)', fontWeight: 600 }}>✓ Trust account details confirmed by phone · {when(d.deposit.trustVerifiedAt)} · {d.deposit.trustVerifiedBy}</span>
                 )}
                 {!d.deposit.receivedAt && !isVoid && (
-                  <div className="k-error" style={{ background: '#FDECEC' }}>
+                  <div className="k-error" style={{ background: 'var(--accent-tint)' }}>
                     <strong>Before you send money:</strong> {agent} gives you the trust account details{d.deposit.trustVerifiedAt ? ' and has confirmed them by phone' : ''}. Phone {d.deposit.holder} at a number you look up yourself to confirm them too. Klyr never changes payment details by email.
                   </div>
                 )}
@@ -106,7 +106,7 @@ export default async function DealPage() {
                       : `Until ${when(c.dueAt)} · ${left(c.dueAt)}`;
                 return (
                   <div key={c.id} style={{ display: 'flex', gap: 10, padding: '8px 0', borderTop: i ? '.5px solid var(--sep)' : 0 }} aria-label={title}>
-                    <span className="k-dot" aria-hidden style={c.deliveredAt ? { background: '#2B7A4B', borderColor: '#2B7A4B' } : c.lapsedAt ? { background: '#A11B1B', borderColor: '#A11B1B' } : undefined}>{c.deliveredAt ? '✓' : c.lapsedAt ? '×' : ''}</span>
+                    <span className="k-dot" aria-hidden style={c.deliveredAt ? { background: 'var(--money)', borderColor: 'var(--money)' } : c.lapsedAt ? { background: 'var(--accent)', borderColor: 'var(--accent)' } : undefined}>{c.deliveredAt ? '✓' : c.lapsedAt ? '×' : ''}</span>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
                       <div><strong>{title}</strong> <span className="k-note">· {state}</span><div className="k-note">{sub}</div></div>
                       {!isVoid && !signed && !c.lapsedAt && <ConditionActions id={c.id} title={title} legalName={legalName} />}

@@ -34,7 +34,7 @@ export function DealCard({ d }: { d: ProDeal }) {
       <div className="k-note">Accepted {torontoWhen(d.acceptedAt)} · {isVoid ? 'void: a condition lapsed' : `closing ${d.closingDate}`} · listed by {d.listingBrokerage}</div>
 
       {dep && (
-        <div className="p-fence" style={dep.receivedAt || isVoid ? undefined : { background: '#FBEBDD', color: '#A54B00' }}>
+        <div className="p-fence" style={dep.receivedAt || isVoid ? undefined : { background: 'var(--warn-tint)', color: 'var(--warn)' }}>
           <strong>Deposit {money(dep.amount)}</strong> · {dep.returnedAt ? `returned ${torontoWhen(dep.returnedAt)}` : isVoid && !dep.receivedAt ? 'not received; return it if it arrives' : dep.receivedAt ? `received ${torontoWhen(dep.receivedAt)}` : `due ${torontoWhen(dep.dueAt)} (${left(dep.dueAt)})`}
           <div style={{ marginTop: 4 }}>{dep.trustVerifiedAt ? `✓ Trust account confirmed by phone ${torontoWhen(dep.trustVerifiedAt)} · ${dep.trustVerifiedBy}` : !dep.receivedAt && !isVoid ? 'Trust account not yet confirmed by phone.' : ''}</div>
         </div>

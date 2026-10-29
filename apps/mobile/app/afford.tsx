@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { affordFromIncome, DEFAULT_ASSUMPTIONS, money } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { klyr } from '../lib/klyr';
-import { display, Button, Card, Chip, Field, Screen, sora, t, Title } from '../components/ui';
+import { display, Button, Card, Chip, Field, Screen, sf, t, Title } from '../components/ui';
 import { Back } from '../components/back';
 
 const DOWNS = [5, 10, 15, 20, 25];
@@ -46,10 +46,10 @@ export default function Afford() {
       <Card>
         {rows.map(([k, v], i) => (
           <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 8, borderTopWidth: i ? 0.5 : 0, borderTopColor: color.separator }}>
-            <Text style={{ ...t.body, flex: 1 }}>{k}</Text><Text style={sora(600)}>{v}</Text>
+            <Text style={{ ...t.body, flex: 1 }}>{k}</Text><Text style={sf(600)}>{v}</Text>
           </View>
         ))}
-        {r.limitedByDown && <Text style={{ ...t.note, color: '#A54B00' }}>Your down payment, not your income, sets this limit: at this price you need at least {money(r.minDown)}.</Text>}
+        {r.limitedByDown && <Text style={{ ...t.note, color: '#C93400' }}>Your down payment, not your income, sets this limit: at this price you need at least {money(r.minDown)}.</Text>}
       </Card>
       <Text style={t.note}>Housing costs up to 39% of income, all debts up to 44%. Qualifying rate is the higher of your rate + 2% or 5.25%. Property tax estimated at $500/month and heating at $100/month. Estimate only.</Text>
       <Button title={`Search homes up to ${money(r.maxPrice)}`} onPress={() => router.replace(`/home?maxPrice=${r.maxPrice}`)} />

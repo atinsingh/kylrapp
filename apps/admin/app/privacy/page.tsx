@@ -21,7 +21,7 @@ export default async function PrivacyPage() {
       <p className="k-sub">Answer within 30 days (PIPEDA). Completing an access request lets the person download their copy. Completing a deletion closes the account and removes sign-in, contact and preference data; FINTRAC records (5 years), trade records (6 years) and the audit log stay.</p>
       {!list.length && <section className="k-card"><strong>No requests</strong></section>}
       {list.map(r => (
-        <article key={r.id} className="k-card" aria-label={`${KIND[r.kind]} for ${r.email}`} style={r.overdue ? { boxShadow: '0 0 0 2px #A11B1B' } : undefined}>
+        <article key={r.id} className="k-card" aria-label={`${KIND[r.kind]} for ${r.email}`} style={r.overdue ? { boxShadow: '0 0 0 2px var(--accent)' } : undefined}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
             <strong>{KIND[r.kind]} · {r.name ?? r.email}</strong>
             <span className="k-note">{r.status === 'open' ? `due ${torontoWhen(r.dueAt)}${r.overdue ? ' · OVERDUE' : ''}` : `${r.status} ${torontoWhen(r.decidedAt!)}`}</span>

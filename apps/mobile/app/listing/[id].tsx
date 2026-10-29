@@ -6,7 +6,7 @@ import type { ListingDetail } from '@klyr/api-client';
 import { money } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { errorText, klyr } from '../../lib/klyr';
-import { Icon, Hero, display, Card, ErrorText, sora, t } from '../../components/ui';
+import { Icon, Hero, display, Card, ErrorText, sf, t } from '../../components/ui';
 import { PhotoStrip } from '../../components/photo-strip';
 
 const EVENTS = { listed: 'Listed', price_change: 'Price change', sold: 'Sold', leased: 'Leased', terminated: 'Taken off the market', expired: 'Listing expired' } as const;
@@ -53,7 +53,7 @@ export default function Listing() {
         </View>
         <View style={{ paddingHorizontal: 16, paddingTop: 18, gap: 16 }}>
           <View style={{ gap: 4 }}>
-            <Text accessibilityRole="header" style={{ ...sora(800), fontSize: 28, lineHeight: 34, letterSpacing: -0.8, color: color.text }}>{l.address}</Text>
+            <Text accessibilityRole="header" style={{ ...sf(800), fontSize: 28, lineHeight: 34, letterSpacing: -0.8, color: color.text }}>{l.address}</Text>
             <Text style={t.label}>{l.city}{l.daysOnMarket != null ? ` · ${l.daysOnMarket} days on market` : ''}</Text>
             <Text style={t.sub}>Listed at {money(l.price)} · {l.beds} bed · {l.baths} bath{l.sqft ? ` · ${l.sqft.toLocaleString('en-CA')} sq ft` : ''} · {l.style ?? l.type}</Text>
             <Text style={t.note}>Listing brokerage: {l.listingBrokerage}</Text>
@@ -65,7 +65,7 @@ export default function Listing() {
           <Card>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <Text style={t.h2}>What goes into it</Text>
-              <Text accessibilityRole="link" onPress={() => router.push('/estimate')} style={{ ...sora(700), fontSize: 13, color: color.brand }}>How we estimate ›</Text>
+              <Text accessibilityRole="link" onPress={() => router.push('/estimate')} style={{ ...sf(700), fontSize: 13, color: color.brand }}>How we estimate ›</Text>
             </View>
             <Rows rows={[
               ['Ontario land transfer tax', money(e.ltt.on)],
@@ -88,7 +88,7 @@ export default function Listing() {
               ['Property tax', money(e.monthlyTax) + '/mo'],
               ...(l.condoFee ? [['Condo fee', money(l.condoFee) + '/mo'] as Row] : []),
             ]} />
-            {e.downRaised && <Text style={{ ...t.note, color: '#A54B00' }}>Your usual down payment is below the minimum for this price, so this uses the minimum, {money(e.down)}.</Text>}
+            {e.downRaised && <Text style={{ ...t.note, color: '#C93400' }}>Your usual down payment is below the minimum for this price, so this uses the minimum, {money(e.down)}.</Text>}
           </Section>
 
           {(l.openHouse || l.offerDate) && <Section title="OPEN HOUSE AND OFFERS"><Rows rows={[['Open house', l.openHouse ?? '—'], ['Offers', l.offerDate ?? '—']]} /></Section>}
@@ -132,24 +132,24 @@ export default function Listing() {
         </View>
       </ScrollView>
 
-      <SafeAreaView edges={['bottom']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: color.line }}>
+      <SafeAreaView edges={['bottom']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(249,249,249,0.96)', borderTopWidth: 0.5, borderTopColor: color.separator }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 }}>
           <View>
             <Text style={t.note}>{e.allIn < 0 ? 'You get back' : 'All-in to close'}</Text>
-            <Text style={{ ...sora(800), fontSize: 20, letterSpacing: -0.5, color: color.text }}>{money(Math.abs(e.allIn))}</Text>
+            <Text style={{ ...sf(800), fontSize: 20, letterSpacing: -0.5, color: color.text }}>{money(Math.abs(e.allIn))}</Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 6 }}>
             <Pressable accessibilityRole="button" accessibilityState={{ selected: saved }} accessibilityLabel={`${saved ? 'Saved' : 'Save'} ${l.address}`} onPress={toggleSave}
-              style={{ width: 50, minHeight: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', backgroundColor: color.canvas }}>
-              <Icon name={saved ? 'heart' : 'heart-outline'} size={22} tint={saved ? color.accent : color.text} />
+              style={{ width: 50, minHeight: 50, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: color.brandTint }}>
+              <Icon name={saved ? 'heart' : 'heart-outline'} size={22} tint={saved ? '#FF3B30' : color.brand} />
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Book a visit" onPress={() => router.push(`/visit/${l.id}`)}
-              style={{ minHeight: 50, borderRadius: 12, paddingHorizontal: 16, justifyContent: 'center', backgroundColor: color.canvas }}>
-              <Text style={{ ...sora(700), fontSize: 15, color: color.text }}>Visit</Text>
+              style={{ minHeight: 50, borderRadius: 12, paddingHorizontal: 16, justifyContent: 'center', backgroundColor: color.brandTint }}>
+              <Text style={{ ...sf(600), fontSize: 17, color: color.brand }}>Visit</Text>
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Make an offer" onPress={() => router.push(`/offer/${l.id}`)}
-              style={{ minHeight: 50, borderRadius: 12, paddingHorizontal: 20, justifyContent: 'center', backgroundColor: color.brandInk }}>
-              <Text style={{ ...sora(700), fontSize: 15, color: '#fff' }}>Offer</Text>
+              style={{ minHeight: 50, borderRadius: 12, paddingHorizontal: 20, justifyContent: 'center', backgroundColor: color.brand }}>
+              <Text style={{ ...sf(600), fontSize: 17, color: '#fff' }}>Offer</Text>
             </Pressable>
           </View>
         </View>
@@ -184,7 +184,7 @@ function Rows({ rows }: { rows: Row[] }) {
               <Text style={{ ...t.body }}>{main}</Text>
               {sub ? <Text style={t.note}>{sub}</Text> : null}
             </View>
-            <Text style={{ ...sora(600), fontSize: 14 }}>{v}</Text>
+            <Text style={{ ...sf(600), fontSize: 14 }}>{v}</Text>
           </View>
         );
       })}

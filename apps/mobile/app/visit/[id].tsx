@@ -5,7 +5,7 @@ import type { BuyingStatus, ListingDetail } from '@klyr/api-client';
 import { TORONTO, torontoTime, visitSlots } from '@klyr/core';
 import { errorText, klyr } from '../../lib/klyr';
 import { Back } from '../../components/back';
-import { Button, Card, Chip, ErrorText, Field, Screen, sora, t, Title } from '../../components/ui';
+import { Button, Card, Chip, ErrorText, Field, Screen, sf, t, Title } from '../../components/ui';
 
 const TIMES: [number, number][] = [[10, 0], [13, 0], [16, 0], [18, 30]];
 /** Next five days, in Toronto time whatever the phone's zone. */
@@ -79,10 +79,10 @@ function Step({ rule, done, title, sub, children }: { rule: string; done: boolea
     <Card>
       <Text style={t.label}>{rule}</Text>
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: done ? 0 : 2, borderColor: '#C7C7CC', backgroundColor: done ? '#2B7A4B' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
-          {done && <Text style={{ ...sora(800), color: '#fff', fontSize: 12 }}>✓</Text>}
+        <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: done ? 0 : 2, borderColor: '#C7C7CC', backgroundColor: done ? '#248A3D' : '#fff', alignItems: 'center', justifyContent: 'center' }}>
+          {done && <Text style={{ ...sf(800), color: '#fff', fontSize: 12 }}>✓</Text>}
         </View>
-        <View style={{ flex: 1 }}><Text style={sora(700)}>{title}</Text><Text style={t.note}>{sub}</Text></View>
+        <View style={{ flex: 1 }}><Text style={sf(700)}>{title}</Text><Text style={t.note}>{sub}</Text></View>
       </View>
       {children}
     </Card>

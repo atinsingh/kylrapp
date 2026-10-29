@@ -31,7 +31,7 @@ export function IdCheckForm({ next }: { next: string }) {
     <>
       <Step n={1} title="Photo ID" done={scanned}>
         <p className="k-note" style={{ margin: 0 }}>Driver’s licence or passport, plus a selfie. Handled by our ID verification partner.</p>
-        <div className="k-note" style={{ background: '#FBEBDD', color: '#A54B00', borderRadius: 10, padding: '8px 10px' }}>
+        <div className="k-note" style={{ background: 'var(--warn-tint)', color: 'var(--warn)', borderRadius: 10, padding: '8px 10px' }}>
           Test mode: the ID partner isn’t connected yet, so this step is simulated and no document is checked.
         </div>
         {!scanned && <button className="k-btn k-alt" onClick={() => setScanned(true)}>Scan my ID (test)</button>}
@@ -70,7 +70,7 @@ function Step({ n, title, note, done, children }: { n: number; title: string; no
   return (
     <section className="k-card" aria-label={title}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span className="k-dot" aria-hidden style={done ? { background: '#2B7A4B', borderColor: '#2B7A4B' } : undefined}>{done ? '✓' : n}</span>
+        <span className="k-dot" aria-hidden style={done ? { background: 'var(--money)', borderColor: 'var(--money)' } : undefined}>{done ? '✓' : n}</span>
         <strong>{title}</strong>
       </div>
       {note && <p className="k-note" style={{ margin: 0 }}>{note}</p>}

@@ -5,7 +5,7 @@ import type { Assumptions } from '@klyr/api-client';
 import { color } from '@klyr/tokens';
 import { errorText, klyr } from '../lib/klyr';
 import { Back } from '../components/back';
-import { Button, Card, Chip, ErrorText, Screen, sora, t, Title } from '../components/ui';
+import { Button, Card, Chip, ErrorText, Screen, sf, t, Title } from '../components/ui';
 
 const RATES = [0.0399, 0.0449, 0.0499];
 const DOWNS = [0.05, 0.1, 0.15, 0.2, 0.25];
@@ -53,7 +53,7 @@ export default function Estimate() {
         {LAWYERS.map(([n, f]) => <Chip key={n} label={`${n} · ${money(f)}`} on={a.lawyerFee === f} onPress={() => setA({ ...a, lawyerFee: f })} />)}
       </Group>
       <ErrorText>{error}</ErrorText>
-      {note ? <Card style={{ backgroundColor: color.brandTint }}><Text accessibilityLiveRegion="polite" style={{ ...sora(600), color: color.brand }}>{note}</Text></Card> : null}
+      {note ? <Card style={{ backgroundColor: color.brandTint }}><Text accessibilityLiveRegion="polite" style={{ ...sf(600), color: color.brand }}>{note}</Text></Card> : null}
       <Button title="Save and update all-ins" disabled={!dirty} onPress={save} />
       {saved.custom && <Button title="Use the standard inputs" alt onPress={reset} />}
       <Text style={t.note}>Also in the all-in: land transfer tax, inspection $550 (houses), title insurance $350, status certificate $100 (condos) and prorated adjustments. Klyr charges buyers $0. Not included: down payment, moving costs, HST on a new build. Estimates as of Oct 27, 2026.</Text>

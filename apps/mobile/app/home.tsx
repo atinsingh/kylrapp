@@ -7,7 +7,7 @@ import { DEFAULT_ASSUMPTIONS, money } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
-import { Card, Chip, ErrorText, Icon, type IconName, sora, t } from '../components/ui';
+import { Card, Chip, ErrorText, Icon, type IconName, IconTile, sf, t, tile } from '../components/ui';
 import { PhotoStrip } from '../components/photo-strip';
 import { HomesMap } from '../components/homes-map';
 import { useCompare } from '../lib/compare';
@@ -19,9 +19,9 @@ const viewed = (iso: string) => 'Viewed ' + new Date(iso).toLocaleDateString('en
 
 /** Everything else Klyr does, one tap from home, as category icons. */
 type Section = '/sell' | '/rent' | '/lease' | '/quotes' | '/afford' | '/estimate' | '/compare';
-const SECTIONS: [string, Section, IconName][] = [
-  ['Sell', '/sell', 'pricetag-outline'], ['Rent', '/rent', 'key-outline'], ['Lease out', '/lease', 'business-outline'], ['Quotes', '/quotes', 'calculator-outline'],
-  ['Afford', '/afford', 'wallet-outline'], ['Estimates', '/estimate', 'stats-chart-outline'], ['Compare', '/compare', 'git-compare-outline'],
+const SECTIONS: [string, Section, IconName, string][] = [
+  ['Sell', '/sell', 'pricetag', tile.orange], ['Rent', '/rent', 'key', tile.blue], ['Lease out', '/lease', 'business', tile.indigo], ['Quotes', '/quotes', 'calculator', tile.teal],
+  ['Afford', '/afford', 'wallet', tile.green], ['Estimates', '/estimate', 'stats-chart', tile.purple], ['Compare', '/compare', 'git-compare', tile.pink],
 ];
 
 export default function Home() {
@@ -65,33 +65,33 @@ export default function Home() {
   const q = query.trim().toLowerCase();
   const shown = homes?.filter(h => !q || `${h.address} ${h.city}`.toLowerCase().includes(q)) ?? null;
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: color.surface }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: color.surfaceGrouped }} edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
-        <View style={{ paddingHorizontal: 16, paddingTop: 8, gap: 14 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ ...sora(600), fontSize: 14, color: color.textSecondary }}>{me?.legalName ? `Hi, ${me.legalName.split(' ')[0]}` : 'Klyr'}</Text>
-              <Text accessibilityRole="header" style={{ ...sora(800), fontSize: 28, letterSpacing: -0.8, color: color.text }}>{savedOnly ? 'Saved homes' : 'Find your home'}</Text>
-            </View>
-            <Pressable accessibilityRole="button" accessibilityLabel={view === 'list' ? 'Map' : 'List'} onPress={() => setView(view === 'list' ? 'map' : 'list')}
-              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name={view === 'list' ? 'map-outline' : 'list-outline'} />
+        <View style={{ paddingHorizontal: 16, gap: 10 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end', minHeight: 44, alignItems: 'center' }}>
+            <Pressable accessibilityRole="button" accessibilityLabel={view === 'list' ? 'Map' : 'List'} onPress={() => setView(view === 'list' ? 'map' : 'list')} style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Icon name={view === 'list' ? 'map-outline' : 'list-outline'} tint={color.brand} />
+              <Text style={{ ...sf(), fontSize: 17, color: color.brand }}>{view === 'list' ? 'Map' : 'List'}</Text>
             </Pressable>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: color.canvas, borderRadius: 28, paddingHorizontal: 16, minHeight: 52 }}>
-            <Icon name="search" size={20} />
-            <TextInput accessibilityLabel="Search by address or city" placeholder="Address or city" placeholderTextColor="#6B6B6B" value={query} onChangeText={setQuery}
-              style={{ ...sora(600), flex: 1, fontSize: 16, color: color.text, minHeight: 52 }} />
-            {query ? <Pressable accessibilityRole="button" accessibilityLabel="Clear search" onPress={() => setQuery('')}><Icon name="close-circle" size={20} tint="#8A8A8A" /></Pressable> : null}
+          <View>
+            <Text accessibilityRole="header" style={t.h1}>{savedOnly ? 'Saved Homes' : 'Homes'}</Text>
+            <Text style={t.sub}>{me?.legalName ? `Hi ${me.legalName.split(' ')[0]}. ` : ''}Prices are the all-in cost to close, after your cash back.</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(118,118,128,0.12)', borderRadius: 10, paddingHorizontal: 8, minHeight: 38 }}>
+            <Icon name="search" size={18} tint={color.textTertiary} />
+            <TextInput accessibilityLabel="Search by address or city" placeholder="Address or city" placeholderTextColor={color.textTertiary} value={query} onChangeText={setQuery}
+              style={{ ...sf(), flex: 1, fontSize: 17, color: color.text, minHeight: 38 }} />
+            {query ? <Pressable accessibilityRole="button" accessibilityLabel="Clear search" onPress={() => setQuery('')}><Icon name="close-circle" size={18} tint={color.textTertiary} /></Pressable> : null}
           </View>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingHorizontal: 12, paddingVertical: 14 }}>
-          {SECTIONS.filter(([, href]) => href !== '/compare' || compare.ids.length >= 2).map(([label, href, icon]) => (
-            <Pressable key={href} accessibilityRole="link" accessibilityLabel={label} onPress={() => router.push(href)} style={({ pressed }) => ({ width: 78, alignItems: 'center', gap: 6, opacity: pressed ? 0.7 : 1 })}>
-              <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: color.canvas, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={26} /></View>
-              <Text style={{ ...sora(600), fontSize: 12, color: color.text }}>{href === '/compare' ? `Compare ${compare.ids.length}` : label}</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 4, paddingHorizontal: 10, paddingVertical: 16 }}>
+          {SECTIONS.filter(([, href]) => href !== '/compare' || compare.ids.length >= 2).map(([label, href, icon, bg]) => (
+            <Pressable key={href} accessibilityRole="link" accessibilityLabel={label} onPress={() => router.push(href)} style={({ pressed }) => ({ width: 74, alignItems: 'center', gap: 6, opacity: pressed ? 0.6 : 1 })}>
+              <IconTile name={icon} bg={bg} size={52} />
+              <Text style={{ ...sf(500), fontSize: 12, color: color.text }}>{href === '/compare' ? `Compare ${compare.ids.length}` : label}</Text>
             </Pressable>
           ))}
         </ScrollView>
@@ -107,55 +107,52 @@ export default function Home() {
           </ScrollView>
         </View>
 
-        <View style={{ paddingHorizontal: 16, paddingTop: 22, gap: 18 }}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 24, gap: 16 }}>
           <ErrorText>{error}</ErrorText>
-          {!homes && !error && <ActivityIndicator color={color.text} style={{ marginTop: 24 }} />}
+          {!homes && !error && <ActivityIndicator style={{ marginTop: 24 }} />}
           {shown && (
-            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
-              <View style={{ flex: 1 }}>
-                <Text style={t.h2}>{savedOnly ? 'Your saved homes' : 'Homes for you'}</Text>
-                <Text accessibilityLiveRegion="polite" style={t.note}>{shown.length} {shown.length === 1 ? 'home' : 'homes'} · all-in cost to close after cash back · estimate as of {new Date(DEFAULT_ASSUMPTIONS.asOf + 'T12:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}</Text>
-              </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 }}>
+              <Text accessibilityLiveRegion="polite" style={{ ...t.label, flex: 1 }}>{shown.length} {shown.length === 1 ? 'home' : 'homes'} · estimate as of {new Date(DEFAULT_ASSUMPTIONS.asOf + 'T12:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}</Text>
               {!savedOnly && (
                 <Pressable accessibilityRole="button" accessibilityLabel="Save this search" onPress={saveSearch} style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <Icon name="notifications-outline" size={18} /><Text style={{ ...sora(700), fontSize: 14, color: color.text }}>Save search</Text>
+                  <Icon name="notifications-outline" size={17} tint={color.brand} /><Text style={{ ...sf(), fontSize: 15, color: color.brand }}>Save Search</Text>
                 </Pressable>
               )}
             </View>
           )}
-          {savedNote ? <Text accessibilityLiveRegion="polite" style={{ ...sora(600), fontSize: 13, color: color.brand }}>{savedNote}</Text> : null}
+          {savedNote ? <Text accessibilityLiveRegion="polite" style={{ ...sf(500), fontSize: 15, color: color.money }}>{savedNote}</Text> : null}
           {view === 'map' && shown && shown.length > 0 && <HomesMap homes={shown} onOpen={id => router.push(`/listing/${id}`)} />}
           {shown?.length === 0 && (
             <Card>
-              <Text style={sora(700)}>{savedOnly ? 'No saved homes yet' : 'No homes match'}</Text>
+              <Text style={sf(600)}>{savedOnly ? 'No saved homes yet' : 'No homes match'}</Text>
               <Text style={t.note}>{savedOnly ? 'Tap the heart on any home to track its price and all-in cost.' : 'Try a higher budget or another city.'}</Text>
             </Card>
           )}
           {view === 'list' && shown?.map(h => (
-            <View key={h.id} style={{ gap: 10 }}>
-              <View style={{ borderRadius: 14, overflow: 'hidden' }}>
+            <View key={h.id} style={{ backgroundColor: color.surface, borderRadius: 14, overflow: 'hidden' }}>
+              <View>
                 <PhotoStrip photos={h.photos} address={h.address} sample={h.samplePhotos} onPress={() => router.push(`/listing/${h.id}`)} />
                 <Pressable accessibilityRole="button" accessibilityState={{ selected: h.saved }} accessibilityLabel={`${h.saved ? 'Saved' : 'Save'} ${h.address}`} onPress={() => toggleSave(h)}
-                  style={{ position: 'absolute', top: 10, right: 10, width: 40, height: 40, borderRadius: 20, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon name={h.saved ? 'heart' : 'heart-outline'} size={22} tint={h.saved ? color.accent : color.text} />
+                  style={{ position: 'absolute', top: 10, right: 10, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.92)', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name={h.saved ? 'heart' : 'heart-outline'} size={20} tint={h.saved ? tile.red : color.text} />
                 </Pressable>
               </View>
-              <Pressable accessibilityRole="link" accessibilityLabel={`${h.address}, ${h.city}, all-in ${money(h.allIn)}`} onPress={() => router.push(`/listing/${h.id}`)} style={{ gap: 3 }}>
+              <Pressable accessibilityRole="link" accessibilityLabel={`${h.address}, ${h.city}, all-in ${money(h.allIn)}`} onPress={() => router.push(`/listing/${h.id}`)} style={{ paddingHorizontal: 14, paddingTop: 12, gap: 2 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Text style={{ ...sora(700), fontSize: 17, color: color.text, flex: 1 }} numberOfLines={1}>{h.address}</Text>
-                  {h.viewedAt ? <Text style={{ ...sora(600), fontSize: 12, color: color.textSecondary }}>{viewed(h.viewedAt)}</Text> : null}
+                  <Text style={{ ...sf(600), fontSize: 17, color: color.text, flex: 1 }} numberOfLines={1}>{h.address}</Text>
+                  {h.viewedAt ? <Text style={t.note}>{viewed(h.viewedAt)}</Text> : null}
                 </View>
-                <Text style={t.note}>{h.city} · {h.beds} bd · {h.baths} ba · {h.type} · listed {money(h.price)}</Text>
-                <Text style={{ ...sora(), fontSize: 14, color: color.textSecondary }}>
-                  <Text style={{ ...sora(800), color: color.brand }}>{money(Math.abs(h.allIn))} {h.allIn < 0 ? 'back' : 'all-in'}</Text> · {money(h.cashBack)} cash back · {money(h.monthly)}/mo
+                <Text style={t.sub}>{h.city} · {h.beds} bd · {h.baths} ba · {h.type} · {money(h.price)}</Text>
+                <Text style={{ ...sf(), fontSize: 15, lineHeight: 22, color: color.textSecondary }}>
+                  <Text style={{ ...sf(700), color: color.money }}>{money(Math.abs(h.allIn))} {h.allIn < 0 ? 'back' : 'all-in'}</Text> · {money(h.cashBack)} cash back · {money(h.monthly)}/mo
                 </Text>
               </Pressable>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={{ ...t.note, flex: 1, fontSize: 12 }}>Listing brokerage: {h.listingBrokerage}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingTop: 6, paddingBottom: 12 }}>
+                <Text style={{ ...t.note, flex: 1, fontSize: 12, color: color.textTertiary }}>Listing brokerage: {h.listingBrokerage}</Text>
                 <Pressable accessibilityRole="button" accessibilityState={{ selected: compare.has(h.id) }} accessibilityLabel={`${compare.has(h.id) ? 'Remove' : 'Add'} ${h.address} ${compare.has(h.id) ? 'from' : 'to'} compare`}
-                  onPress={() => compare.toggle(h.id)} style={{ minHeight: 36, paddingHorizontal: 12, borderRadius: 18, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: compare.has(h.id) ? color.brandInk : color.canvas }}>
-                  <Icon name={compare.has(h.id) ? 'checkmark' : 'add'} size={16} tint={compare.has(h.id) ? '#fff' : color.text} />
-                  <Text style={{ ...sora(700), fontSize: 13, color: compare.has(h.id) ? '#fff' : color.text }}>Compare</Text>
+                  onPress={() => compare.toggle(h.id)} style={{ minHeight: 32, paddingHorizontal: 12, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: compare.has(h.id) ? color.brand : color.brandTint }}>
+                  <Icon name={compare.has(h.id) ? 'checkmark' : 'add'} size={15} tint={compare.has(h.id) ? '#fff' : color.brand} />
+                  <Text style={{ ...sf(600), fontSize: 13, color: compare.has(h.id) ? '#fff' : color.brand }}>Compare</Text>
                 </Pressable>
               </View>
             </View>

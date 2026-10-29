@@ -47,7 +47,7 @@ export function ClosingChecklist({ deal: d, agent }: { deal: Deal; agent: string
         const [title, sub] = STEPS[t.key];
         return (
           <div key={t.key} style={{ display: 'flex', gap: 10, padding: '8px 0', borderTop: i ? '.5px solid var(--sep)' : 0 }} aria-label={title}>
-            <span className="k-dot" aria-hidden style={t.doneAt ? { background: '#2B7A4B', borderColor: '#2B7A4B' } : undefined}>{t.doneAt ? '✓' : ''}</span>
+            <span className="k-dot" aria-hidden style={t.doneAt ? { background: 'var(--money)', borderColor: 'var(--money)' } : undefined}>{t.doneAt ? '✓' : ''}</span>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div><strong>{title}</strong>{t.doneAt && <span className="k-note"> · {done(t.key, t.details)} · {torontoWhen(t.doneAt)}</span>}<div className="k-note">{t.key === 'walkthrough' ? `${agent} books it for the day before closing.` : sub}</div></div>
               {!t.doneAt && t.key !== 'walkthrough' && open !== t.key && (

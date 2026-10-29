@@ -30,7 +30,7 @@ export default async function PayoutsPage() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
             <strong style={{ fontSize: 17 }}>{p.client ?? p.email}</strong>
             <span className="k-note">{p.address} · {money(p.price)} · listed by {p.listingBrokerage}</span>
-            <span className="a-flag" style={p.status === 'sent' ? { background: '#E3F2E8', color: '#2B7A4B' } : undefined}>{STATUS[p.status]}</span>
+            <span className="a-flag" style={p.status === 'sent' ? { background: 'var(--money-tint)', color: 'var(--money)' } : undefined}>{STATUS[p.status]}</span>
           </div>
           <div className="a-grid">
             <span><span className="k-note">Closed</span><br />{p.closedAt ? torontoWhen(p.closedAt) : '—'}</span>

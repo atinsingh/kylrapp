@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ADMIN_LINKS, AdminNav } from '@/components/admin-nav';
 
+/** Apple system colours for each module's icon. */
+const TINT: Record<string, string> = { 'field-activity': '#34C759', 'id-reviews': '#007AFF', payouts: '#FF9500', 'listings-feed': '#5856D6', marketplace: '#30B0C7', privacy: '#8E8E93', assumptions: '#AF52DE', users: '#FF2D55' };
+
 /** What each module is for. Klyr AI review waits on Klyr AI itself. */
 const ABOUT: Record<string, string> = {
   'field-activity': 'Showings with GPS check-in, refused attempts and time on site, per agent.',
@@ -29,16 +32,16 @@ export default function AdminHome() {
         {ADMIN_LINKS.filter(([, key]) => key !== 'home').map(([href, key, label, Ico]) => (
           <li key={key}>
             <Link href={href} className="k-card a-tile" style={{ textDecoration: 'none', height: '100%' }} aria-label={label}>
-              <span style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--fill)', display: 'grid', placeItems: 'center' }}><Ico size={22} aria-hidden /></span>
+              <span style={{ width: 40, height: 40, borderRadius: 10, background: TINT[key], color: '#fff', display: 'grid', placeItems: 'center' }}><Ico size={22} aria-hidden /></span>
               <span className="k-h2">{label}</span>
               <span className="k-note" style={{ fontSize: 14 }}>{ABOUT[key]}</span>
-              <span style={{ marginTop: 'auto', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>Open <ArrowRight size={16} aria-hidden /></span>
+              <span style={{ marginTop: 'auto', fontWeight: 500, color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: 4 }}>Open <ArrowRight size={15} aria-hidden /></span>
             </Link>
           </li>
         ))}
         <li>
-          <div className="k-card" style={{ height: '100%', boxShadow: 'none', background: 'transparent', border: '2px dashed var(--line)' }}>
-            <span className="k-label" style={{ color: 'var(--accent)' }}>Waiting</span>
+          <div className="k-card" style={{ height: '100%', background: 'transparent', border: '1.5px dashed #C7C7CC' }}>
+            <span className="k-label" style={{ color: 'var(--warn)' }}>Waiting</span>
             <span className="k-h2">Klyr AI review</span>
             <span className="k-note" style={{ fontSize: 14 }}>Conversations sent to an agent, sources, and blocked advice under Form 326. Waits on Klyr AI: a model provider agreement and a legally reviewed prompt.</span>
           </div>

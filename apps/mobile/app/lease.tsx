@@ -6,7 +6,7 @@ import { landlordNet, money, moneyCents, rentControlled, TENANT_SIDE_CHOICES, to
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
-import { display, Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { display, Button, Card, Check, Chip, ErrorText, Field, Screen, sf, t, Title } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 
@@ -89,10 +89,10 @@ function PlanSign({ l, legalName, onDone }: { l: Leasing; legalName: string; onD
   }
   return (
     <>
-      <View style={{ backgroundColor: color.brandInk, borderRadius: 20, padding: 18, gap: 6 }} accessibilityLabel={`First year after fees ${money(net.net)}`}>
-        <Text style={{ ...t.label, color: '#8CC2B1' }}>{l.property.address.toUpperCase()} · FIRST YEAR AFTER FEES</Text>
+      <View style={{ backgroundColor: color.panel, borderRadius: 20, padding: 18, gap: 6 }} accessibilityLabel={`First year after fees ${money(net.net)}`}>
+        <Text style={{ ...t.label, color: '#98989D' }}>{l.property.address.toUpperCase()} · FIRST YEAR AFTER FEES</Text>
         <Text style={{ ...display(600), fontSize: 38, letterSpacing: -0.6, color: '#fff' }}>{money(net.net)}</Text>
-        <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>12 × {money(l.rent)} · Klyr fee {money(net.fee)} · tenant’s brokerage {money(net.tenantSide)}</Text>
+        <Text style={{ ...sf(), fontSize: 13, color: '#AEAEB2' }}>12 × {money(l.rent)} · Klyr fee {money(net.fee)} · tenant’s brokerage {money(net.tenantSide)}</Text>
       </View>
       <Card>
         <Text style={t.label}>TO THE TENANT’S BROKERAGE · YOUR CHOICE</Text>
@@ -149,17 +149,17 @@ function Live({ l, legalName, onDone }: { l: Leasing; legalName: string; onDone:
 
   return (
     <>
-      <View style={{ backgroundColor: color.brandInk, borderRadius: 20, padding: 18, gap: 6 }}>
-        <Text style={{ ...t.label, color: '#8CC2B1' }}>{l.property.address.toUpperCase()} · {money(l.rent)}/MONTH</Text>
+      <View style={{ backgroundColor: color.panel, borderRadius: 20, padding: 18, gap: 6 }}>
+        <Text style={{ ...t.label, color: '#98989D' }}>{l.property.address.toUpperCase()} · {money(l.rent)}/MONTH</Text>
         <Text accessibilityRole="header" style={{ ...display(600), fontSize: 34, letterSpacing: -0.6, color: '#fff' }}>{leased ? 'Leased' : l.publishedAt ? 'You’re live' : 'Getting listed'}</Text>
-        <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>
+        <Text style={{ ...sf(), fontSize: 13, color: '#AEAEB2' }}>
           {leased ? `${leased.name} at ${money(leased.rent)}/month from ${leased.startDate}. Next: the Ontario Standard Lease.` : l.publishedAt ? `Listed ${torontoWhen(l.publishedAt)}.` : `${l.agent?.name ?? 'Your agent'} adds photos and publishes it.`}
         </Text>
       </View>
       {l.consents.filter(c => !c.sellerSignedAt).map(c => (
         <Card key={c.id}>
           <Text style={t.label}>● ACTION · OREA FORM 326</Text>
-          <Text style={sora(700)}>A Klyr tenant wants to apply</Text>
+          <Text style={sf(700)}>A Klyr tenant wants to apply</Text>
           <Text style={t.note}>Klyr represents you both. Klyr won’t tell the tenant the least rent you’d take, or tell you the most they’d pay.</Text>
           {open?.id === c.id ? sign('Sign consent') : <Button title="Review and sign" onPress={() => { setOpen({ id: c.id, kind: 'consent' }); setRead(false); setName(''); }} />}
         </Card>
@@ -167,7 +167,7 @@ function Live({ l, legalName, onDone }: { l: Leasing; legalName: string; onDone:
       {l.applications.length > 0 && <Text style={t.label}>APPLICANTS · SAME FACTS FOR EVERYONE</Text>}
       {l.applications.map(a => (
         <Card key={a.id}>
-          <Text style={sora(700)}>{a.name} · {money(a.rent)}/month</Text>
+          <Text style={sf(700)}>{a.name} · {money(a.rent)}/month</Text>
           <Text style={t.note}>{a.startDate} · {a.termMonths} months · income {money(a.screening.monthlyIncome)} ({a.screening.incomeToRent}× rent) · {a.screening.jobTitle}, {a.screening.employer}</Text>
           <Text style={t.note}>{a.screening.occupants} occupant(s) · pets: {a.screening.pets ?? 'none'} · {a.screening.references} reference(s) · credit check {a.screening.creditConsent ? 'allowed' : 'not allowed'} · {a.status}</Text>
           {!leased && a.status === 'submitted' && (open?.id === a.id ? (open.kind === 'decline'
@@ -191,7 +191,7 @@ function Live({ l, legalName, onDone }: { l: Leasing; legalName: string; onDone:
           <Text style={t.label}>INTEREST ON THE DEPOSIT</Text>
           {l.interest.map(i => (
             <View key={i.dueDate} style={{ gap: 6 }}>
-              <Text style={sora(600)}>{moneyCents(i.amount)} ({i.pct}%) due {i.dueDate}{i.method ? ` · ${i.method === 'paid' ? 'paid' : 'kept to top up'}` : ''}</Text>
+              <Text style={sf(600)}>{moneyCents(i.amount)} ({i.pct}%) due {i.dueDate}{i.method ? ` · ${i.method === 'paid' ? 'paid' : 'kept to top up'}` : ''}</Text>
               {!i.method && Date.parse(i.dueDate) - Date.now() <= 30 * 86_400_000 && (
                 <View style={{ flexDirection: 'row', gap: 6 }}>
                   <Chip flex label="I paid it" on={false} onPress={() => void interest(i.dueDate, 'paid')} />

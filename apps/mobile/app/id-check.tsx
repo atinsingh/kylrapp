@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import type { IdCheckAnswers } from '@klyr/api-client';
 import { errorText, klyr } from '../lib/klyr';
 import { Back } from '../components/back';
-import { Button, Card, Chip, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { Button, Card, Chip, ErrorText, Field, Screen, sf, t, Title } from '../components/ui';
 
 const SOURCES: [IdCheckAnswers['sourceOfFunds'][number], string][] = [
   ['savings', 'Savings'], ['employment', 'Employment income'], ['sale_of_property', 'Sale of a property'],
@@ -34,8 +34,8 @@ export default function IdCheck() {
       <Title sub="Required once by FINTRAC before your first visit, listing or offer. About 4 minutes.">Verify your identity</Title>
       <Step title="1 · Photo ID">
         <Text style={t.note}>Driver’s licence or passport, plus a selfie. Handled by our ID verification partner.</Text>
-        <Text style={{ ...t.note, backgroundColor: '#FBEBDD', color: '#A54B00', borderRadius: 10, padding: 8 }}>Test mode: the ID partner isn’t connected yet, so this step is simulated and no document is checked.</Text>
-        {scanned ? <Text style={{ ...sora(700), color: '#2B7A4B' }}>✓ ID scanned (test)</Text> : <Button title="Scan my ID (test)" alt onPress={() => setScanned(true)} />}
+        <Text style={{ ...t.note, backgroundColor: '#FFF2E5', color: '#C93400', borderRadius: 10, padding: 8 }}>Test mode: the ID partner isn’t connected yet, so this step is simulated and no document is checked.</Text>
+        {scanned ? <Text style={{ ...sf(700), color: '#248A3D' }}>✓ ID scanned (test)</Text> : <Button title="Scan my ID (test)" alt onPress={() => setScanned(true)} />}
       </Step>
       <Step title="2 · About you"><Field label="Occupation" value={a.occupation} onChangeText={v => setA({ ...a, occupation: v })} /></Step>
       <Step title="3 · Source of funds" note="Where will your deposit and down payment come from?">
@@ -61,7 +61,7 @@ export default function IdCheck() {
 }
 
 function Step({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
-  return <Card><Text style={sora(700)}>{title}</Text>{note ? <Text style={t.note}>{note}</Text> : null}{children}</Card>;
+  return <Card><Text style={sf(700)}>{title}</Text>{note ? <Text style={t.note}>{note}</Text> : null}{children}</Card>;
 }
 
 function YesNo({ value, set }: { value: boolean; set: (v: boolean) => void }) {

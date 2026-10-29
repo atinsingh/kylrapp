@@ -129,9 +129,9 @@ function PlanAndSign({ l, legalName }: { l: Leasing; legalName: string }) {
   return (
     <>
       <section className="k-card" style={{ background: 'var(--ink)', color: '#fff', borderRadius: 20, padding: 18 }} aria-label={`First year after fees ${money(net.net)}`}>
-        <div className="k-label" style={{ color: '#8CC2B1' }}>{l.property.address.toUpperCase()}, {l.property.city.toUpperCase()} · FIRST YEAR AFTER FEES</div>
+        <div className="k-label" style={{ color: '#98989D' }}>{l.property.address.toUpperCase()}, {l.property.city.toUpperCase()} · FIRST YEAR AFTER FEES</div>
         <div style={{ fontSize: 34, fontWeight: 800 }}>{money(net.net)}</div>
-        <div style={{ fontSize: 13, color: '#C9DDD6' }}>12 × {money(rent)} = {money(net.gross)} · Klyr fee {money(net.fee)} · tenant’s brokerage {money(net.tenantSide)} (HST included)</div>
+        <div style={{ fontSize: 13, color: '#AEAEB2' }}>12 × {money(rent)} = {money(net.gross)} · Klyr fee {money(net.fee)} · tenant’s brokerage {money(net.tenantSide)} (HST included)</div>
       </section>
       <section className="k-card">
         <label className="k-field">Rent a month<input inputMode="numeric" value={rent.toLocaleString('en-CA')} onChange={e => setRent(n(e.target.value))} /></label>
@@ -191,9 +191,9 @@ function Live({ l, legalName }: { l: Leasing; legalName: string }) {
   return (
     <>
       <section className="k-card" style={{ background: 'var(--ink)', color: '#fff', borderRadius: 20, padding: 18 }}>
-        <div className="k-label" style={{ color: '#8CC2B1' }}>{l.property.address.toUpperCase()}{l.property.unit ? ` #${l.property.unit}` : ''}, {l.property.city.toUpperCase()} · {money(l.rent)}/MONTH</div>
+        <div className="k-label" style={{ color: '#98989D' }}>{l.property.address.toUpperCase()}{l.property.unit ? ` #${l.property.unit}` : ''}, {l.property.city.toUpperCase()} · {money(l.rent)}/MONTH</div>
         <div style={{ fontSize: 30, fontWeight: 800 }}>{leased ? 'Leased' : l.publishedAt ? 'You’re live' : 'Getting listed'}</div>
-        <div style={{ fontSize: 13, color: '#C9DDD6' }}>
+        <div style={{ fontSize: 13, color: '#AEAEB2' }}>
           {leased ? `${leased.name} at ${money(leased.rent)}/month from ${leased.startDate}. Next: you both sign the Ontario Standard Lease (2229E) within 21 days, and you collect the first and last month’s rent.`
             : l.publishedAt ? `Listed ${torontoWhen(l.publishedAt)}. Applications come here, each with the same facts.`
             : `Agreement signed ${torontoWhen(l.agreement!.signedAt)}. ${l.agent?.name ?? 'Your agent'} adds photos and publishes it. First year after fees: about ${money(l.net.net)}.`}

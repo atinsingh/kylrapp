@@ -67,9 +67,9 @@ export function OfferBuilder({ listing: l, assumptions: a, initial, enabled, age
 
   const hero = (
     <section className="k-card" style={{ background: 'var(--ink)', color: '#fff', borderRadius: 20, padding: 18 }} aria-label="All-in at this offer">
-      <div className="k-label" style={{ color: '#8CC2B1' }}>ALL-IN AT THIS OFFER</div>
+      <div className="k-label" style={{ color: '#98989D' }}>ALL-IN AT THIS OFFER</div>
       <div style={{ fontSize: 38, fontWeight: 800, letterSpacing: '-.03em', lineHeight: 1 }}>{money(est.allIn)}</div>
-      <div style={{ fontSize: 13, color: '#C9DDD6' }}>
+      <div style={{ fontSize: 13, color: '#AEAEB2' }}>
         {diff === 0 ? 'Same as at asking' : `${diff > 0 ? '+' : '−'}${money(Math.abs(diff))} vs asking`} · cash back {money(est.cashBack)} · land transfer tax {money(est.ltt.total)}
       </div>
     </section>
@@ -152,7 +152,7 @@ export function OfferBuilder({ listing: l, assumptions: a, initial, enabled, age
             </div>
           ))}
           {firm && (
-            <div className="k-error" style={{ background: '#FBEBDD', color: '#A54B00' }}>
+            <div className="k-error" style={{ background: 'var(--warn-tint)', color: 'var(--warn)' }}>
               <strong>No conditions.</strong> You’re firm the moment it’s accepted. If the appraisal comes in low, you cover the gap. Get your mortgage approval first.
             </div>
           )}

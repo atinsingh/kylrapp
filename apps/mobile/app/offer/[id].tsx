@@ -7,7 +7,7 @@ import { buyerEstimate, money, nextBankingDate, type PropertyType, TORONTO, toro
 import { color } from '@klyr/tokens';
 import { Back } from '../../components/back';
 import { StepUp } from '../../components/step-up';
-import { display, Button, Card, Check, Chip, ErrorText, Field, Screen, sora, t, Title } from '../../components/ui';
+import { display, Button, Card, Check, Chip, ErrorText, Field, Screen, sf, t, Title } from '../../components/ui';
 import { useAuth } from '../../lib/auth';
 import { errorText, klyr } from '../../lib/klyr';
 
@@ -86,10 +86,10 @@ export default function MakeOffer() {
   }
 
   const hero = (
-    <View style={{ backgroundColor: color.brandInk, borderRadius: 20, padding: 18, gap: 6 }} accessibilityLabel={`All-in at this offer: ${money(est.allIn)}`}>
-      <Text style={{ ...t.label, color: '#8CC2B1' }}>ALL-IN AT THIS OFFER</Text>
+    <View style={{ backgroundColor: color.panel, borderRadius: 20, padding: 18, gap: 6 }} accessibilityLabel={`All-in at this offer: ${money(est.allIn)}`}>
+      <Text style={{ ...t.label, color: '#98989D' }}>ALL-IN AT THIS OFFER</Text>
       <Text style={{ ...display(600), fontSize: 38, letterSpacing: -0.6, color: '#fff' }}>{money(est.allIn)}</Text>
-      <Text style={{ ...sora(), fontSize: 13, color: '#C9DDD6' }}>Cash back {money(est.cashBack)} · land transfer tax {money(est.ltt.total)}</Text>
+      <Text style={{ ...sf(), fontSize: 13, color: '#AEAEB2' }}>Cash back {money(est.cashBack)} · land transfer tax {money(est.ltt.total)}</Text>
     </View>
   );
 
@@ -133,7 +133,7 @@ export default function MakeOffer() {
         <Card>
           {rows.map(([k, v], i) => (
             <View key={k} style={{ paddingVertical: 8, borderTopWidth: i ? 0.5 : 0, borderTopColor: color.separator, gap: 2 }}>
-              <Text style={t.note}>{k}</Text><Text style={sora(600)}>{v}</Text>
+              <Text style={t.note}>{k}</Text><Text style={sf(600)}>{v}</Text>
             </View>
           ))}
         </Card>
@@ -161,11 +161,11 @@ export default function MakeOffer() {
       {!b.canBookVisits && (
         <Card>
           <Text style={t.label}>● RULE · BEFORE AN OFFER</Text>
-          <Text style={sora(700)}>{!b.agreement.signed ? 'Sign your buyer agreement first' : 'Verify your ID first'}</Text>
+          <Text style={sf(700)}>{!b.agreement.signed ? 'Sign your buyer agreement first' : 'Verify your ID first'}</Text>
           <Button title={!b.agreement.signed ? 'Review and sign Form 300' : 'Verify my ID'} onPress={() => router.push(!b.agreement.signed ? '/sign-300' : '/id-check')} />
         </Card>
       )}
-      {returned && <Card style={{ backgroundColor: '#FBEBDD' }}><Text style={{ ...sora(700), color: '#A54B00' }}>Your agent sent this back</Text><Text style={{ ...t.body, color: '#A54B00' }}>“{returned}”</Text></Card>}
+      {returned && <Card style={{ backgroundColor: '#FFF2E5' }}><Text style={{ ...sf(700), color: '#C93400' }}>Your agent sent this back</Text><Text style={{ ...t.body, color: '#C93400' }}>“{returned}”</Text></Card>}
       {hero}
       <Card>
         <Field label="Offer price" value={o.price.toLocaleString('en-CA')} onChangeText={v => set('price', n(v))} keyboardType="number-pad" />
@@ -186,7 +186,7 @@ export default function MakeOffer() {
             ) : null}
           </View>
         ))}
-        {firm && <Text style={{ ...sora(600), fontSize: 13, color: '#A54B00', backgroundColor: '#FBEBDD', padding: 10, borderRadius: 10 }}>No conditions: you’re firm the moment it’s accepted. Get your mortgage approval first.</Text>}
+        {firm && <Text style={{ ...sf(600), fontSize: 13, color: '#C93400', backgroundColor: '#FFF2E5', padding: 10, borderRadius: 10 }}>No conditions: you’re firm the moment it’s accepted. Get your mortgage approval first.</Text>}
       </Card>
       <Card>
         <Text style={t.label}>OPEN UNTIL · {when(o.irrevocableAt).toUpperCase()}</Text>

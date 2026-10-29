@@ -19,7 +19,7 @@ export default async function AssumptionsPage() {
       <AdminNav current="assumptions" />
       <h1 className="k-h1">Content and assumptions</h1>
       <p className="k-sub">The defaults behind every all-in estimate. A client who changes their own inputs keeps theirs. Review at least every 90 days so the “as of” date stays honest.</p>
-      <section className="k-card" aria-label="In force" style={c.overdue ? { boxShadow: '0 0 0 2px #A11B1B' } : undefined}>
+      <section className="k-card" aria-label="In force" style={c.overdue ? { boxShadow: '0 0 0 2px var(--accent)' } : undefined}>
         <div className="k-label">IN FORCE · AS OF {c.asOf}{c.overdue ? ' · REVIEW OVERDUE' : ` · REVIEW BY ${c.reviewBy}`}</div>
         <div><strong>Rate {pct(c.rate)}</strong> · down payment {pct(c.downPct)} · lawyer’s fee {money(c.lawyerFee)} before HST</div>
         <span className="k-note">{c.note}</span>

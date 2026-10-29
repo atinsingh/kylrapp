@@ -6,16 +6,16 @@ import { money, TORONTO, torontoWhen } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
-import { display, Button, Card, ErrorText, Field, Screen, sora, t, Title } from '../components/ui';
+import { display, Button, Card, ErrorText, Field, Screen, sf, t, Title } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 
 const when = (iso: string) => torontoWhen(iso);
 const STATUS: Record<Offer['status'], [string, string, string]> = {
-  draft: ['Draft · not sent', '#F2F2F7', '#5E5E63'], sent: ['With your agent', '#FBEBDD', '#A54B00'], returned: ['Sent back for changes', '#FBEBDD', '#A54B00'],
-  registered: ['With the seller', '#FBEBDD', '#A54B00'], signed_back: ['Seller signed back', '#E8EEF9', '#2A4D8F'], accepted: ['Accepted', '#E3F2E8', '#2B7A4B'],
+  draft: ['Draft · not sent', '#F2F2F7', '#5E5E63'], sent: ['With your agent', '#FFF2E5', '#C93400'], returned: ['Sent back for changes', '#FFF2E5', '#C93400'],
+  registered: ['With the seller', '#FFF2E5', '#C93400'], signed_back: ['Seller signed back', '#E8EEF9', '#2A4D8F'], accepted: ['Accepted', '#E8F6EC', '#248A3D'],
   rejected: ['Not accepted', '#F2F2F7', '#5E5E63'], expired: ['Expired', '#F2F2F7', '#5E5E63'], withdrawn: ['Withdrawn', '#F2F2F7', '#5E5E63'],
-  void: ['Ended · condition not met', '#FDECEC', '#A11B1B'],
+  void: ['Ended · condition not met', '#FFEBEC', '#D70015'],
 };
 
 export default function Offers() {
@@ -34,9 +34,9 @@ export default function Offers() {
       <Title>Your offers</Title>
       <ErrorText>{error}</ErrorText>
       {hasDeal && <Button title="Open your deal" onPress={() => router.push('/deal')} />}
-      {list?.length === 0 && <Card><Text style={sora(700)}>No offers yet</Text><Text style={t.note}>Open a home you’ve visited and tap “Offer”.</Text></Card>}
+      {list?.length === 0 && <Card><Text style={sf(700)}>No offers yet</Text><Text style={t.note}>Open a home you’ve visited and tap “Offer”.</Text></Card>}
       {list?.map(o => <OfferCard key={o.id} o={o} onChange={load} />)}
-      <Text style={{ ...sora(700), fontSize: 12, color: color.brand }}>● Rule · multiple offers: the listing brokerage must tell every buyer agent how many offers it has. Other buyers’ terms stay private.</Text>
+      <Text style={{ ...sf(700), fontSize: 12, color: color.brand }}>● Rule · multiple offers: the listing brokerage must tell every buyer agent how many offers it has. Other buyers’ terms stay private.</Text>
     </Screen>
   );
 }
@@ -67,11 +67,11 @@ function OfferCard({ o, onChange }: { o: Offer; onChange: () => Promise<void> })
       <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
         {o.photo && <Image source={{ uri: o.photo.url }} accessibilityLabel={o.photo.alt} style={{ width: 64, height: 48, borderRadius: 8 }} />}
         <View style={{ flex: 1 }}>
-          <Pressable accessibilityRole="link" onPress={() => router.push(`/listing/${o.listingId}`)}><Text style={sora(700)}>{o.address}, {o.city}</Text></Pressable>
+          <Pressable accessibilityRole="link" onPress={() => router.push(`/listing/${o.listingId}`)}><Text style={sf(700)}>{o.address}, {o.city}</Text></Pressable>
           <Text style={t.note}>{money(o.price)} · deposit {money(o.deposit)} · all-in {money(o.allIn)}</Text>
         </View>
       </View>
-      <Text style={{ ...sora(700), fontSize: 12, alignSelf: 'flex-start', backgroundColor: bg, color: fg, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 2, overflow: 'hidden' }}>{label}</Text>
+      <Text style={{ ...sf(700), fontSize: 12, alignSelf: 'flex-start', backgroundColor: bg, color: fg, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 2, overflow: 'hidden' }}>{label}</Text>
       {o.registeredAt && <Text style={t.note}>Registered with {o.listingBrokerage} {when(o.registeredAt)} · seller decides by {when(o.irrevocableAt)}</Text>}
       {o.agentNote && <Text style={[t.note, { color: color.text }]}>Your agent: “{o.agentNote}”</Text>}
       {sb && (

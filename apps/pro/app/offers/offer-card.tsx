@@ -53,7 +53,7 @@ export function OfferCard({ o }: { o: ProOffer }) {
       {o.agentNote && <div className="k-note">You: “{o.agentNote}”</div>}
       {o.signBack && <div className="p-fence">Seller signed back at {money(o.signBack.price)}, open until {when(o.signBack.irrevocableAt)} · {o.signBack.status === 'signed_back' ? 'waiting for your client' : o.signBack.status === 'accepted' ? 'your client accepted' : o.signBack.status === 'rejected' ? 'your client declined' : 'expired'}</div>}
       {dep && (
-        <div className="p-fence" style={dep.receivedAt ? undefined : { background: '#FBEBDD', color: '#A54B00' }}>
+        <div className="p-fence" style={dep.receivedAt ? undefined : { background: 'var(--warn-tint)', color: 'var(--warn)' }}>
           {dep.receivedAt ? `Deposit ${money(dep.amount)} received by ${dep.holder} · ${when(dep.receivedAt)}` : `Deposit ${money(dep.amount)} to ${dep.holder} due by ${when(dep.dueAt)}`}
         </div>
       )}

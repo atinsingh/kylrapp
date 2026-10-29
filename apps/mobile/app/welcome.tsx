@@ -1,7 +1,7 @@
 import { Image, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { color } from '@klyr/tokens';
-import { display, Button, Card, Screen, sora, t } from '../components/ui';
+import { display, Button, Card, Screen, sf, t } from '../components/ui';
 
 export default function Welcome() {
   return (

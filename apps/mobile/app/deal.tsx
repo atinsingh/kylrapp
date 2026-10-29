@@ -6,7 +6,7 @@ import { calendarDate, money, nextBankingDate, torontoInputValue, torontoWhen } 
 import { color } from '@klyr/tokens';
 import { Back } from '../components/back';
 import { StepUp } from '../components/step-up';
-import { display, Button, Card, ErrorText, Field, Screen, sora, t } from '../components/ui';
+import { display, Button, Card, ErrorText, Field, Screen, sf, t } from '../components/ui';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 
@@ -67,7 +67,7 @@ export default function DealScreen() {
     ? <StepUp reason="Signing needs a fresh check." onCancel={() => setStepUp(false)} onDone={() => { setStepUp(false); void sign(); }} />
     : (
       <Card style={{ borderWidth: 2, borderColor: color.brand }}>
-        <Text style={sora(700)}>{signing.kind === 'release' ? 'Mutual release · Form 122' : signing.kind === 'amend' ? `Amendment · Form 120: ${signing.summary}` : `${signing.action === 'waive' ? 'Waive' : 'Confirm fulfilled'}: ${signing.title} · Form 123`}</Text>
+        <Text style={sf(700)}>{signing.kind === 'release' ? 'Mutual release · Form 122' : signing.kind === 'amend' ? `Amendment · Form 120: ${signing.summary}` : `${signing.action === 'waive' ? 'Waive' : 'Confirm fulfilled'}: ${signing.title} · Form 123`}</Text>
         <Text style={t.note}>{signing.kind === 'release' ? 'You and the seller release each other; your deposit comes back in full.' : signing.kind === 'amend' ? 'It changes the agreement only if the seller agrees.' : 'Once your agent delivers it, you can’t take it back.'}</Text>
         <Field label={`Type your full name to sign (${me?.legalName ?? ''})`} value={name} onChangeText={setName} autoComplete="name" />
         <ErrorText>{error}</ErrorText>
@@ -80,16 +80,16 @@ export default function DealScreen() {
     <Screen>
       <Back />
       <View style={{ backgroundColor: isVoid ? '#5E5E63' : color.brandInk, borderRadius: 20, padding: 18, gap: 6 }}>
-        <Text style={{ ...t.label, color: isVoid ? '#E5E5EA' : '#8CC2B1' }}>{d.address.toUpperCase()} · {money(d.price)}</Text>
+        <Text style={{ ...t.label, color: isVoid ? '#E5E5EA' : '#98989D' }}>{d.address.toUpperCase()} · {money(d.price)}</Text>
         <Text style={{ ...display(600), fontSize: 32, letterSpacing: -0.6, color: '#fff' }}>{isVoid ? 'Ended' : closed ? 'Welcome home' : d.stage === 'firm' ? 'Firm' : 'Conditional'}</Text>
-        <Text style={{ ...sora(), fontSize: 13, color: isVoid ? '#E5E5EA' : '#C9DDD6' }}>
+        <Text style={{ ...sf(), fontSize: 13, color: isVoid ? '#E5E5EA' : '#AEAEB2' }}>
           {isVoid ? 'A condition wasn’t met in time, so the agreement is void. Your deposit comes back in full.' : closed ? `Closed ${when(d.closedAt!)}. The keys are yours.` : `Closing ${longDate(d.closingDate)} · cash back ${money(d.cashBack)}`}
         </Text>
       </View>
       {isVoid && (d.release
         ? <Card><Text style={t.label}>MUTUAL RELEASE · FORM 122</Text><Text style={t.body}>✓ Signed {when(d.release.signedAt)}. {d.deposit?.returnedAt ? 'Your deposit is on its way back.' : 'Your agent gets the seller’s signature, then your deposit comes back.'}</Text></Card>
         : signing?.kind === 'release' ? signPanel
-          : <Card><Text style={sora(700)}>Sign the release to get your deposit back</Text><Button title="Sign the release" onPress={() => setSigning({ kind: 'release' })} /></Card>)}
+          : <Card><Text style={sf(700)}>Sign the release to get your deposit back</Text><Button title="Sign the release" onPress={() => setSigning({ kind: 'release' })} /></Card>)}
       {d.payout && (
         <Card style={{ borderWidth: 2, borderColor: color.brand }}>
           <Text style={t.label}>YOUR CASH BACK · {d.payout.pct}% OF THE COMMISSION</Text>
@@ -102,7 +102,7 @@ export default function DealScreen() {
           <Text style={t.label}>CLOSING · {d.tasks.filter(x => x.doneAt).length} OF {d.tasks.length} DONE</Text>
           {d.tasks.map(x => (
             <View key={x.key} style={{ gap: 6, paddingVertical: 6 }}>
-              <Text style={sora(700)}>{x.doneAt ? '✓ ' : ''}{STEPS[x.key][0]}</Text>
+              <Text style={sf(700)}>{x.doneAt ? '✓ ' : ''}{STEPS[x.key][0]}</Text>
               {x.doneAt && <Text style={t.note}>{x.details.name ? `${x.details.name}, ${x.details.firm}` : x.details.lender ?? x.details.insurer ?? 'Done'}</Text>}
               {!x.doneAt && x.key !== 'walkthrough' && (task === x.key ? (
                 <View style={{ gap: 6 }}>
@@ -116,14 +116,14 @@ export default function DealScreen() {
         </Card>
       )}
       {d.deposit && (
-        <Card style={d.deposit.receivedAt || isVoid ? undefined : { borderWidth: 2, borderColor: '#A54B00' }}>
-          <Text style={{ ...t.label, color: d.deposit.receivedAt || isVoid ? color.textSecondary : '#A54B00' }}>
+        <Card style={d.deposit.receivedAt || isVoid ? undefined : { borderWidth: 2, borderColor: '#C93400' }}>
+          <Text style={{ ...t.label, color: d.deposit.receivedAt || isVoid ? color.textSecondary : '#C93400' }}>
             {d.deposit.returnedAt ? 'DEPOSIT RETURNED' : d.deposit.receivedAt ? 'DEPOSIT RECEIVED' : isVoid ? 'DEPOSIT' : `DEPOSIT DUE BY ${when(d.deposit.dueAt).toUpperCase()}`}
           </Text>
           <Text style={{ ...display(600), fontSize: 28, letterSpacing: -0.6 }}>{money(d.deposit.amount)}</Text>
           <Text style={t.body}>{d.deposit.receivedAt ? `${d.deposit.holder} has it in trust.` : isVoid ? 'Nothing to send now. If you already sent it, it comes back after the release.' : `To ${d.deposit.holder} in trust, by bank draft or wire.`}</Text>
-          {d.deposit.trustVerifiedAt && <Text style={{ ...sora(600), fontSize: 12, color: '#2B7A4B' }}>✓ Trust account confirmed by phone · {when(d.deposit.trustVerifiedAt)}</Text>}
-          {!d.deposit.receivedAt && !isVoid && <Text style={{ ...sora(600), fontSize: 13, color: '#A11B1B', backgroundColor: '#FDECEC', padding: 10, borderRadius: 10 }}>Before you send money, phone {d.deposit.holder} at a number you look up yourself to confirm the trust account. Klyr never changes payment details by email.</Text>}
+          {d.deposit.trustVerifiedAt && <Text style={{ ...sf(600), fontSize: 12, color: '#248A3D' }}>✓ Trust account confirmed by phone · {when(d.deposit.trustVerifiedAt)}</Text>}
+          {!d.deposit.receivedAt && !isVoid && <Text style={{ ...sf(600), fontSize: 13, color: '#D70015', backgroundColor: '#FFEBEC', padding: 10, borderRadius: 10 }}>Before you send money, phone {d.deposit.holder} at a number you look up yourself to confirm the trust account. Klyr never changes payment details by email.</Text>}
         </Card>
       )}
       <Card>
@@ -135,7 +135,7 @@ export default function DealScreen() {
             : c.lapsedAt ? '× Not met in time' : isVoid ? 'Ended with the agreement' : signed ? `Signed ${when(signed)} · your agent delivers it` : `Until ${when(c.dueAt)}`;
           return (
             <View key={c.id} style={{ paddingVertical: 8, borderTopWidth: i ? 0.5 : 0, borderTopColor: color.separator, gap: 6 }}>
-              <Text style={sora(700)}>{LABEL[c.kind]}</Text>
+              <Text style={sf(700)}>{LABEL[c.kind]}</Text>
               <Text style={t.note}>{state}</Text>
               {!isVoid && !signed && !c.lapsedAt && (signing?.kind === 'notice' && signing.id === c.id ? signPanel : (
                 <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -153,7 +153,7 @@ export default function DealScreen() {
           <Text style={t.label}>CHANGES TO THE AGREEMENT · FORM 120</Text>
           {d.amendments.map(a => (
             <View key={a.id} style={{ gap: 4 }}>
-              <Text style={sora(600)}>{[...(a.changes.closingDate ? [`Closing to ${calendarDate(a.changes.closingDate)}`] : []), ...(a.changes.extend ?? []).map(e => `${LABEL[e.kind]} to ${when(e.until)}`)].join(' · ')}</Text>
+              <Text style={sf(600)}>{[...(a.changes.closingDate ? [`Closing to ${calendarDate(a.changes.closingDate)}`] : []), ...(a.changes.extend ?? []).map(e => `${LABEL[e.kind]} to ${when(e.until)}`)].join(' · ')}</Text>
               <Text style={t.note}>{STATUS[a.status]}{a.agentNote ? ` · “${a.agentNote}”` : ''}</Text>
               {a.status === 'signed' && <Button title="Withdraw" alt busy={busy} onPress={async () => { const r = await klyr.withdrawAmendment(a.id); if (r.ok) setD(r.data); else setError(errorText(r.error)); }} />}
             </View>

@@ -17,7 +17,7 @@ export function CancelVisit({ id, address }: { id: string; address: string }) {
   if (error) return <span className="k-note" role="alert">{error}</span>;
   return ask ? (
     <span style={{ display: 'flex', gap: 4 }}>
-      <button onClick={cancel} style={{ ...link, color: '#A11B1B' }} aria-label={`Confirm cancelling the visit to ${address}`}>Cancel visit</button>
+      <button onClick={cancel} style={{ ...link, color: 'var(--accent)' }} aria-label={`Confirm cancelling the visit to ${address}`}>Cancel visit</button>
       <button onClick={() => setAsk(false)} style={{ ...link, color: 'var(--muted)' }}>Keep</button>
     </span>
   ) : <button onClick={() => setAsk(true)} style={{ ...link, color: 'var(--brand)' }} aria-label={`Cancel the visit to ${address}`}>Cancel</button>;

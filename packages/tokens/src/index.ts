@@ -1,45 +1,61 @@
 /**
- * Klyr's app look, in the spirit of DoorDash and Uber: white screens, black actions, grey filled controls,
- * bold sans type, Klyr green for money and status. Body text never goes lighter than `textSecondary` (WCAG AA).
+ * Klyr follows Apple's Human Interface Guidelines: system colours, grouped backgrounds, inset grouped
+ * sections, San Francisco type (Inter where SF isn't available). Text colours meet WCAG AA on white and on
+ * the grouped background.
  */
 export const color = {
-  brand: '#0B7A55',
-  /** Primary actions and the selected state: near-black. */
-  brandInk: '#111111',
-  brandTint: '#E6F4EE',
-  brandOnDark: '#7EDDB6',
-  /** Alerts and overdue items. */
-  accent: '#C8372A',
-  accentTint: '#FDECEA',
-  text: '#111111',
-  textStrong: '#333333',
-  textSecondary: '#5E5E5E',
+  /** The tint: buttons, links, selected tabs (iOS systemBlue). */
+  brand: '#007AFF',
+  /** Filled primary actions: the same tint. */
+  brandInk: '#007AFF',
+  /** Tinted buttons and highlights. */
+  brandTint: '#E5F1FF',
+  brandOnDark: '#64D2FF',
+  /** Money you keep or save (iOS systemGreen, accessible variant for text). */
+  money: '#248A3D',
+  moneyTint: '#E8F6EC',
+  /** Destructive and overdue (iOS systemRed). */
+  accent: '#D70015',
+  accentTint: '#FFEBEC',
+  /** Waiting on someone (iOS systemOrange, accessible variant for text). */
+  warning: '#C93400',
+  warningTint: '#FFF2E5',
+  /** label, secondaryLabel (solid for AA), tertiaryLabel. */
+  text: '#000000',
+  textStrong: '#1C1C1E',
+  textSecondary: '#6C6C70',
+  textTertiary: '#8E8E93',
+  /** secondarySystemGroupedBackground: sections and cards. */
   surface: '#FFFFFF',
-  /** Screens are white; grey is for filled controls and grouped blocks. */
-  surfaceGrouped: '#FFFFFF',
-  canvas: '#F3F3F3',
-  line: '#EAEAEA',
-  separator: 'rgba(0,0,0,.08)',
-  focus: '#111111',
+  /** systemGroupedBackground: every screen. */
+  surfaceGrouped: '#F2F2F7',
+  /** tertiarySystemFill: text fields, chips, icon wells. */
+  canvas: '#EEEEF0',
+  line: '#E5E5EA',
+  separator: '#C6C6C8',
+  /** A dark panel for the one big number on a screen. */
+  panel: '#1C1C1E',
+  focus: '#007AFF',
 } as const;
 
 export const font = {
-  family: 'Sora',
-  /** Headlines and hero numbers: the same family, heavier and tighter. */
-  display: 'Sora',
-  fallback: '-apple-system, system-ui, sans-serif',
-  displayFallback: '-apple-system, system-ui, sans-serif',
+  /** San Francisco on Apple devices; Inter elsewhere. */
+  family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", Inter',
+  display: '-apple-system, BlinkMacSystemFont, "SF Pro Display", Inter',
+  fallback: 'system-ui, "Helvetica Neue", Arial, sans-serif',
+  displayFallback: 'system-ui, "Helvetica Neue", Arial, sans-serif',
   weights: [400, 500, 600, 700, 800] as const,
   /** No text smaller than 12 px (Launch Checklist, accessibility). */
   minSize: 12,
-  body: 15,
-  nav: 15,
+  body: 17,
+  nav: 17,
 } as const;
 
-export const radius = { chip: 999, button: 12, card: 16, row: 12, item: 10, logo: 8, photo: 14 } as const;
+/** iOS corner radii: inset grouped sections 10–12, large buttons 12–14, capsules. */
+export const radius = { chip: 999, button: 12, card: 12, row: 10, item: 8, logo: 8, photo: 12 } as const;
 
 export const layout = {
-  sidebarWidth: 276,
+  sidebarWidth: 260,
   /** Minimum touch target. */
   touch: 44,
   focusRing: { width: 3, offset: 2 },

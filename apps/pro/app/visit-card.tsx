@@ -16,8 +16,8 @@ const fromLocal = fromTorontoInput;
 const metres = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${m} m`);
 
 const STATUS: Record<ProShowing['status'], [string, string, string]> = {
-  requested: ['Requested', '#FBEBDD', '#A54B00'],
-  confirmed: ['Confirmed', '#E3F2E8', '#2B7A4B'],
+  requested: ['Requested', 'var(--warn-tint)', 'var(--warn)'],
+  confirmed: ['Confirmed', 'var(--money-tint)', 'var(--money)'],
   declined: ['Declined', '#F2F2F7', '#5E5E63'],
   cancelled: ['Cancelled by client', '#F2F2F7', '#5E5E63'],
   completed: ['Visited', '#E8EEF9', '#2A4D8F'],

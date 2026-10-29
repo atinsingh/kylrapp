@@ -8,6 +8,7 @@ import { QUEUES } from './jobs/queues.js';
 import { NotifyService } from './notify/notify.service.js';
 import { createMailer } from './identity/mailer.js';
 import { createPusher } from './notify/push.js';
+import { sendSearchAlerts } from './listings/alerts.js';
 import { lapseDue, remindDeadlines } from './offers/progress.service.js';
 import { sendVisitReminders } from './notify/visit-notes.js';
 
@@ -26,6 +27,8 @@ const workers = [
     const x = { db, notify, mail };
     return { lapsed: await lapseDue(x), reminded: await remindDeadlines(x) };
   }, { connection }),
+  // Saved-search alerts: instant ones each run, daily digests from 7 am Toronto.
+  new Worker(QUEUES.alerts, async () => ({ sent: await sendSearchAlerts({ db, notify, mail }) }), { connection }),
   new Worker(QUEUES.visitReminders, async () => ({ sent: await sendVisitReminders(db, notify) }), { connection }),
 ];
 
@@ -33,6 +36,7 @@ await new Queue(QUEUES.listingFeed, { connection }).upsertJobScheduler('feed-eve
 const deadlines = new Queue(QUEUES.deadlines, { connection });
 await deadlines.removeJobScheduler('deadlines-every-15m'); // the old 15-minute schedule
 await deadlines.upsertJobScheduler('deadlines-every-minute', { every: 60_000 });
+await new Queue(QUEUES.alerts, { connection }).upsertJobScheduler('alerts-every-5m', { every: 5 * 60_000 });
 await new Queue(QUEUES.visitReminders, { connection }).upsertJobScheduler('visit-reminders-every-minute', { every: 60_000 });
 
 const stop = async () => { await Promise.all(workers.map(w => w.close())); process.exit(0); };

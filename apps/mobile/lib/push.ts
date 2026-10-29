@@ -45,7 +45,7 @@ export function usePush(enabled: boolean): { state: PushState; openSettings: () 
   // Tapping a push opens its screen: your deal, offers or visits.
   useEffect(() => {
     const screen = last?.notification.request.content.data?.screen;
-    if (enabled && (screen === 'deal' || screen === 'offers' || screen === 'visits')) router.push(`/${screen}`);
+    if (enabled && (screen === 'deal' || screen === 'offers' || screen === 'visits' || screen === 'searches')) router.push(`/${screen}`);
   }, [enabled, last]);
 
   return { state, openSettings: () => void Linking.openSettings() };

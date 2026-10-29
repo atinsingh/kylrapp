@@ -248,7 +248,19 @@ export const savedSearches = pgTable('saved_searches', {
   filters: jsonb('filters').notNull(),
   alert: text('alert', { enum: ['instant', 'daily', 'off'] }).notNull().default('daily'),
   createdAt: created(),
+  lastAlertedAt: ts('last_alerted_at'),
 });
+
+/**
+ * What a saved search has already told its owner about, and at what price. A matching home with no row
+ * is new; a lower price than the row's is a price drop. Works the same for seed data and the VOW feed.
+ */
+export const savedSearchHits = pgTable('saved_search_hits', {
+  searchId: uuid('search_id').notNull().references(() => savedSearches.id, { onDelete: 'cascade' }),
+  listingId: uuid('listing_id').notNull().references(() => listings.id, { onDelete: 'cascade' }),
+  price: dollars('price').notNull(),
+  seenAt: ts('seen_at').notNull().defaultNow(),
+}, t => [primaryKey({ columns: [t.searchId, t.listingId] })]);
 
 /** Drives the "Viewed Oct 24" badge and saved homes. */
 export const listingViews = pgTable('listing_views', {

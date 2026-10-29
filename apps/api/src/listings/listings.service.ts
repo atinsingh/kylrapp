@@ -23,12 +23,7 @@ export class ListingsService {
   ) {}
 
   async search(userId: string, q: ListingSearch) {
-    const where: SQL[] = [eq(listings.status, 'active'), eq(listings.kind, q.kind), eq(listings.internetDisplay, true)];
-    if (q.city) where.push(inArray(listings.city, q.city.split(',').map(c => c.trim()).filter(Boolean)));
-    if (q.minPrice != null) where.push(gte(listings.price, q.minPrice));
-    if (q.maxPrice != null) where.push(lte(listings.price, q.maxPrice));
-    if (q.minBeds != null) where.push(gte(listings.beds, q.minBeds));
-    if (q.type) where.push(eq(listings.propertyType, q.type));
+    const where = filterWhere(q);
     if (q.near) {
       where.push(sql`ST_DWithin(${listings.geom}::geography, ST_SetSRID(ST_MakePoint(${q.near.lng}, ${q.near.lat}), 4326)::geography, ${q.near.radiusM})`);
     }
@@ -155,4 +150,15 @@ export function toEstimateInput(r: Row) {
     price: r.price, city: r.city, type: r.propertyType as PropertyType,
     coop: Number(r.coop ?? 0.025), tax: r.annualTax ?? 0, fee: r.condoFee ?? undefined,
   };
+}
+
+/** Active, displayable listings matching search filters: shared by search and saved-search alerts. */
+export function filterWhere(q: { kind?: 'sale' | 'lease'; city?: string; minPrice?: number; maxPrice?: number; minBeds?: number; type?: string }): SQL[] {
+  const where: SQL[] = [eq(listings.status, 'active'), eq(listings.kind, q.kind ?? 'sale'), eq(listings.internetDisplay, true)];
+  if (q.city) where.push(inArray(listings.city, q.city.split(',').map(c => c.trim()).filter(Boolean)));
+  if (q.minPrice != null) where.push(gte(listings.price, q.minPrice));
+  if (q.maxPrice != null) where.push(lte(listings.price, q.maxPrice));
+  if (q.minBeds != null) where.push(gte(listings.beds, q.minBeds));
+  if (q.type) where.push(eq(listings.propertyType, q.type as 'House' | 'Townhouse' | 'Condo'));
+  return where;
 }

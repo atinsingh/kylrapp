@@ -46,6 +46,7 @@ function Routes() {
         <Stack.Screen name="offer/[id]" />
         <Stack.Screen name="offers" />
         <Stack.Screen name="deal" />
+        <Stack.Screen name="searches" />
         <Stack.Screen name="security" />
       </Stack.Protected>
     </Stack>

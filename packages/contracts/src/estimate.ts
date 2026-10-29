@@ -42,3 +42,22 @@ export const Assumptions = z.object({
   lawyerFee: z.number().int().min(0).max(10_000),
 });
 export type Assumptions = z.infer<typeof Assumptions>;
+
+/** The filters a saved search keeps (the same ones as search). */
+export const SearchFilters = z.object({
+  city: z.string().trim().max(200).optional(),
+  minPrice: z.number().int().nonnegative().optional(),
+  maxPrice: z.number().int().positive().optional(),
+  minBeds: z.number().int().nonnegative().max(10).optional(),
+  type: z.enum(['House', 'Townhouse', 'Condo']).optional(),
+});
+export type SearchFilters = z.infer<typeof SearchFilters>;
+
+export const SaveSearchRequest = z.object({
+  name: z.string().trim().min(1).max(80),
+  filters: SearchFilters,
+  /** "instant": within minutes of a new listing or price drop; "daily": one morning email. */
+  alert: z.enum(['instant', 'daily', 'off']).default('daily'),
+});
+export type SaveSearchRequest = z.infer<typeof SaveSearchRequest>;
+export const UpdateSearchRequest = z.object({ alert: z.enum(['instant', 'daily', 'off']) });

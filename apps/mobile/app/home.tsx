@@ -9,6 +9,7 @@ import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 import { Card, Chip, ErrorText, sora, t } from '../components/ui';
 import { PhotoStrip } from '../components/photo-strip';
+import { HomesMap } from '../components/homes-map';
 import { useCompare } from '../lib/compare';
 
 const CITIES = ['Mississauga', 'Toronto', 'Oakville', 'Brampton', 'Burlington'];
@@ -29,6 +30,14 @@ export default function Home() {
   // "Search homes up to $X" from What you can afford.
   useEffect(() => { if (params.maxPrice) setMaxPrice(Number(params.maxPrice)); }, [params.maxPrice]);
   const [savedOnly, setSavedOnly] = useState(false);
+  const [view, setView] = useState<'list' | 'map'>('list');
+  const [savedNote, setSavedNote] = useState('');
+  const searchName = [cities.join(', ') || 'All areas', maxPrice && `up to ${short(maxPrice)}`].filter(Boolean).join(' · ');
+  async function saveSearch() {
+    setSavedNote('');
+    const r = await klyr.saveSearch(searchName, { city: cities.join(',') || undefined, maxPrice }, 'instant');
+    setSavedNote(r.ok ? `Saved “${searchName}”. We’ll tell you about new listings and price drops.` : errorText(r.error));
+  }
 
   const load = useCallback(async () => {
     const q: SearchQuery = { city: cities.join(',') || undefined, maxPrice, saved: savedOnly || undefined };
@@ -65,7 +74,7 @@ export default function Home() {
         </View>
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-          {([['Visits and docs', '/visits'], ['Offers', '/offers'], ['What you can afford', '/afford'], ['How we estimate', '/estimate'], ...(compare.ids.length >= 2 ? [[`Compare ${compare.ids.length}`, '/compare']] : [])] as [string, '/visits' | '/offers' | '/afford' | '/estimate' | '/compare'][])
+          {([['Visits and docs', '/visits'], ['Offers', '/offers'], ['Saved searches', '/searches'], ['What you can afford', '/afford'], ['How we estimate', '/estimate'], ...(compare.ids.length >= 2 ? [[`Compare ${compare.ids.length}`, '/compare']] : [])] as [string, '/visits' | '/offers' | '/searches' | '/afford' | '/estimate' | '/compare'][])
             .map(([label, href]) => (
               <Pressable key={href} accessibilityRole="link" onPress={() => router.push(href)} style={{ minHeight: 44, justifyContent: 'center' }}>
                 <Text style={{ ...sora(700), fontSize: 13, color: color.brand }}>{label} ›</Text>
@@ -83,14 +92,22 @@ export default function Home() {
 
         <ErrorText>{error}</ErrorText>
         {!homes && !error && <ActivityIndicator color={color.brand} style={{ marginTop: 24 }} />}
-        {homes && <Text accessibilityLiveRegion="polite" style={t.note}>{homes.length} {homes.length === 1 ? 'home' : 'homes'}</Text>}
+        {homes && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Text accessibilityLiveRegion="polite" style={[t.note, { flex: 1 }]}>{homes.length} {homes.length === 1 ? 'home' : 'homes'}</Text>
+            {!savedOnly && <Chip label="Save this search" on={false} onPress={saveSearch} />}
+            <Chip label={view === 'list' ? 'Map' : 'List'} on={false} onPress={() => setView(view === 'list' ? 'map' : 'list')} />
+          </View>
+        )}
+        {savedNote ? <Text accessibilityLiveRegion="polite" style={{ ...sora(600), fontSize: 13, color: color.brand }}>{savedNote}</Text> : null}
+        {view === 'map' && homes && homes.length > 0 && <HomesMap homes={homes} onOpen={id => router.push(`/listing/${id}`)} />}
         {homes?.length === 0 && (
           <Card>
             <Text style={sora(700)}>{savedOnly ? 'No saved homes yet' : 'No homes match'}</Text>
             <Text style={t.note}>{savedOnly ? 'Tap Save on any listing to track its price and all-in cost.' : 'Try a higher budget or another city.'}</Text>
           </Card>
         )}
-        {homes?.map(h => (
+        {view === 'list' && homes?.map(h => (
           <Card key={h.id} style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
             <PhotoStrip photos={h.photos} address={h.address} sample={h.samplePhotos} onPress={() => router.push(`/listing/${h.id}`)} />
             <Pressable accessibilityRole="link" accessibilityLabel={`${h.address}, ${h.city}, all-in ${money(h.allIn)}`} onPress={() => router.push(`/listing/${h.id}`)} style={{ padding: 14, paddingBottom: 4, gap: 8 }}>

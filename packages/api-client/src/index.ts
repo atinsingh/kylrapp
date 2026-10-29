@@ -159,6 +159,12 @@ export interface IdReview {
   actingForThirdParty: boolean; politicallyExposed: boolean; buyingAs: 'self' | 'company'; vendor: string; method: string;
 }
 
+export interface SearchFilters { city?: string; minPrice?: number; maxPrice?: number; minBeds?: number; type?: 'House' | 'Townhouse' | 'Condo' }
+export interface SavedSearch {
+  id: string; name: string; filters: SearchFilters; alert: 'instant' | 'daily' | 'off';
+  createdAt: string; lastAlertedAt: string | null; matches: number;
+}
+
 export interface Assumptions { rate: number; downPct: number; firstTime: boolean; lawyerFee: number }
 /** Session as the client sees it; web never receives the token (the proxy keeps it). */
 export type SignedIn = Omit<SessionResponse, 'session'> & { session: { token?: string; expiresAt: string; mfaRequired: boolean } };
@@ -266,6 +272,10 @@ export function createClient(opts: ClientOptions) {
     conditionNotice: (id: string, action: 'waive' | 'fulfil', typedName: string) => post<Deal>(`/deal/conditions/${encodeURIComponent(id)}`, { action, typedName, readConfirmed: true }),
     proposeAmendment: (a: { closingDate?: string; extend: { conditionId: string; until: string }[] }, typedName: string) => post<Deal>('/deal/amendments', { ...a, typedName, readConfirmed: true }),
     withdrawAmendment: (id: string) => del<Deal>(`/deal/amendments/${encodeURIComponent(id)}`),
+    searches: () => get<SavedSearch[]>('/me/searches'),
+    saveSearch: (name: string, filters: SearchFilters, alert: SavedSearch['alert'] = 'daily') => post<{ id: string; matches: number }>('/me/searches', { name, filters, alert }),
+    setSearchAlert: (id: string, alert: SavedSearch['alert']) => call<{ id: string; alert: string }>('PATCH', `/me/searches/${encodeURIComponent(id)}`, { alert }),
+    deleteSearch: (id: string) => del<{ ok: true }>(`/me/searches/${encodeURIComponent(id)}`),
     dealTask: (t: DealTaskInput) => post<Deal>('/deal/tasks', t),
     signRelease: (typedName: string) => post<Deal>('/deal/release', { typedName, readConfirmed: true }),
 

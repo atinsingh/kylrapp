@@ -604,7 +604,8 @@ export const quotes = pgTable('quotes', {
   rate: numeric('rate', { precision: 6, scale: 4 }),
   /** Disclosed to the client in writing (RECO Bulletin 3.3). */
   referralFee: dollars('referral_fee').notNull().default(0),
-  source: text('source', { enum: ['manual', 'import'] }).notNull(),
+  /** manual: the agent typed it in; partner: the provider sent it from the partner portal. */
+  source: text('source', { enum: ['manual', 'import', 'partner'] }).notNull(),
   details: jsonb('details'),
   validUntil: ts('valid_until'),
   acceptedAt: ts('accepted_at'),

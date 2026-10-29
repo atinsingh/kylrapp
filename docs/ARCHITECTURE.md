@@ -225,8 +225,13 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * Interest on the last month's rent deposit (RTA s. 106): due every lease anniversary at that year's guideline (`lmrInterestSchedule` and `RENT_GUIDELINES` in `@klyr/core`). The landlord records each year as paid, or kept to top the deposit up to a new rent, within 30 days of the date. The tenant sees it and is emailed.
   * Landlords have the full flow on the phone: start, first year after fees, Form 210, Form 326 consents, applicants on the same facts, viewings and deposit interest.
 
+* Partner portal (Klyr Pro `/partner`, Klyr Admin; screenshots `141`–`143`):
+  * Klyr Admin links a person to a provider firm (lender, lawyer, inspector or insurer role, scoped to that firm). They sign in like staff: emailed code, then an authenticator.
+  * Each firm is emailed when a client asks it for a quote, and sees the requests that named it with only what it needs to quote: the client's first name, the amount and their note. The client's name and email appear only once the client chooses that firm.
+  * The firm sends or updates its own quote. The same rules apply as when an agent enters one: ranked only by the client's cost, any referral fee shown to the client, none from lawyers or firms without a referral agreement. The client's agent is told when a partner quotes.
+
 **Still to build** (no outside dependency, smaller follow-ups):
-* A provider portal so lenders, lawyers, inspectors and insurers send quotes themselves, and quote imports.
+* Quote imports from providers' own systems.
 * Privacy requests on the phone (web only today); the client-facing "as of" date reading the published assumptions everywhere (the Admin value drives defaults today, the label still shows the shipped date on some screens).
 * Reassigning an agent's deals from Users and roles.
 

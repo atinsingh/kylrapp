@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import type { MarketplaceAudit } from '@klyr/api-client';
 import { money, torontoWhen } from '@klyr/core';
 import { api, sessionToken } from '@klyr/web-kit/session';
+import { PartnerForm } from './partner-form';
 
 export const metadata = { title: 'Marketplace · Klyr Admin' };
 const KIND: Record<string, string> = { law_firm: 'Lawyer', lender: 'Lender', inspector: 'Inspector', insurer: 'Insurer' };
@@ -10,9 +11,9 @@ const KIND: Record<string, string> = { law_firm: 'Lawyer', lender: 'Lender', ins
 /** Referral fee audit: every chosen quote, what Klyr earns, and whether the client acknowledged it in writing. */
 export default async function MarketplacePage() {
   if (!(await sessionToken())) redirect('/signin');
-  const res = await api<MarketplaceAudit>('/admin/marketplace');
+  const [res, people] = await Promise.all([api<MarketplaceAudit>('/admin/marketplace'), api<{ email: string; name: string | null; orgId: string | null; role: string }[]>('/admin/partners')]);
   if (!res.data) redirect('/signin');
-  const m = res.data;
+  const m = res.data, partners = people.data ?? [];
   const total = m.chosen.reduce((t, c) => t + c.referralFee, 0);
   return (
     <main className="a-wrap">
@@ -29,9 +30,11 @@ export default async function MarketplacePage() {
         {m.providers.map(p => (
           <div key={p.id} style={{ padding: '6px 0', borderTop: '.5px solid var(--sep)' }}>
             <strong>{p.name}</strong> <span className="k-note">· {KIND[p.kind]} · {p.registration} · {p.referralAgreement ? 'referral agreement' : 'no referral fees'} · {p.quoted} quoted · {p.chosen} chosen{p.referralFees ? ` · ${money(p.referralFees)} in fees` : ''}</span>
+            <div className="k-note">Portal: {partners.filter(x => x.orgId === p.id).map(x => x.name ?? x.email).join(', ') || 'nobody linked; your agents enter its quotes'}</div>
           </div>
         ))}
       </section>
+      <PartnerForm providers={m.providers.map(p => ({ id: p.id, name: p.name }))} />
       <section className="k-card" aria-label="Chosen quotes">
         <div className="k-label">CHOSEN QUOTES · {m.chosen.length}</div>
         {m.chosen.length === 0 && <span className="k-note">None yet.</span>}

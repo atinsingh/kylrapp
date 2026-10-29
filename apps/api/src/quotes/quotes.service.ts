@@ -1,15 +1,18 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, desc, eq, inArray } from 'drizzle-orm';
-import type { EnterQuoteRequest, QuoteKind, QuoteRequestRequest } from '@klyr/contracts';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import type { EnterQuoteRequest, PartnerQuoteRequest, PartnerUserRequest, QuoteKind, QuoteRequestRequest } from '@klyr/contracts';
 import { HST, termCost } from '@klyr/core';
 import { DB, type Db } from '../db/db.module.js';
-import { auditLog, dealParties, deals, dealTasks, organizations, quoteRequests, quotes, users } from '../db/schema.js';
+import { auditLog, dealParties, deals, dealTasks, organizations, quoteRequests, quotes, userRoles, users } from '../db/schema.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 import { NotifyService } from '../notify/notify.service.js';
 
 const SIGN = 'Klyr Realty Inc., Brokerage';
 const money = (n: number) => '$' + n.toLocaleString('en-CA');
 const ORG_KIND: Record<QuoteKind, 'law_firm' | 'lender' | 'inspector' | 'insurer'> = { lawyer: 'law_firm', lender: 'lender', inspector: 'inspector', insurer: 'insurer' };
+/** The partner-portal role for each kind of provider firm. */
+const PARTNER_ROLE = { law_firm: 'lawyer', lender: 'lender', inspector: 'inspector', insurer: 'insurer' } as const;
+const PARTNER_ROLES = Object.values(PARTNER_ROLE);
 const LABEL: Record<QuoteKind, string> = { lawyer: 'lawyer', lender: 'mortgage', inspector: 'home inspection', insurer: 'home insurance' };
 type Provider = { email?: string; phone?: string; about?: string; referral?: boolean };
 type Req = typeof quoteRequests.$inferSelect;
@@ -44,6 +47,11 @@ export class QuotesService {
     const [r] = await this.db.insert(quoteRequests).values({ dealId: deal.id, kind, providerIds: [...new Set(providerIds)], details, note: note ?? null }).returning();
     await this.db.insert(auditLog).values({ actorId: userId, action: 'quote_request', entity: 'quote_request', entityId: r!.id, data: { kind, providers: providerIds.length } });
     await this.notify.toUser(deal.agentId, 'agent', { title: `Quotes requested: ${LABEL[kind]}`, body: `${providerIds.length} provider(s)`, data: { screen: 'quotes' } });
+    const orgs = await this.db.select().from(organizations).where(inArray(organizations.id, providerIds));
+    for (const o of orgs) {
+      const email = ((o.details ?? {}) as Provider).email;
+      if (email) await this.mail.send({ to: email, subject: `New ${LABEL[kind]} quote request from a Klyr client`, text: `A Klyr client asked ${o.name} for a ${LABEL[kind]} quote. Send it from the Klyr partner portal; the client sees quotes ranked only by what they pay.\n\n${SIGN}` });
+    }
     return this.mine(userId);
   }
 
@@ -115,29 +123,106 @@ export class QuotesService {
     const r = row.r;
     if (r.status !== 'open') throw new ConflictException({ code: 'not_open', message: 'The client has already chosen.' });
     if (req.kind !== r.kind) throw new BadRequestException({ code: 'wrong_kind', message: `This request is for ${LABEL[r.kind]} quotes.` });
-    if (!r.providerIds.includes(req.providerId)) throw new BadRequestException({ code: 'bad_provider', message: 'The client didn’t ask this provider.' });
+    await this.save(r, req.providerId, req, agentId, 'manual');
+    return (await this.forAgent(agentId)).find(x => x.id === r.id)!;
+  }
+
+  /** One quote per provider per request; a newer one replaces it. Shared by agents and the partner portal. */
+  private async save(r: Req, providerId: string, req: PartnerQuoteRequest, actorId: string, source: 'manual' | 'partner') {
+    if (!r.providerIds.includes(providerId)) throw new BadRequestException({ code: 'bad_provider', message: 'The client didn’t ask this provider.' });
     if (req.kind === 'lawyer' && req.referralFee > 0) throw new BadRequestException({ code: 'lawyer_referral', message: 'Lawyers can’t pay referral fees to a brokerage (Law Society rules).' });
-    const [org] = await this.db.select().from(organizations).where(eq(organizations.id, req.providerId));
+    const [org] = await this.db.select().from(organizations).where(eq(organizations.id, providerId));
     if (req.referralFee > 0 && !((org!.details ?? {}) as Provider).referral) throw new BadRequestException({ code: 'no_referral_agreement', message: `Klyr has no referral agreement with ${org!.name}.` });
     const { cost, details } = this.price(r, req);
     const values = {
-      requestId: r.id, dealId: r.dealId, providerOrgId: req.providerId, kind: r.kind, clientCost: cost, rate: req.kind === 'lender' ? String(req.rate) : null,
-      referralFee: req.referralFee, source: 'manual' as const, details, validUntil: new Date(Date.now() + req.validDays * 86_400_000),
+      requestId: r.id, dealId: r.dealId, providerOrgId: providerId, kind: r.kind, clientCost: cost, rate: req.kind === 'lender' ? String(req.rate) : null,
+      referralFee: req.referralFee, source, details, validUntil: new Date(Date.now() + req.validDays * 86_400_000),
     };
-    const [existing] = await this.db.select({ id: quotes.id }).from(quotes).where(and(eq(quotes.requestId, r.id), eq(quotes.providerOrgId, req.providerId)));
+    const [existing] = await this.db.select({ id: quotes.id }).from(quotes).where(and(eq(quotes.requestId, r.id), eq(quotes.providerOrgId, providerId)));
     if (existing) await this.db.update(quotes).set(values).where(eq(quotes.id, existing.id));
     else await this.db.insert(quotes).values(values);
-    await this.db.insert(auditLog).values({ actorId: agentId, action: 'quote_entered', entity: 'quote_request', entityId: r.id, data: { provider: org!.name, clientCost: cost, referralFee: req.referralFee } });
+    await this.db.insert(auditLog).values({ actorId, action: 'quote_entered', entity: 'quote_request', entityId: r.id, data: { provider: org!.name, clientCost: cost, referralFee: req.referralFee, source } });
     const [client] = await this.db.select({ id: users.id, email: users.email }).from(dealParties).innerJoin(users, eq(users.id, dealParties.userId))
       .where(and(eq(dealParties.dealId, r.dealId), eq(dealParties.role, 'client')));
     if (client) await this.notify.toUser(client.id, 'consumer', { title: `New ${LABEL[r.kind]} quote`, body: org!.name, data: { screen: 'quotes' } });
-    return (await this.forAgent(agentId)).find(x => x.id === r.id)!;
+    const [deal] = await this.db.select({ agentId: deals.agentId }).from(deals).where(eq(deals.id, r.dealId));
+    if (source === 'partner' && deal) await this.notify.toUser(deal.agentId, 'agent', { title: `${org!.name} sent a quote`, body: LABEL[r.kind], data: { screen: 'quotes' } });
+  }
+
+  // ── Partner portal ───────────────────────────────────────────────────────
+
+  /** The firm a partner user acts for. */
+  async partner(userId: string) {
+    const [r] = await this.db.select({ role: userRoles.role, org: organizations, name: users.legalName, email: users.email }).from(userRoles)
+      .innerJoin(organizations, eq(organizations.id, userRoles.orgId)).innerJoin(users, eq(users.id, userRoles.userId))
+      .where(and(eq(userRoles.userId, userId), inArray(userRoles.role, PARTNER_ROLES))).limit(1);
+    if (!r) throw new NotFoundException({ code: 'not_partner', message: 'This account isn’t linked to a provider firm.' });
+    const d = (r.org.details ?? {}) as Provider;
+    return { name: r.name, email: r.email, role: r.role, org: { id: r.org.id, name: r.org.name, kind: r.org.kind, registration: r.org.registration, referralAgreement: r.org.kind !== 'law_firm' && !!d.referral } };
+  }
+
+  /**
+   * Requests that named this firm. Before the client chooses, the partner sees only what it needs to quote
+   * (first name, the amount, the note); the client's contact details come only if they choose this firm.
+   */
+  async partnerRequests(userId: string) {
+    const me = await this.partner(userId);
+    const rows = await this.db.select({ r: quoteRequests, name: users.legalName, email: users.email }).from(quoteRequests)
+      .innerJoin(dealParties, and(eq(dealParties.dealId, quoteRequests.dealId), eq(dealParties.role, 'client')))
+      .innerJoin(users, eq(users.id, dealParties.userId))
+      .where(sql`${quoteRequests.providerIds} @> ${JSON.stringify([me.org.id])}::jsonb`).orderBy(desc(quoteRequests.createdAt)).limit(100);
+    const mine = rows.length ? await this.db.select().from(quotes).where(and(inArray(quotes.requestId, rows.map(x => x.r.id)), eq(quotes.providerOrgId, me.org.id))) : [];
+    return rows.map(({ r, name, email }) => {
+      const q = mine.find(x => x.requestId === r.id), won = !!q?.acceptedAt;
+      return {
+        id: r.id, kind: r.kind, details: r.details as Record<string, number>, note: r.note, createdAt: r.createdAt.toISOString(),
+        status: r.status === 'open' ? 'open' : won ? 'won' : r.status === 'chosen' ? 'not_chosen' : 'cancelled',
+        client: won ? { name, email } : { name: (name ?? 'Klyr client').split(' ')[0]! },
+        quote: q ? { clientCost: q.clientCost, referralFee: q.referralFee, details: q.details as Record<string, number>, validUntil: q.validUntil?.toISOString() ?? null, source: q.source } : null,
+      };
+    });
+  }
+
+  async partnerQuote(userId: string, requestId: string, req: PartnerQuoteRequest) {
+    const me = await this.partner(userId);
+    const [r] = await this.db.select().from(quoteRequests).where(eq(quoteRequests.id, requestId));
+    if (!r || !r.providerIds.includes(me.org.id)) throw new NotFoundException();
+    if (r.status !== 'open') throw new ConflictException({ code: 'not_open', message: 'The client has already chosen.' });
+    if (req.kind !== r.kind) throw new BadRequestException({ code: 'wrong_kind', message: `This request is for ${LABEL[r.kind]} quotes.` });
+    await this.save(r, me.org.id, req, userId, 'partner');
+    return this.partnerRequests(userId);
+  }
+
+  // ── Klyr Admin ───────────────────────────────────────────────────────────
+
+  /** Link a person to a provider firm, so they can use the partner portal, or remove them. */
+  async partnerUser(adminId: string, req: PartnerUserRequest) {
+    const [u] = await this.db.select().from(users).where(and(sql`lower(${users.email}) = ${req.email.toLowerCase()}`, isNull(users.deletedAt)));
+    if (!u) throw new NotFoundException({ code: 'no_user', message: 'No account with that email. They sign up first, then you link them.' });
+    const [org] = await this.db.select().from(organizations).where(eq(organizations.id, req.orgId));
+    if (!org || !(org.kind in PARTNER_ROLE)) throw new BadRequestException({ code: 'bad_org', message: 'Choose a provider firm.' });
+    const role = PARTNER_ROLE[org.kind as keyof typeof PARTNER_ROLE];
+    if (req.action === 'grant') {
+      const other = await this.db.select({ orgId: userRoles.orgId }).from(userRoles).where(and(eq(userRoles.userId, u.id), inArray(userRoles.role, PARTNER_ROLES)));
+      if (other.some(o => o.orgId !== org.id)) throw new ConflictException({ code: 'other_firm', message: 'This person is linked to another firm. Remove that first.' });
+      await this.db.insert(userRoles).values({ userId: u.id, role, orgId: org.id }).onConflictDoNothing();
+    } else {
+      await this.db.delete(userRoles).where(and(eq(userRoles.userId, u.id), eq(userRoles.role, role), eq(userRoles.orgId, org.id)));
+    }
+    await this.db.insert(auditLog).values({ actorId: adminId, action: `partner_${req.action}`, entity: 'organization', entityId: org.id, data: { email: u.email, role } });
+    return this.partnerUsers();
+  }
+
+  async partnerUsers() {
+    const rows = await this.db.select({ email: users.email, name: users.legalName, orgId: userRoles.orgId, role: userRoles.role }).from(userRoles)
+      .innerJoin(users, eq(users.id, userRoles.userId)).where(inArray(userRoles.role, PARTNER_ROLES));
+    return rows;
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   /** What the client pays, the only number quotes are ranked by. */
-  private price(r: Req, q: EnterQuoteRequest) {
+  private price(r: Req, q: PartnerQuoteRequest) {
     const d = r.details as { loan?: number; amortYears?: number };
     switch (q.kind) {
       case 'lender': {

@@ -59,4 +59,41 @@ describe('provider marketplace', () => {
     expect(mail('team@summitmb.example').subject).toBe('Klyr client chose your quote');
     expect((await h.call('POST', `/quotes/${summitQ.id}/choose`, { referralAcknowledged: true }, b.t)).body.code).toBe('not_open');
   });
+
+  it('lets a provider send its own quote from the partner portal, seeing the client only once chosen', async () => {
+    const officer = await p.staff('priya.nair@klyr.example');
+    const b = await p.readyBuyer();
+    const lenders = (await h.call('GET', '/providers?kind=lender', undefined, b.t)).body as { id: string; name: string }[];
+    const maple = lenders.find(l => l.name.startsWith('Maple'))!, lake = lenders.find(l => l.name.startsWith('Lakeshore'))!;
+
+    // Klyr Admin links a person to Maple; they sign in with a second factor like staff.
+    const someone = await h.signedIn();
+    const email = (await h.call('GET', '/auth/me', undefined, someone)).body.email as string;
+    expect((await h.call('GET', '/partner/requests', undefined, someone)).status).toBe(403);
+    expect((await h.call('POST', '/admin/partners', { email, orgId: maple.id, action: 'grant' }, b.t)).status).toBe(403);
+    const linked = (await h.call('POST', '/admin/partners', { email, orgId: maple.id, action: 'grant' }, officer)).body;
+    expect(linked.find((x: { email: string }) => x.email === email)).toMatchObject({ role: 'lender', orgId: maple.id });
+    expect((await h.call('POST', '/admin/partners', { email, orgId: lake.id, action: 'grant' }, officer)).body.code).toBe('other_firm');
+    const partner = await p.staff(email);
+    expect((await h.call('GET', '/partner/me', undefined, partner)).body.org).toMatchObject({ name: 'Maple Mortgage Co. (sample)', referralAgreement: true });
+    expect((await h.call('GET', '/pro/quotes', undefined, partner)).status).toBe(403);
+
+    await h.call('POST', '/quotes/requests', { kind: 'lender', providerIds: [maple.id, lake.id], loan: 600_000, amortYears: 25, note: 'Self-employed, two years of returns' }, b.t);
+    expect(mail('quotes@maplemortgage.example').subject).toBe('New mortgage quote request from a Klyr client');
+    const [req] = (await h.call('GET', '/partner/requests', undefined, partner)).body;
+    expect(req).toMatchObject({ kind: 'lender', status: 'open', details: { loan: 600_000, amortYears: 25 }, note: 'Self-employed, two years of returns', client: { name: 'Test' }, quote: null });
+    expect(req.client.email).toBeUndefined();
+
+    expect((await h.call('POST', `/partner/requests/${req.id}/quote`, { kind: 'lawyer', fee: 1, disbursements: 0, titleInsurance: 0, referralFee: 0, validDays: 30 }, partner)).body.code).toBe('wrong_kind');
+    const sent = (await h.call('POST', `/partner/requests/${req.id}/quote`, { kind: 'lender', rate: 0.0419, fees: 0, prepaymentPct: 20, approvalDays: 1, referralFee: 800, validDays: 30 }, partner)).body[0];
+    expect(sent.quote).toMatchObject({ referralFee: 800, source: 'partner' });
+    const q = (await h.call('GET', '/quotes', undefined, b.t)).body[0].quotes[0];
+    expect(q).toMatchObject({ provider: { name: 'Maple Mortgage Co. (sample)' }, referralFee: 800 });
+
+    await h.call('POST', `/quotes/${q.id}/choose`, { referralAcknowledged: true }, b.t);
+    const won = (await h.call('GET', '/partner/requests', undefined, partner)).body[0];
+    expect(won).toMatchObject({ status: 'won', client: { name: 'Test Buyer', email: b.email } });
+    expect((await h.call('POST', `/partner/requests/${req.id}/quote`, { kind: 'lender', rate: 0.04, fees: 0, prepaymentPct: 20, approvalDays: 1, referralFee: 0, validDays: 30 }, partner)).body.code).toBe('not_open');
+    await h.call('POST', '/admin/partners', { email, orgId: maple.id, action: 'revoke' }, officer);
+  });
 });

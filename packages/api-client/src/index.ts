@@ -272,6 +272,17 @@ export interface StaffMember {
   id: string; email: string; name: string | null; roles: string[]; mfa: { authenticator: boolean; passkeys: number }; lastSeenAt: string | null;
   agent: { registeredName: string; title: string; recoNumber: string; openDeals: number } | null;
 }
+export interface PartnerMe { name: string | null; email: string; role: string; org: { id: string; name: string; kind: string; registration: string | null; referralAgreement: boolean } }
+export interface PartnerRequest {
+  id: string; kind: QuoteKind; details: Record<string, number>; note: string | null; createdAt: string;
+  status: 'open' | 'won' | 'not_chosen' | 'cancelled'; client: { name: string | null; email?: string };
+  quote: { clientCost: number; referralFee: number; details: Record<string, number>; validUntil: string | null; source: string } | null;
+}
+export type PartnerQuoteInput = { referralFee: number; validDays: number } & (
+  | { kind: 'lender'; rate: number; fees: number; prepaymentPct: number; approvalDays: number }
+  | { kind: 'lawyer'; fee: number; disbursements: number; titleInsurance: number }
+  | { kind: 'inspector'; price: number; reportHours: number }
+  | { kind: 'insurer'; annualPremium: number; deductible: number });
 export interface ProListing extends Selling { clientName: string | null; clientEmail: string }
 
 export interface Assumptions { rate: number; downPct: number; firstTime: boolean; lawyerFee: number }
@@ -452,7 +463,14 @@ export function createClient(opts: ClientOptions) {
       clients: () => get<ProClient[]>('/pro/clients'),
       client: (id: string) => get<ProClientDetail>(`/pro/clients/${encodeURIComponent(id)}`),
     },
+    partner: {
+      me: () => get<PartnerMe>('/partner/me'),
+      requests: () => get<PartnerRequest[]>('/partner/requests'),
+      quote: (id: string, q: PartnerQuoteInput) => post<PartnerRequest[]>(`/partner/requests/${encodeURIComponent(id)}/quote`, q),
+    },
     admin: {
+      partners: () => get<{ email: string; name: string | null; orgId: string | null; role: string }[]>('/admin/partners'),
+      changePartner: (email: string, orgId: string, action: 'grant' | 'revoke') => post<{ email: string; name: string | null; orgId: string | null; role: string }[]>('/admin/partners', { email, orgId, action }),
       idReviews: () => get<IdReview[]>('/admin/id-reviews'),
       payouts: () => get<Payout[]>('/admin/payouts'),
       commissionReceived: (id: string, amount: number) => post<{ id: string; status: string; amount: number }>(`/admin/payouts/${encodeURIComponent(id)}/commission`, { amount }),

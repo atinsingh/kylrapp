@@ -9,7 +9,7 @@ export const metadata = { title: 'How we estimate · Klyr' };
 
 export default async function EstimatePage() {
   if (!(await sessionToken())) redirect('/welcome');
-  const [me, a] = await Promise.all([api<Me>('/auth/me'), api<Assumptions & { custom: boolean }>('/me/assumptions')]);
+  const [me, a] = await Promise.all([api<Me>('/auth/me'), api<Assumptions & { custom: boolean; asOf: string }>('/me/assumptions')]);
   if (me.status === 401 || !a.data) redirect('/welcome');
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px 48px' }}>

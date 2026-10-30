@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, gte, inArray, isNotNull, lte, ne, sql, type SQL } from 'drizzle-orm';
-import { buyerEstimate, DEFAULT_ASSUMPTIONS, type PropertyType } from '@klyr/core';
+import { buyerEstimate, type PropertyType } from '@klyr/core';
 import type { Assumptions, ListingSearch } from '@klyr/contracts';
 import { DB, type Db } from '../db/db.module.js';
 import { AssumptionsService, engineOptions } from './assumptions.service.js';
@@ -36,6 +36,7 @@ export class ListingsService {
     const [photos, views, mine] = await Promise.all([this.photos(ids, 10), this.views(userId, ids), this.assumptions.get(userId)]);
     return {
       results: shown.map(r => this.card(r, photos.get(r.id) ?? [], mine, views.get(r.id))),
+      asOf: mine.asOf,
       /** Client shows "Refine your search" when true. */
       capped: rows.length > VOW_RESULT_CAP,
     };
@@ -70,7 +71,7 @@ export class ListingsService {
       annualTax: r.annualTax, condoFee: r.condoFee, coop: Number(r.coop ?? 0),
       openHouse: r.openHouse, offerDate: r.offerDate,
       daysOnMarket: r.listedAt ? Math.max(0, Math.round((Date.now() - Date.parse(r.listedAt)) / 86_400_000)) : null,
-      estimate: { ...estimate, asOf: DEFAULT_ASSUMPTIONS.asOf, customAssumptions: mine.custom },
+      estimate: { ...estimate, asOf: mine.asOf, customAssumptions: mine.custom },
       history,
       comparables,
       insights: insights ? { schools: insights.schools, commute: insights.commute, nearby: insights.nearby } : null,

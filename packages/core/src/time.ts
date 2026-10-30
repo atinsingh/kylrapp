@@ -138,3 +138,7 @@ export const torontoTime = (at: Date | string | number) =>
 /** "YYYY-MM-DD" as "Tue, Jan 12, 2027" (a calendar date, no time zone involved). */
 export const calendarDate = (ymd: string) =>
   new Date(ymd + 'T12:00:00Z').toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+
+/** "YYYY-MM-DD" as "Oct 27, 2026": the "estimate as of" date. */
+export const shortDate = (ymd: string) =>
+  new Date(ymd + 'T12:00:00Z').toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });

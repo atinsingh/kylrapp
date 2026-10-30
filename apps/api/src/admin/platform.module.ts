@@ -1,6 +1,6 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, Inject, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
 import { and, count, desc, eq, gt, inArray, isNotNull, isNull, max, notInArray, sql } from 'drizzle-orm';
-import { PrivacyDecision, PrivacyRequestRequest, PublishAssumptionsRequest, RoleChangeRequest, SuspendListingRequest, type StaffRole } from '@klyr/contracts';
+import { PrivacyDecision, PrivacyRequestRequest, PublishAssumptionsRequest, ReassignDealsRequest, RoleChangeRequest, SuspendListingRequest, type StaffRole } from '@klyr/contracts';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { DB, type Db } from '../db/db.module.js';
 import {
@@ -11,6 +11,7 @@ import { Auth, AuthGuard, type AuthContext } from '../identity/auth.guard.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 import { Roles, RolesGuard } from '../identity/roles.guard.js';
 import { publishedAssumptions } from '../listings/assumptions.service.js';
+import { NotifyService } from '../notify/notify.service.js';
 
 const SIGN = 'Klyr Realty Inc., Brokerage';
 const DAY = 86_400_000;
@@ -207,7 +208,28 @@ export class SettingsService {
 
 @Injectable()
 export class StaffService {
-  constructor(@Inject(DB) private readonly db: Db) {}
+  constructor(@Inject(DB) private readonly db: Db, @Inject(MAILER) private readonly mail: Mailer, @Inject(NotifyService) private readonly notify: NotifyService) {}
+
+  /** Every open deal moves to another current agent; each client is told who their agent is now. */
+  async reassign(adminId: string, req: ReassignDealsRequest) {
+    const find = async (email: string) => (await this.db.select().from(users).where(and(sql`lower(${users.email}) = ${email.toLowerCase()}`, isNull(users.deletedAt))))[0];
+    const [from, to] = await Promise.all([find(req.fromEmail), find(req.toEmail)]);
+    if (!from || !to) throw new NotFoundException({ code: 'no_user', message: 'No account with that email.' });
+    const [isAgent] = await this.db.select({ id: userRoles.userId }).from(userRoles).where(and(eq(userRoles.userId, to.id), eq(userRoles.role, 'agent')));
+    const [toAgent] = await this.db.select().from(agents).where(eq(agents.userId, to.id));
+    if (!isAgent || !toAgent) throw new ConflictException({ code: 'not_agent', message: `${to.legalName ?? to.email} isn’t a current agent.` });
+    const moved = await this.db.update(deals).set({ agentId: to.id }).where(and(eq(deals.agentId, from.id), inArray(deals.stage, [...OPEN_STAGES]))).returning({ id: deals.id });
+    if (!moved.length) throw new ConflictException({ code: 'no_open_deals', message: `${from.legalName ?? from.email} has no open deals.` });
+    await this.db.insert(auditLog).values({ actorId: adminId, action: 'deals_reassign', entity: 'user', entityId: from.id, data: { to: to.id, deals: moved.map(d => d.id) } });
+    const clients = await this.db.select({ id: users.id, email: users.email }).from(dealParties).innerJoin(users, eq(users.id, dealParties.userId))
+      .where(and(inArray(dealParties.dealId, moved.map(d => d.id)), eq(dealParties.role, 'client')));
+    for (const c of clients) {
+      await this.mail.send({ to: c.email, subject: 'Your Klyr agent has changed', text: `${toAgent.registeredName}, ${toAgent.title}, is now your agent at Klyr. Everything you’ve signed, booked and sent carries over.\n\n${SIGN}` });
+      await this.notify.toUser(c.id, 'consumer', { title: 'Your Klyr agent has changed', body: toAgent.registeredName, data: { screen: 'home' } });
+    }
+    await this.notify.toUser(to.id, 'agent', { title: `${moved.length} deal(s) reassigned to you`, body: `From ${from.legalName ?? from.email}`, data: { screen: 'deals' } });
+    return { moved: moved.length, staff: await this.staff() };
+  }
 
   async staff() {
     const rows = await this.db.select({ id: users.id, email: users.email, name: users.legalName, role: userRoles.role }).from(userRoles)
@@ -317,6 +339,7 @@ class StaffController {
   constructor(@Inject(StaffService) private readonly staffs: StaffService) {}
   @Get() list() { return this.staffs.staff(); }
   @Post('roles') @HttpCode(200) change(@Auth() a: AuthContext, @Body(new ZodPipe(RoleChangeRequest)) b: RoleChangeRequest) { return this.staffs.change(a.userId, b); }
+  @Post('reassign') @HttpCode(200) reassign(@Auth() a: AuthContext, @Body(new ZodPipe(ReassignDealsRequest)) b: ReassignDealsRequest) { return this.staffs.reassign(a.userId, b); }
   @Get('audit') audit() { return this.staffs.audit(); }
 }
 

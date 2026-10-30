@@ -33,3 +33,8 @@ export type RoleChangeRequest = z.infer<typeof RoleChangeRequest>;
 
 export const SuspendListingRequest = z.object({ reason: z.string().trim().min(5).max(500) });
 export type SuspendListingRequest = z.infer<typeof SuspendListingRequest>;
+
+/** Move every open deal from one agent to another, e.g. before removing the agent role. */
+export const ReassignDealsRequest = z.object({ fromEmail: z.string().trim().email(), toEmail: z.string().trim().email() })
+  .refine(r => r.fromEmail.toLowerCase() !== r.toEmail.toLowerCase(), { message: 'Choose two different agents.', path: ['toEmail'] });
+export type ReassignDealsRequest = z.infer<typeof ReassignDealsRequest>;

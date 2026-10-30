@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Text, View } from 'react-native';
-import { HST } from '@klyr/core';
+import { shortDate, HST } from '@klyr/core';
 import type { Assumptions } from '@klyr/api-client';
 import { color } from '@klyr/tokens';
 import { errorText, klyr } from '../lib/klyr';
@@ -15,7 +15,7 @@ const money = (n: number) => '$' + Math.round(n).toLocaleString('en-CA');
 
 /** "How we estimate": the inputs behind every all-in this buyer sees. */
 export default function Estimate() {
-  const [saved, setSaved] = useState<(Assumptions & { custom: boolean }) | null>(null);
+  const [saved, setSaved] = useState<(Assumptions & { custom: boolean; asOf: string }) | null>(null);
   const [a, setA] = useState<Assumptions | null>(null);
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
@@ -56,7 +56,7 @@ export default function Estimate() {
       {note ? <Card style={{ backgroundColor: color.brandTint }}><Text accessibilityLiveRegion="polite" style={{ ...sf(600), color: color.brand }}>{note}</Text></Card> : null}
       <Button title="Save and update all-ins" disabled={!dirty} onPress={save} />
       {saved.custom && <Button title="Use the standard inputs" alt onPress={reset} />}
-      <Text style={t.note}>Also in the all-in: land transfer tax, inspection $550 (houses), title insurance $350, status certificate $100 (condos) and prorated adjustments. Klyr charges buyers $0. Not included: down payment, moving costs, HST on a new build. Estimates as of Oct 27, 2026.</Text>
+      <Text style={t.note}>Also in the all-in: land transfer tax, inspection $550 (houses), title insurance $350, status certificate $100 (condos) and prorated adjustments. Klyr charges buyers $0. Not included: down payment, moving costs, HST on a new build. Estimates as of {shortDate(saved.asOf)}.</Text>
     </Screen>
   );
 }

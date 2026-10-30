@@ -230,6 +230,10 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * Each firm is emailed when a client asks it for a quote, and sees the requests that named it with only what it needs to quote: the client's first name, the amount and their note. The client's name and email appear only once the client chooses that firm.
   * The firm sends or updates its own quote. The same rules apply as when an agent enters one: ranked only by the client's cost, any referral fee shown to the client, none from lawyers or firms without a referral agreement. The client's agent is told when a partner quotes.
 
+* Housekeeping (screenshots `144`–`145`):
+  * "Estimate as of" is the date the published assumptions were last reviewed, on every screen (search, listings, estimates, the phone home); the API sends it with each search, listing, estimate and `/me/assumptions`.
+  * Privacy requests on the phone, under Account: ask for a copy, a correction or deletion; share the copy through the phone's share sheet once it's ready.
+  * Users and roles in Klyr Admin can reassign every open deal from one agent to another current agent; each client gets an email and a push naming their new agent. An agent with open deals can only be removed after that.
 * Design system (Apple Human Interface Guidelines; `packages/tokens`, `packages/web-kit/src/styles.ts`, `apps/*/components/ui.tsx`):
   * iOS system colours: blue tint for actions, links and the selected tab; green for money; orange for waiting; red for alerts; dark grey panels for the one big number on a screen.
   * Grouped grey backgrounds with white inset sections, iOS radii, large titles, filled and tinted buttons, capsule chips, Settings-style rows with coloured icon tiles (Ionicons on the phone, lucide on the web).
@@ -239,8 +243,6 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 **Still to build** (no outside dependency, smaller follow-ups):
 * Client web layouts in the new design (it already uses the new colours, type and controls).
 * Quote imports from providers' own systems.
-* Privacy requests on the phone (web only today); the client-facing "as of" date reading the published assumptions everywhere (the Admin value drives defaults today, the label still shows the shipped date on some screens).
-* Reassigning an agent's deals from Users and roles.
 
 **Blocked on outside parties** (built as interfaces with development stand-ins, refused in production):
 * OREA forms licence and an e-sign provider: signed records are plain-language summaries until then.

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { Me } from '@klyr/contracts';
 import type { ListingCard } from '@klyr/api-client';
+import { shortDate } from '@klyr/core';
 import { AppHeader } from '@/components/app-header';
 import { CompareBar } from '@/components/compare-controls';
 import { FilterBar } from '@/components/filter-bar';
@@ -21,7 +22,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   for (const k of FILTERS) { const v = sp[k]; if (typeof v === 'string' && v) query.set(k, v); }
   const [me, search] = await Promise.all([
     api<Me>('/auth/me'),
-    api<{ results: ListingCard[]; capped: boolean }>(`/listings${query.size ? '?' + query : ''}`),
+    api<{ results: ListingCard[]; capped: boolean; asOf: string }>(`/listings${query.size ? '?' + query : ''}`),
   ]);
   if (me.status === 401) redirect('/welcome');
   const data = search.data;
@@ -35,7 +36,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px 48px' }}>
       <AppHeader me={me.data} current="search" />
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-.02em', margin: '0 0 4px' }}>Search</h1>
-      <p style={{ color: 'var(--muted)', margin: '0 0 16px' }}>All-in cost to close after your cash back. Estimate as of Oct 27, 2026.</p>
+      <p style={{ color: 'var(--muted)', margin: '0 0 16px' }}>All-in cost to close after your cash back.{data ? ` Estimate as of ${shortDate(data.asOf)}.` : ''}</p>
       <Suspense><FilterBar /></Suspense>
       {!data && <p role="alert">Can’t load homes right now. Try again in a moment.</p>}
       {data && (

@@ -49,7 +49,9 @@ input[type=checkbox]{accent-color:var(--brand);width:18px;height:18px}
 .k-tabs a[aria-current=page]{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .k-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(180deg,#A1A1A6,#7C7C80);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:600;flex:none}
 /* macOS-style sidebar for Klyr Pro and Klyr Admin. */
-.k-side{position:fixed;inset:0 auto 0 0;width:240px;background:rgba(246,246,248,.92);backdrop-filter:saturate(180%) blur(20px);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px;padding:18px 10px;z-index:10}
+body:has(.k-side){position:relative}
+.k-side{position:absolute;inset:0 auto 0 0;width:240px;background:#F6F6F8;border-right:1px solid var(--line);z-index:10}
+.k-side-in{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:2px;padding:18px 10px}
 .k-side .k-brand{font-size:17px;font-weight:700;letter-spacing:-.02em;padding:4px 10px 16px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px}
 .k-side .k-brand span{color:var(--muted);font-weight:500}
 .k-side nav{display:flex;flex-direction:column;gap:1px}
@@ -61,7 +63,8 @@ input[type=checkbox]{accent-color:var(--brand);width:18px;height:18px}
 .k-side .k-me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px 10px 4px;border-top:1px solid var(--line)}
 body:has(.k-side) main{margin-left:240px}
 @media (max-width:900px){
-  .k-side{position:sticky;top:0;width:auto;flex-direction:row;align-items:center;flex-wrap:wrap;padding:8px 12px;border-right:0;border-bottom:1px solid var(--line)}
+  .k-side{position:static;width:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .k-side-in{position:static;height:auto;flex-direction:row;align-items:center;flex-wrap:wrap;padding:8px 12px}
   .k-side .k-brand{padding:4px 6px}
   .k-side nav{flex-direction:row;overflow-x:auto;gap:2px;order:3;width:100%}
   .k-side nav a{white-space:nowrap}

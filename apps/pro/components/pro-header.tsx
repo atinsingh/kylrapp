@@ -13,6 +13,7 @@ export function ProHeader({ me, current }: { me: ProMe; current: 'visits' | 'off
   const initials = me.name.split(' ').slice(0, 2).map(w => w[0]).join('');
   return (
     <aside className="k-side" aria-label="Klyr Pro">
+      <div className="k-side-in">
       <Link href="/" className="k-brand"><img src="/klyr-mark.png" alt="" width={26} height={26} style={{ borderRadius: 6 }} />Klyr <span>Pro</span></Link>
       <nav aria-label="Klyr Pro">
         {TABS.map(([href, key, label, Ico]) => (
@@ -26,6 +27,7 @@ export function ProHeader({ me, current }: { me: ProMe; current: 'visits' | 'off
           <div className="k-note" style={{ fontSize: 12 }}>{me.title}</div>
         </div>
         <SignOut />
+      </div>
       </div>
     </aside>
   );

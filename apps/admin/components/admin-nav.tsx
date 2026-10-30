@@ -18,6 +18,7 @@ export type AdminPage = (typeof ADMIN_LINKS)[number][1];
 export function AdminNav({ current }: { current: AdminPage }) {
   return (
     <aside className="k-side" aria-label="Klyr Admin">
+      <div className="k-side-in">
       <Link href="/" className="k-brand"><img src="/klyr-mark.png" alt="" width={26} height={26} style={{ borderRadius: 6 }} />Klyr <span>Admin</span></Link>
       <nav aria-label="Klyr Admin">
         {ADMIN_LINKS.map(([href, key, label, Ico]) => (
@@ -25,6 +26,7 @@ export function AdminNav({ current }: { current: AdminPage }) {
         ))}
       </nav>
       <div className="k-me"><ClipboardList size={18} aria-hidden /><span className="k-note" style={{ fontSize: 12 }}>Klyr Realty Inc., Brokerage · internal, every action logged</span></div>
+      </div>
     </aside>
   );
 }

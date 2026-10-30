@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { HST } from '@klyr/core';
+import { shortDate, HST } from '@klyr/core';
 import type { Assumptions } from '@klyr/api-client';
 import { errorText, klyr } from '@/lib/client';
 
@@ -13,7 +13,7 @@ const LAWYERS: [string, number][] = [['Harbour Law', 1400], ['Ng & Patel LLP', 1
 const pct = (n: number) => `${+(n * 100).toFixed(2)}%`;
 const money = (n: number) => '$' + Math.round(n).toLocaleString('en-CA');
 
-export function EstimateForm({ initial }: { initial: Assumptions & { custom: boolean } }) {
+export function EstimateForm({ initial }: { initial: Assumptions & { custom: boolean; asOf: string } }) {
   const router = useRouter();
   const [a, setA] = useState<Assumptions>(initial);
   const [custom, setCustom] = useState(initial.custom);
@@ -59,7 +59,7 @@ export function EstimateForm({ initial }: { initial: Assumptions & { custom: boo
           ['Status certificate', '$100 · condos'], ['Adjustments', 'Property tax, utilities, fuel, condo fee · prorated'],
           ['Klyr fees to buyers', '$0'], ['Cash back', 'Your plan % of the commission offered'],
         ]} />
-        <p className="k-note" style={{ margin: 0 }}>Not included: down payment, moving costs, HST on a new build, and any special assessment not yet known. Estimates as of Oct 27, 2026. Your lawyer’s statement of adjustments gives the final figure.</p>
+        <p className="k-note" style={{ margin: 0 }}>Not included: down payment, moving costs, HST on a new build, and any special assessment not yet known. Estimates as of {shortDate(initial.asOf)}. Your lawyer’s statement of adjustments gives the final figure.</p>
       </section>
     </div>
   );

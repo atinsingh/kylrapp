@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, TextInp
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ListingCard, SearchQuery } from '@klyr/api-client';
-import { DEFAULT_ASSUMPTIONS, money } from '@klyr/core';
+import { money, shortDate } from '@klyr/core';
 import { color } from '@klyr/tokens';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
@@ -39,6 +39,7 @@ export default function Home() {
   const [view, setView] = useState<'list' | 'map'>('list');
   const [savedNote, setSavedNote] = useState('');
   const [query, setQuery] = useState('');
+  const [asOf, setAsOf] = useState('');
   const searchName = [cities.join(', ') || 'All areas', maxPrice && `up to ${short(maxPrice)}`].filter(Boolean).join(' · ');
   async function saveSearch() {
     setSavedNote('');
@@ -49,7 +50,7 @@ export default function Home() {
   const load = useCallback(async () => {
     const q: SearchQuery = { city: cities.join(',') || undefined, maxPrice, saved: savedOnly || undefined };
     const r = await klyr.listings(q);
-    if (r.ok) { setHomes(r.data.results); setError(''); } else setError(errorText(r.error));
+    if (r.ok) { setHomes(r.data.results); setAsOf(r.data.asOf); setError(''); } else setError(errorText(r.error));
   }, [cities, maxPrice, savedOnly]);
   useEffect(() => { void load(); }, [load]);
   // Coming back from a listing: refresh saved hearts and "Viewed" badges.
@@ -112,7 +113,7 @@ export default function Home() {
           {!homes && !error && <ActivityIndicator style={{ marginTop: 24 }} />}
           {shown && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 }}>
-              <Text accessibilityLiveRegion="polite" style={{ ...t.label, flex: 1 }}>{shown.length} {shown.length === 1 ? 'home' : 'homes'} · estimate as of {new Date(DEFAULT_ASSUMPTIONS.asOf + 'T12:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}</Text>
+              <Text accessibilityLiveRegion="polite" style={{ ...t.label, flex: 1 }}>{shown.length} {shown.length === 1 ? 'home' : 'homes'}{asOf ? ` · estimate as of ${shortDate(asOf)}` : ''}</Text>
               {!savedOnly && (
                 <Pressable accessibilityRole="button" accessibilityLabel="Save this search" onPress={saveSearch} style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <Icon name="notifications-outline" size={17} tint={color.brand} /><Text style={{ ...sf(), fontSize: 15, color: color.brand }}>Save Search</Text>

@@ -3,6 +3,7 @@ import { AdminNav } from '@/components/admin-nav';
 import type { StaffMember } from '@klyr/api-client';
 import { torontoWhen } from '@klyr/core';
 import { api, sessionToken } from '@klyr/web-kit/session';
+import { ReassignForm } from './reassign-form';
 import { RoleForm } from './role-form';
 
 export const metadata = { title: 'Users and roles · Klyr Admin' };
@@ -32,6 +33,7 @@ export default async function UsersPage() {
         ))}
       </section>
       <RoleForm />
+      <ReassignForm agents={staff.data.filter(s => s.roles.includes('agent') && s.agent).map(s => ({ email: s.email, name: s.name, openDeals: s.agent!.openDeals }))} />
       <section className="k-card" aria-label="Audit log">
         <div className="k-label">AUDIT LOG · LATEST 200</div>
         {(audit.data ?? []).slice(0, 40).map(a => <div key={a.id} className="k-note" style={{ padding: '3px 0' }}>{torontoWhen(a.at)} · <strong style={{ color: 'var(--text)' }}>{a.action}</strong> · {a.entity}{a.actor ? ` · ${a.actor}` : ''}</div>)}

@@ -1,5 +1,5 @@
 import { Body, Controller, Inject, Post, UseGuards } from '@nestjs/common';
-import { buyerEstimate, DEFAULT_ASSUMPTIONS } from '@klyr/core';
+import { buyerEstimate } from '@klyr/core';
 import { EstimateRequest } from '@klyr/contracts';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { Auth, AuthGuard, type AuthContext } from '../identity/auth.guard.js';
@@ -24,6 +24,6 @@ export class EstimatesController {
     const { listingId, ...overrides } = body;
     const [listing, mine] = await Promise.all([this.listings.get(listingId), this.assumptions.get(a.userId)]);
     const defined = Object.fromEntries(Object.entries(overrides).filter(([, v]) => v !== undefined));
-    return { asOf: DEFAULT_ASSUMPTIONS.asOf, estimate: buyerEstimate(toEstimateInput(listing), { ...engineOptions(mine), ...defined }) };
+    return { asOf: mine.asOf, estimate: buyerEstimate(toEstimateInput(listing), { ...engineOptions(mine), ...defined }) };
   }
 }

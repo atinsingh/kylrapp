@@ -1,7 +1,7 @@
-import { eq, inArray } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDb } from '../db/client.js';
-import { publishedSettings } from '../db/schema.js';
+import { deals, publishedSettings } from '../db/schema.js';
 import { startApp } from '../test/harness.js';
 import { people, resetStaff } from '../test/people.js';
 
@@ -80,5 +80,35 @@ describe('Klyr Admin modules', () => {
     expect((await h.call('POST', '/admin/users/roles', { email: OFFICER, role: 'broker_of_record', action: 'revoke' }, admin)).body.code).toBe('own_role');
     const audit = (await h.call('GET', '/admin/users/audit', undefined, admin)).body;
     expect(audit.slice(0, 5).map((a: { action: string }) => a.action)).toContain('role_revoke');
+  });
+
+  it('reassigns an agent’s open deals so the agent can be removed, and tells each client', async () => {
+    const admin = await p.staff(OFFICER);
+    // The buyer first, so their deal goes to a seeded agent; then two new agents.
+    const b = await p.readyBuyer();
+    const agentUser = async (name: string, reco: string) => {
+      const t = await h.signedIn();
+      const email = (await h.call('GET', '/auth/me', undefined, t)).body.email as string;
+      await h.call('POST', '/admin/users/roles', { email, role: 'agent', action: 'grant', registeredName: name, title: 'Salesperson', recoNumber: reco }, admin);
+      return email;
+    };
+    const sam = await agentUser('Sam Lee', 'SAMPLE-0201'), jo = await agentUser('Jo Park', 'SAMPLE-0202');
+    const staff = (await h.call('GET', '/admin/users', undefined, admin)).body as { id: string; email: string }[];
+    const samId = staff.find(s => s.email === sam)!.id, joId = staff.find(s => s.email === jo)!.id, originalAgent = staff.find(s => s.email === b.agentEmail)!.id;
+    const [deal] = await db.select().from(deals).where(eq(deals.agentId, originalAgent)).orderBy(desc(deals.createdAt)).limit(1);
+    await db.update(deals).set({ agentId: samId }).where(eq(deals.id, deal!.id));
+
+    expect((await h.call('POST', '/admin/users/roles', { email: sam, role: 'agent', action: 'revoke' }, admin)).body.code).toBe('open_deals');
+    expect((await h.call('POST', '/admin/users/reassign', { fromEmail: sam, toEmail: b.email }, admin)).body.code).toBe('not_agent');
+    expect((await h.call('POST', '/admin/users/reassign', { fromEmail: sam, toEmail: sam }, admin)).status).toBe(400);
+    expect((await h.call('POST', '/admin/users/reassign', { fromEmail: sam, toEmail: jo }, admin)).body.moved).toBe(1);
+    expect((await db.select().from(deals).where(eq(deals.id, deal!.id)))[0]!.agentId).toBe(joId);
+    expect(mail(b.email).subject).toBe('Your Klyr agent has changed');
+    expect(mail(b.email).text).toMatch(/Jo Park, Salesperson, is now your agent/);
+    expect((await h.call('POST', '/admin/users/reassign', { fromEmail: sam, toEmail: jo }, admin)).body.code).toBe('no_open_deals');
+    expect((await h.call('POST', '/admin/users/roles', { email: sam, role: 'agent', action: 'revoke' }, admin)).status).toBe(200);
+    // Put things back so later test files assign deals to the seeded agents only.
+    await db.update(deals).set({ agentId: originalAgent }).where(eq(deals.agentId, joId));
+    await h.call('POST', '/admin/users/roles', { email: jo, role: 'agent', action: 'revoke' }, admin);
   });
 });

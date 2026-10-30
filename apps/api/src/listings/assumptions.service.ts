@@ -20,10 +20,11 @@ export async function publishedAssumptions(db: Db) {
 export class AssumptionsService {
   constructor(@Inject(DB) private readonly db: Db) {}
 
-  async get(userId: string): Promise<Assumptions & { custom: boolean }> {
-    const [row] = await this.db.select().from(buyerAssumptions).where(eq(buyerAssumptions.userId, userId));
-    if (row) return { rate: row.rate, downPct: row.downPct, firstTime: row.firstTime, lawyerFee: row.lawyerFee, custom: true };
-    return { ...(await this.defaults(userId)), custom: false };
+  async get(userId: string): Promise<Assumptions & { custom: boolean; asOf: string }> {
+    // "Estimate as of" is the date the published defaults were last reviewed, on every screen.
+    const [[row], pub] = await Promise.all([this.db.select().from(buyerAssumptions).where(eq(buyerAssumptions.userId, userId)), publishedAssumptions(this.db)]);
+    if (row) return { rate: row.rate, downPct: row.downPct, firstTime: row.firstTime, lawyerFee: row.lawyerFee, custom: true, asOf: pub.asOf };
+    return { ...(await this.defaults(userId)), custom: false, asOf: pub.asOf };
   }
 
   async put(userId: string, a: Assumptions) {

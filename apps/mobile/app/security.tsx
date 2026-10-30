@@ -5,6 +5,7 @@ import * as Clipboard from 'expo-clipboard';
 import type { Device, Passkey, Result } from '@klyr/api-client';
 import type { Me } from '@klyr/contracts';
 import { color } from '@klyr/tokens';
+import { PrivacyRequests } from '../components/privacy';
 import { useAuth } from '../lib/auth';
 import { errorText, klyr } from '../lib/klyr';
 import { List, Row as LinkRow, tile, Button, Card, ErrorText, Field, Screen, sf, t, Title } from '../components/ui';
@@ -147,6 +148,7 @@ export default function Security() {
       </Section>
 
       <Button title="Sign out" alt onPress={auth.signOut} />
+      <PrivacyRequests />
     </Screen>
   );
 }

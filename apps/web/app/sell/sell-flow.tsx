@@ -54,7 +54,7 @@ function StartSelling() {
 
   return (
     <>
-      <h1 style={{ margin: 0, fontSize: 28, letterSpacing: '-.02em' }}>Sell your home</h1>
+      <h1 className="k-h1">Sell your home</h1>
       <p className="k-note" style={{ margin: 0 }}>Tell us about it and see what you keep. You choose the plan and what you offer the buyer’s brokerage.</p>
       <section className="k-card">
         <label className="k-field">Street address<input value={p.address} onChange={e => set('address', e.target.value)} autoComplete="street-address" /></label>
@@ -131,7 +131,7 @@ function PlanAndSign({ s, legalName, idVerified }: { s: Selling; legalName: stri
   if (step === 'sign') {
     return (
       <>
-        <h1 style={{ margin: 0, fontSize: 28, letterSpacing: '-.02em' }}>Your listing agreement</h1>
+        <h1 className="k-h1">Your listing agreement</h1>
         <section className="k-card">
           <div className="k-label">OREA FORM 200 · PLAIN-LANGUAGE SUMMARY</div>
           {[

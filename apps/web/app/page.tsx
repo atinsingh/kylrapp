@@ -35,7 +35,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px 48px' }}>
       <AppHeader me={me.data} current="search" />
-      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-.02em', margin: '0 0 4px' }}>Search</h1>
+      <h1 className="k-h1" style={{ margin: '0 0 4px' }}>Search</h1>
       <p style={{ color: 'var(--muted)', margin: '0 0 16px' }}>All-in cost to close after your cash back.{data ? ` Estimate as of ${shortDate(data.asOf)}.` : ''}</p>
       <Suspense><FilterBar /></Suspense>
       {!data && <p role="alert">Can’t load homes right now. Try again in a moment.</p>}

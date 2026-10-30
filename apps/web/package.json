@@ -16,6 +16,7 @@
     "@klyr/web-kit": "workspace:*",
     "@simplewebauthn/browser": "14.0.0",
     "leaflet": "1.9.4",
+    "lucide-react": "0.460.0",
     "next": "16.4.3",
     "qrcode": "1.5.4",
     "react": "19.3.1",

@@ -361,6 +361,9 @@ importers:
       leaflet:
         specifier: 1.9.4
         version: 1.9.4
+      lucide-react:
+        specifier: 0.460.0
+        version: 0.460.0(react@19.3.1)
       next:
         specifier: 16.4.3
         version: 16.4.3(@types/node@22.18.12)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)

@@ -237,11 +237,10 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
 * Design system (Apple Human Interface Guidelines; `packages/tokens`, `packages/web-kit/src/styles.ts`, `apps/*/components/ui.tsx`):
   * iOS system colours: blue tint for actions, links and the selected tab; green for money; orange for waiting; red for alerts; dark grey panels for the one big number on a screen.
   * Grouped grey backgrounds with white inset sections, iOS radii, large titles, filled and tinted buttons, capsule chips, Settings-style rows with coloured icon tiles (Ionicons on the phone, lucide on the web).
-  * Phone apps have bottom tab bars (client: Home, Saved, Offers, Visits, Account; agent: Today, Offers, Deals, Activity, Clients). Pro and Admin use a macOS-style sidebar.
+  * Phone apps have bottom tab bars (client: Home, Saved, Offers, Visits, Account; agent: Today, Offers, Deals, Activity, Clients). Pro, Admin and the client web use a macOS-style sidebar; the client web groups it as Buy (Search, Saved, Afford, Visits, Offers), Sell and rent (Sell, Rent, Lease out) and Account (Quotes, Documents, Security).
   * Type: San Francisco on iPhone and Mac, Inter on Android and other browsers. Text colours meet WCAG AA.
 
 **Still to build** (no outside dependency, smaller follow-ups):
-* Client web layouts in the new design (it already uses the new colours, type and controls).
 * Quote imports from providers' own systems.
 
 **Blocked on outside parties** (built as interfaces with development stand-ins, refused in production):

@@ -19,7 +19,7 @@ export default async function SavedPage() {
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px 48px' }}>
       <AppHeader me={me.data} current="saved" />
-      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-.02em', margin: '0 0 16px' }}>Saved</h1>
+      <h1 className="k-h1" style={{ margin: '0 0 16px' }}>Saved</h1>
       <SavedSearches list={searches.data ?? []} />
       <h2 className="k-label" style={{ margin: '0 0 8px' }}>SAVED HOMES</h2>
       {homes.length === 0 ? (

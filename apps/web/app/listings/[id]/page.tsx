@@ -44,7 +44,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
               <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-.02em' }}>{money(l.price)}</span>
               {l.daysOnMarket != null && <span className="k-note">{l.daysOnMarket} days on market</span>}
             </div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{l.address}, {l.city}</h1>
+            <h1 className="k-h1" style={{ fontSize: 28 }}>{l.address}, {l.city}</h1>
             <div style={{ color: 'var(--muted)' }}>{l.beds} bed · {l.baths} bath{l.sqft ? ` · ${l.sqft.toLocaleString('en-CA')} sq ft` : ''} · {l.style ?? l.type} · {l.neighbourhood}</div>
             <div className="k-note">Listing brokerage: {l.listingBrokerage}</div>
           </section>

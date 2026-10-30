@@ -1,40 +1,41 @@
 import Link from 'next/link';
+import { Building2, CalendarDays, Calculator, FileText, FolderOpen, Heart, KeyRound, Search, ShieldCheck, Tag, Wallet } from 'lucide-react';
 import type { Me } from '@klyr/contracts';
 import { SignOut } from './sign-out';
 
-/** Signed-in header: logo, main sections, account. */
-export function AppHeader({ me, current }: { me: Me | null; current?: 'search' | 'saved' | 'afford' | 'estimate' | 'visits' | 'offers' | 'documents' | 'sell' | 'rent' | 'lease' | 'quotes' }) {
-  const tab = (href: string, label: string, on: boolean) => (
-    <Link href={href} aria-current={on ? 'page' : undefined}
-      style={{ fontWeight: on ? 800 : 600, fontSize: 14, color: on ? 'var(--brand)' : 'var(--text)', textDecoration: 'none', minHeight: 44, display: 'grid', placeItems: 'center' }}>
-      {label}
-    </Link>
-  );
+type Page = 'search' | 'saved' | 'afford' | 'estimate' | 'visits' | 'offers' | 'documents' | 'sell' | 'rent' | 'lease' | 'quotes' | 'security';
+const GROUPS: [string, [string, Page, string, typeof Search][]][] = [
+  ['Buy', [['/', 'search', 'Search', Search], ['/saved', 'saved', 'Saved', Heart], ['/afford', 'afford', 'Afford', Wallet], ['/visits', 'visits', 'Visits', CalendarDays], ['/offers', 'offers', 'Offers', FileText]]],
+  ['Sell and rent', [['/sell', 'sell', 'Sell', Tag], ['/rent', 'rent', 'Rent', KeyRound], ['/lease', 'lease', 'Lease out', Building2]]],
+  ['Account', [['/quotes', 'quotes', 'Quotes', Calculator], ['/documents', 'documents', 'Documents', FolderOpen], ['/security', 'security', 'Security', ShieldCheck]]],
+];
+
+/** The signed-in sidebar: the same shell as Klyr Pro and Admin, with sections grouped the way people use them. */
+export function AppHeader({ me, current }: { me: Me | null; current?: Page }) {
+  const name = me?.legalName ?? me?.email ?? '';
+  const initials = name.split(/[\s@]/).filter(Boolean).slice(0, 2).map(w => w[0]!.toUpperCase()).join('');
   return (
-    <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text)', textDecoration: 'none' }}>
-          <img src="/klyr-mark.png" alt="" width={30} height={30} style={{ borderRadius: 8 }} />
-          <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-.02em' }}>klyr</span>
-        </Link>
-        <nav style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }} aria-label="Main">
-          {tab('/', 'Search', current === 'search')}
-          {tab('/saved', 'Saved', current === 'saved')}
-          {tab('/afford', 'Afford', current === 'afford')}
-          {tab('/visits', 'Visits', current === 'visits')}
-          {tab('/offers', 'Offers', current === 'offers')}
-          {tab('/sell', 'Sell', current === 'sell')}
-          {tab('/rent', 'Rent', current === 'rent')}
-          {tab('/lease', 'Lease out', current === 'lease')}
-          {tab('/quotes', 'Quotes', current === 'quotes')}
-          {tab('/documents', 'Docs', current === 'documents')}
+    <aside className="k-side" aria-label="Klyr">
+      <div className="k-side-in">
+        <Link href="/" className="k-brand"><img src="/klyr-mark.png" alt="" width={26} height={26} style={{ borderRadius: 6 }} />klyr</Link>
+        <nav aria-label="Main">
+          {GROUPS.map(([group, links]) => (
+            <div key={group} className="k-side-group">
+              <div className="k-side-title">{group}</div>
+              {links.map(([href, key, label, Ico]) => (
+                <Link key={key} href={href} aria-current={current === key ? 'page' : undefined}><Ico size={18} strokeWidth={current === key ? 2.4 : 2} aria-hidden />{label}</Link>
+              ))}
+            </div>
+          ))}
         </nav>
+        <div className="k-me">
+          <span className="k-avatar" aria-hidden>{initials}</span>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
+          </div>
+          <SignOut />
+        </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: 'var(--muted)' }}>
-        <span>{me?.legalName ?? me?.email}</span>
-        <Link href="/security" style={{ fontWeight: 700, fontSize: 13 }}>Security</Link>
-        <SignOut />
-      </div>
-    </header>
+    </aside>
   );
 }

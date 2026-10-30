@@ -1,0 +1,16 @@
+{
+  "name": "@klyr/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ontario cost engine: land transfer tax, CMHC, mortgage payment, buyer all-in, seller net, affordability.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": { "typescript": "5.9.3", "vitest": "3.2.4" }
+}

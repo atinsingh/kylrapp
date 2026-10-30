@@ -40,3 +40,12 @@ export type PartnerUserRequest = z.infer<typeof PartnerUserRequest>;
 /** Choosing a quote. When the provider pays Klyr a referral fee, the client acknowledges it in writing first. */
 export const ChooseQuoteRequest = z.object({ referralAcknowledged: z.boolean() });
 export type ChooseQuoteRequest = z.infer<typeof ChooseQuoteRequest>;
+
+/** Several quotes at once, from a provider's own system (API key) or a CSV in the partner portal. */
+export const ImportQuotesRequest = z.object({
+  quotes: z.array(z.object({ requestId: z.string().uuid() }).passthrough()).min(1).max(50),
+});
+export type ImportQuotesRequest = z.infer<typeof ImportQuotesRequest>;
+
+export const PartnerKeyRequest = z.object({ name: z.string().trim().min(2).max(60) });
+export type PartnerKeyRequest = z.infer<typeof PartnerKeyRequest>;

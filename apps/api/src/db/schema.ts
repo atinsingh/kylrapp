@@ -637,6 +637,23 @@ export const publishedSettings = pgTable('published_settings', {
   publishedAt: ts('published_at').notNull().defaultNow(),
 }, t => [index('published_settings_key_ix').on(t.key, t.publishedAt)]);
 
+/**
+ * A provider firm's key for sending quotes from its own system. Only a SHA-256 of the key is stored; the key is
+ * shown once, when it's made. Revoked keys stop working at once.
+ */
+export const partnerApiKeys = pgTable('partner_api_keys', {
+  id: id(),
+  orgId: uuid('org_id').notNull().references(() => organizations.id),
+  name: text('name').notNull(),
+  /** The first characters, so people can tell keys apart. */
+  prefix: text('prefix').notNull(),
+  hash: char('hash', { length: 64 }).notNull(),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: created(),
+  lastUsedAt: ts('last_used_at'),
+  revokedAt: ts('revoked_at'),
+}, t => [uniqueIndex('partner_api_keys_hash_uq').on(t.hash)]);
+
 // ── Messaging, AI and audit ─────────────────────────────────────────────────
 export const threads = pgTable('threads', {
   id: id(),

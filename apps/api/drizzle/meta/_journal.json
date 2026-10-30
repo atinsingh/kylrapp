@@ -127,6 +127,13 @@
       "when": 1793301144087,
       "tag": "0017_rentals_part2",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793321746978,
+      "tag": "0018_partner_api_keys",
+      "breakpoints": true
     }
   ]
 }

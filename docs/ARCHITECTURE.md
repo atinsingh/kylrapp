@@ -240,8 +240,12 @@ TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. W
   * Phone apps have bottom tab bars (client: Home, Saved, Offers, Visits, Account; agent: Today, Offers, Deals, Activity, Clients). Pro, Admin and the client web use a macOS-style sidebar; the client web groups it as Buy (Search, Saved, Afford, Visits, Offers), Sell and rent (Sell, Rent, Lease out) and Account (Quotes, Documents, Security).
   * Type: San Francisco on iPhone and Mac, Inter on Android and other browsers. Text colours meet WCAG AA.
 
-**Still to build** (no outside dependency, smaller follow-ups):
-* Quote imports from providers' own systems.
+* Quote imports (partner portal; screenshot `146`):
+  * A provider makes API keys in the portal (shown once; only a SHA-256 is stored; revoking stops a key at once). Its own system calls `GET /partner/api/requests` (open requests: amounts and notes, never the client's identity) and `POST /partner/api/quotes` with up to 50 quotes, using the key as a Bearer token.
+  * The portal also takes a CSV of quotes. API and CSV go through one import that checks each row on its own (bad rows are listed and skipped) and applies the same rules as a typed quote.
+  * Not yet: rate limiting on the key endpoints (needed before a partner goes live).
+
+**Still to build**: nothing without an outside dependency; the list below is what's left.
 
 **Blocked on outside parties** (built as interfaces with development stand-ins, refused in production):
 * OREA forms licence and an e-sign provider: signed records are plain-language summaries until then.

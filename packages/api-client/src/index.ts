@@ -278,6 +278,8 @@ export interface PartnerRequest {
   status: 'open' | 'won' | 'not_chosen' | 'cancelled'; client: { name: string | null; email?: string };
   quote: { clientCost: number; referralFee: number; details: Record<string, number>; validUntil: string | null; source: string } | null;
 }
+export interface PartnerKey { id: string; name: string; prefix: string; createdAt: string; lastUsedAt: string | null; revokedAt: string | null }
+export interface ImportResult { saved: number; failed: number; results: { row: number; requestId: string; ok: boolean; error: string | null }[] }
 export type PartnerQuoteInput = { referralFee: number; validDays: number } & (
   | { kind: 'lender'; rate: number; fees: number; prepaymentPct: number; approvalDays: number }
   | { kind: 'lawyer'; fee: number; disbursements: number; titleInsurance: number }
@@ -467,6 +469,10 @@ export function createClient(opts: ClientOptions) {
       me: () => get<PartnerMe>('/partner/me'),
       requests: () => get<PartnerRequest[]>('/partner/requests'),
       quote: (id: string, q: PartnerQuoteInput) => post<PartnerRequest[]>(`/partner/requests/${encodeURIComponent(id)}/quote`, q),
+      importQuotes: (quotes: ({ requestId: string } & Record<string, unknown>)[]) => post<ImportResult>('/partner/import', { quotes }),
+      keys: () => get<PartnerKey[]>('/partner/keys'),
+      createKey: (name: string) => post<{ key: string; keys: PartnerKey[] }>('/partner/keys', { name }),
+      revokeKey: (id: string) => del<PartnerKey[]>(`/partner/keys/${encodeURIComponent(id)}`),
     },
     admin: {
       partners: () => get<{ email: string; name: string | null; orgId: string | null; role: string }[]>('/admin/partners'),

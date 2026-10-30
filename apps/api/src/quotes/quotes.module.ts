@@ -1,5 +1,5 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Inject, Module, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
-import { ChooseQuoteRequest, EnterQuoteRequest, PartnerQuoteRequest, PartnerUserRequest, QUOTE_KINDS, type QuoteKind, QuoteRequestRequest } from '@klyr/contracts';
+import { BadRequestException, Body, Controller, Delete, Get, Headers, HttpCode, Inject, Module, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { ChooseQuoteRequest, EnterQuoteRequest, ImportQuotesRequest, PartnerKeyRequest, PartnerQuoteRequest, PartnerUserRequest, QUOTE_KINDS, type QuoteKind, QuoteRequestRequest } from '@klyr/contracts';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { Auth, AuthGuard, type AuthContext } from '../identity/auth.guard.js';
 import { Roles, RolesGuard } from '../identity/roles.guard.js';
@@ -55,8 +55,35 @@ class PartnerController {
   @Get('requests')
   requests(@Auth() a: AuthContext) { return this.quotes.partnerRequests(a.userId); }
 
+  @Post('import') @HttpCode(200)
+  import(@Auth() a: AuthContext, @Body(new ZodPipe(ImportQuotesRequest)) b: ImportQuotesRequest) { return this.quotes.partnerImport(a.userId, b.quotes as ({ requestId: string } & Record<string, unknown>)[]); }
+
+  @Get('keys')
+  keys(@Auth() a: AuthContext) { return this.quotes.keys(a.userId); }
+
+  @Post('keys') @HttpCode(201)
+  createKey(@Auth() a: AuthContext, @Body(new ZodPipe(PartnerKeyRequest)) b: PartnerKeyRequest) { return this.quotes.createKey(a.userId, b.name); }
+
+  @Delete('keys/:id')
+  revokeKey(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string) { return this.quotes.revokeKey(a.userId, id); }
+
   @Post('requests/:id/quote') @HttpCode(200)
   quote(@Auth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(PartnerQuoteRequest)) b: PartnerQuoteRequest) { return this.quotes.partnerQuote(a.userId, id, b); }
+}
+
+/** For a provider's own system: authenticated with a partner API key, not a person's sign-in. */
+@Controller('partner/api')
+class PartnerApiController {
+  constructor(@Inject(QuotesService) private readonly quotes: QuotesService) {}
+
+  @Get('requests')
+  async requests(@Headers('authorization') auth?: string) { return this.quotes.openForOrg((await this.quotes.byKey(auth)).orgId); }
+
+  @Post('quotes') @HttpCode(200)
+  async quotes_(@Headers('authorization') auth: string | undefined, @Body(new ZodPipe(ImportQuotesRequest)) b: ImportQuotesRequest) {
+    const k = await this.quotes.byKey(auth);
+    return this.quotes.importQuotes(k.orgId, k.actorId, b.quotes as ({ requestId: string } & Record<string, unknown>)[]);
+  }
 }
 
 @UseGuards(AuthGuard, RolesGuard)
@@ -72,5 +99,5 @@ class PartnerAdminController {
   change(@Auth() a: AuthContext, @Body(new ZodPipe(PartnerUserRequest)) b: PartnerUserRequest) { return this.quotes.partnerUser(a.userId, b); }
 }
 
-@Module({ controllers: [QuotesController, ProQuotesController, PartnerController, PartnerAdminController], providers: [QuotesService] })
+@Module({ controllers: [QuotesController, ProQuotesController, PartnerController, PartnerApiController, PartnerAdminController], providers: [QuotesService] })
 export class QuotesModule {}

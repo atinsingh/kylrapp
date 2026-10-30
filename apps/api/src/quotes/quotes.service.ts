@@ -1,9 +1,10 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
-import type { EnterQuoteRequest, PartnerQuoteRequest, PartnerUserRequest, QuoteKind, QuoteRequestRequest } from '@klyr/contracts';
+import { createHash, randomBytes } from 'node:crypto';
+import { PartnerQuoteRequest, type EnterQuoteRequest, type PartnerUserRequest, type QuoteKind, type QuoteRequestRequest } from '@klyr/contracts';
 import { HST, termCost } from '@klyr/core';
 import { DB, type Db } from '../db/db.module.js';
-import { auditLog, dealParties, deals, dealTasks, organizations, quoteRequests, quotes, userRoles, users } from '../db/schema.js';
+import { auditLog, dealParties, deals, dealTasks, organizations, partnerApiKeys, quoteRequests, quotes, userRoles, users } from '../db/schema.js';
 import { MAILER, type Mailer } from '../identity/mailer.js';
 import { NotifyService } from '../notify/notify.service.js';
 
@@ -16,6 +17,7 @@ const PARTNER_ROLES = Object.values(PARTNER_ROLE);
 const LABEL: Record<QuoteKind, string> = { lawyer: 'lawyer', lender: 'mortgage', inspector: 'home inspection', insurer: 'home insurance' };
 type Provider = { email?: string; phone?: string; about?: string; referral?: boolean };
 type Req = typeof quoteRequests.$inferSelect;
+const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
 /**
  * The provider marketplace. Quotes are ranked only by what the client pays (lenders by 5-year cost), and any
@@ -128,7 +130,7 @@ export class QuotesService {
   }
 
   /** One quote per provider per request; a newer one replaces it. Shared by agents and the partner portal. */
-  private async save(r: Req, providerId: string, req: PartnerQuoteRequest, actorId: string, source: 'manual' | 'partner') {
+  private async save(r: Req, providerId: string, req: PartnerQuoteRequest, actorId: string, source: 'manual' | 'partner' | 'import') {
     if (!r.providerIds.includes(providerId)) throw new BadRequestException({ code: 'bad_provider', message: 'The client didn’t ask this provider.' });
     if (req.kind === 'lawyer' && req.referralFee > 0) throw new BadRequestException({ code: 'lawyer_referral', message: 'Lawyers can’t pay referral fees to a brokerage (Law Society rules).' });
     const [org] = await this.db.select().from(organizations).where(eq(organizations.id, providerId));
@@ -146,7 +148,7 @@ export class QuotesService {
       .where(and(eq(dealParties.dealId, r.dealId), eq(dealParties.role, 'client')));
     if (client) await this.notify.toUser(client.id, 'consumer', { title: `New ${LABEL[r.kind]} quote`, body: org!.name, data: { screen: 'quotes' } });
     const [deal] = await this.db.select({ agentId: deals.agentId }).from(deals).where(eq(deals.id, r.dealId));
-    if (source === 'partner' && deal) await this.notify.toUser(deal.agentId, 'agent', { title: `${org!.name} sent a quote`, body: LABEL[r.kind], data: { screen: 'quotes' } });
+    if (source !== 'manual' && deal) await this.notify.toUser(deal.agentId, 'agent', { title: `${org!.name} sent a quote`, body: LABEL[r.kind], data: { screen: 'quotes' } });
   }
 
   // ── Partner portal ───────────────────────────────────────────────────────
@@ -185,12 +187,85 @@ export class QuotesService {
 
   async partnerQuote(userId: string, requestId: string, req: PartnerQuoteRequest) {
     const me = await this.partner(userId);
+    await this.quoteFor(me.org.id, userId, requestId, req, 'partner');
+    return this.partnerRequests(userId);
+  }
+
+  /** One provider quote on one request, from the portal or an import. */
+  private async quoteFor(orgId: string, actorId: string, requestId: string, req: PartnerQuoteRequest, source: 'partner' | 'import') {
     const [r] = await this.db.select().from(quoteRequests).where(eq(quoteRequests.id, requestId));
-    if (!r || !r.providerIds.includes(me.org.id)) throw new NotFoundException();
+    if (!r || !r.providerIds.includes(orgId)) throw new NotFoundException({ code: 'not_found', message: 'No request for this firm with that ID.' });
     if (r.status !== 'open') throw new ConflictException({ code: 'not_open', message: 'The client has already chosen.' });
     if (req.kind !== r.kind) throw new BadRequestException({ code: 'wrong_kind', message: `This request is for ${LABEL[r.kind]} quotes.` });
-    await this.save(r, me.org.id, req, userId, 'partner');
-    return this.partnerRequests(userId);
+    await this.save(r, orgId, req, actorId, source);
+  }
+
+  /**
+   * Several quotes at once, each checked on its own: a bad row is reported and skipped, the rest go through. The
+   * same rules apply as for one quote (ranking by client cost, referral fee rules).
+   */
+  async importQuotes(orgId: string, actorId: string, items: ({ requestId: string } & Record<string, unknown>)[]) {
+    const results = [];
+    for (const [i, item] of items.entries()) {
+      const { requestId, ...rest } = item;
+      const parsed = PartnerQuoteRequest.safeParse(rest);
+      if (!parsed.success) { results.push({ row: i + 1, requestId, ok: false, error: parsed.error.issues.map(x => x.code === 'invalid_type' ? `${x.path.join('.') || 'quote'} is missing` : `${x.path.join('.') || 'quote'}: ${x.message}`).join('; ') }); continue; }
+      try {
+        await this.quoteFor(orgId, actorId, requestId, parsed.data, 'import');
+        results.push({ row: i + 1, requestId, ok: true, error: null });
+      } catch (e) {
+        const body = e instanceof HttpException ? (e.getResponse() as { message?: string }) : null;
+        results.push({ row: i + 1, requestId, ok: false, error: body?.message ?? 'Could not save this quote.' });
+      }
+    }
+    await this.db.insert(auditLog).values({ actorId, action: 'quotes_import', entity: 'organization', entityId: orgId, data: { rows: items.length, saved: results.filter(r => r.ok).length } });
+    return { saved: results.filter(r => r.ok).length, failed: results.filter(r => !r.ok).length, results };
+  }
+
+  async partnerImport(userId: string, items: ({ requestId: string } & Record<string, unknown>)[]) {
+    const me = await this.partner(userId);
+    return this.importQuotes(me.org.id, userId, items);
+  }
+
+  // ── Partner API keys ──────────────────────────────────────────────────────
+
+  async keys(userId: string) {
+    const me = await this.partner(userId);
+    const rows = await this.db.select().from(partnerApiKeys).where(eq(partnerApiKeys.orgId, me.org.id)).orderBy(desc(partnerApiKeys.createdAt));
+    return rows.map(k => ({ id: k.id, name: k.name, prefix: k.prefix, createdAt: k.createdAt.toISOString(), lastUsedAt: k.lastUsedAt?.toISOString() ?? null, revokedAt: k.revokedAt?.toISOString() ?? null }));
+  }
+
+  /** A new key, shown once. Only its hash is kept. */
+  async createKey(userId: string, name: string) {
+    const me = await this.partner(userId);
+    const key = `klyr_pk_${randomBytes(24).toString('base64url')}`;
+    const [row] = await this.db.insert(partnerApiKeys).values({ orgId: me.org.id, name, prefix: key.slice(0, 14), hash: sha256(key), createdBy: userId }).returning();
+    await this.db.insert(auditLog).values({ actorId: userId, action: 'partner_key_create', entity: 'organization', entityId: me.org.id, data: { keyId: row!.id, name } });
+    return { key, keys: await this.keys(userId) };
+  }
+
+  async revokeKey(userId: string, keyId: string) {
+    const me = await this.partner(userId);
+    const r = await this.db.update(partnerApiKeys).set({ revokedAt: new Date() }).where(and(eq(partnerApiKeys.id, keyId), eq(partnerApiKeys.orgId, me.org.id), isNull(partnerApiKeys.revokedAt))).returning();
+    if (!r.length) throw new NotFoundException();
+    await this.db.insert(auditLog).values({ actorId: userId, action: 'partner_key_revoke', entity: 'organization', entityId: me.org.id, data: { keyId } });
+    return this.keys(userId);
+  }
+
+  /** The firm behind an API key, for requests from a provider's own system. */
+  async byKey(authorization?: string) {
+    const raw = authorization?.match(/^Bearer (klyr_pk_[A-Za-z0-9_-]+)$/)?.[1];
+    if (!raw) throw new UnauthorizedException({ code: 'api_key_required', message: 'Send your Klyr partner API key as a Bearer token.' });
+    const [k] = await this.db.select().from(partnerApiKeys).where(and(eq(partnerApiKeys.hash, sha256(raw)), isNull(partnerApiKeys.revokedAt)));
+    if (!k) throw new UnauthorizedException({ code: 'api_key_invalid', message: 'This API key is not valid or has been revoked.' });
+    await this.db.update(partnerApiKeys).set({ lastUsedAt: new Date() }).where(eq(partnerApiKeys.id, k.id));
+    return { orgId: k.orgId, actorId: k.createdBy };
+  }
+
+  /** Open requests for a firm, for its own system: amounts and notes only, never the client's identity. */
+  async openForOrg(orgId: string) {
+    const rows = await this.db.select().from(quoteRequests).where(and(eq(quoteRequests.status, 'open'), sql`${quoteRequests.providerIds} @> ${JSON.stringify([orgId])}::jsonb`)).orderBy(desc(quoteRequests.createdAt)).limit(100);
+    return rows.map(r => ({ requestId: r.id, kind: r.kind, details: r.details, note: r.note, createdAt: r.createdAt.toISOString() }));
   }
 
   // ── Klyr Admin ───────────────────────────────────────────────────────────

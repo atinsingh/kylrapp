@@ -96,4 +96,51 @@ describe('provider marketplace', () => {
     expect((await h.call('POST', `/partner/requests/${req.id}/quote`, { kind: 'lender', rate: 0.04, fees: 0, prepaymentPct: 20, approvalDays: 1, referralFee: 0, validDays: 30 }, partner)).body.code).toBe('not_open');
     await h.call('POST', '/admin/partners', { email, orgId: maple.id, action: 'revoke' }, officer);
   });
+
+  it('imports quotes from a provider’s own system with an API key, row by row', async () => {
+    const officer = await p.staff('priya.nair@klyr.example');
+    const b = await p.readyBuyer();
+    const lenders = (await h.call('GET', '/providers?kind=lender', undefined, b.t)).body as { id: string; name: string }[];
+    const summit = lenders.find(l => l.name.startsWith('Summit'))!;
+    const someone = await h.signedIn();
+    const email = (await h.call('GET', '/auth/me', undefined, someone)).body.email as string;
+    await h.call('POST', '/admin/partners', { email, orgId: summit.id, action: 'grant' }, officer);
+    const partner = await p.staff(email);
+
+    const reqs = (await h.call('POST', '/quotes/requests', { kind: 'lender', providerIds: [summit.id], loan: 500_000, amortYears: 30 }, b.t)).body;
+    const lenderReq = reqs.find((r: { kind: string }) => r.kind === 'lender');
+
+    // A key is shown once; only its hash is kept.
+    expect((await h.call('GET', '/partner/api/requests')).status).toBe(401);
+    const made = (await h.call('POST', '/partner/keys', { name: 'Summit LOS' }, partner)).body;
+    expect(made.key).toMatch(/^klyr_pk_/);
+    expect(made.keys[0]).toMatchObject({ name: 'Summit LOS', prefix: made.key.slice(0, 14), revokedAt: null });
+    expect(JSON.stringify(made.keys)).not.toContain(made.key);
+
+    // The firm's system sees open requests without the client's identity, then sends quotes.
+    const open = (await h.call('GET', '/partner/api/requests', undefined, made.key)).body;
+    expect(open.find((r: { requestId: string }) => r.requestId === lenderReq.id)).toMatchObject({ kind: 'lender', details: { loan: 500_000, amortYears: 30 } });
+    expect(JSON.stringify(open)).not.toContain(b.email);
+    const result = (await h.call('POST', '/partner/api/quotes', { quotes: [
+      { requestId: lenderReq.id, kind: 'lender', rate: 0.0415, fees: 1500, prepaymentPct: 20, approvalDays: 2, referralFee: 700, validDays: 30 },
+      { requestId: lenderReq.id, kind: 'lawyer', fee: 1000, disbursements: 0, titleInsurance: 0, referralFee: 0, validDays: 30 },
+      { requestId: lenderReq.id, kind: 'lender', fees: 0, prepaymentPct: 20, approvalDays: 2, referralFee: 0, validDays: 30 },
+      { requestId: crypto.randomUUID(), kind: 'lender', rate: 0.04, fees: 0, prepaymentPct: 20, approvalDays: 2, referralFee: 0, validDays: 30 },
+    ] }, made.key)).body;
+    expect(result).toMatchObject({ saved: 1, failed: 3 });
+    expect(result.results.map((r: { ok: boolean }) => r.ok)).toEqual([true, false, false, false]);
+    expect(result.results[1].error).toMatch(/mortgage quotes/);
+    expect(result.results[2].error).toBe('rate is missing');
+    expect(result.results[3].error).toMatch(/No request/);
+    const mine = (await h.call('GET', '/quotes', undefined, b.t)).body.find((r: { id: string }) => r.id === lenderReq.id);
+    expect(mine.quotes[0]).toMatchObject({ provider: { name: 'Summit Mortgage Brokers (sample)' }, referralFee: 700 });
+
+    // The portal's CSV upload goes through the same import.
+    expect((await h.call('POST', '/partner/import', { quotes: [{ requestId: lenderReq.id, kind: 'lender', rate: 0.041, fees: 1500, prepaymentPct: 20, approvalDays: 2, referralFee: 700, validDays: 30 }] }, partner)).body.saved).toBe(1);
+
+    // Revoked keys stop working at once.
+    await h.call('DELETE', `/partner/keys/${made.keys[0].id}`, undefined, partner);
+    expect((await h.call('GET', '/partner/api/requests', undefined, made.key)).body.code).toBe('api_key_invalid');
+    await h.call('POST', '/admin/partners', { email, orgId: summit.id, action: 'revoke' }, officer);
+  });
 });

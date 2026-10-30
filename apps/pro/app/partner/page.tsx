@@ -1,6 +1,7 @@
-import type { PartnerRequest } from '@klyr/api-client';
+import type { PartnerKey, PartnerRequest, QuoteKind } from '@klyr/api-client';
 import { api, requirePartner } from '@/lib/session';
 import { SignOut } from '@/components/sign-out';
+import { Connect } from './connect';
 import { PartnerQuote } from './partner-quote';
 
 export const metadata = { title: 'Quote requests · Klyr Partners' };
@@ -8,7 +9,9 @@ export const metadata = { title: 'Quote requests · Klyr Partners' };
 /** A provider's own view: requests that named the firm, and its quotes. Clients see quotes ranked only by what they pay. */
 export default async function PartnerPage() {
   const me = await requirePartner();
-  const list = (await api<PartnerRequest[]>('/partner/requests')).data ?? [];
+  const [reqs, keys] = await Promise.all([api<PartnerRequest[]>('/partner/requests'), api<PartnerKey[]>('/partner/keys')]);
+  const list = reqs.data ?? [];
+  const kind = ({ law_firm: 'lawyer', lender: 'lender', inspector: 'inspector', insurer: 'insurer' } as Record<string, QuoteKind>)[me.org.kind] ?? 'lender';
   const open = list.filter(r => r.status === 'open'), done = list.filter(r => r.status !== 'open');
   return (
     <main className="p-wrap">
@@ -31,6 +34,7 @@ export default async function PartnerPage() {
           {(rs as PartnerRequest[]).map(r => <PartnerQuote key={r.id} r={r} referral={me.org.referralAgreement} />)}
         </section>
       ))}
+      <Connect keys={keys.data ?? []} kind={kind} />
     </main>
   );
 }

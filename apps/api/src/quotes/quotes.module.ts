@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, Get, Headers, HttpCode, Inject, Module, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { ChooseQuoteRequest, EnterQuoteRequest, ImportQuotesRequest, PartnerKeyRequest, PartnerQuoteRequest, PartnerUserRequest, QUOTE_KINDS, type QuoteKind, QuoteRequestRequest } from '@klyr/contracts';
+import { RateLimit } from '../common/rate-limit.js';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { Auth, AuthGuard, type AuthContext } from '../identity/auth.guard.js';
 import { Roles, RolesGuard } from '../identity/roles.guard.js';
@@ -55,7 +56,7 @@ class PartnerController {
   @Get('requests')
   requests(@Auth() a: AuthContext) { return this.quotes.partnerRequests(a.userId); }
 
-  @Post('import') @HttpCode(200)
+  @Post('import') @HttpCode(200) @RateLimit('import')
   import(@Auth() a: AuthContext, @Body(new ZodPipe(ImportQuotesRequest)) b: ImportQuotesRequest) { return this.quotes.partnerImport(a.userId, b.quotes as ({ requestId: string } & Record<string, unknown>)[]); }
 
   @Get('keys')
@@ -72,6 +73,7 @@ class PartnerController {
 }
 
 /** For a provider's own system: authenticated with a partner API key, not a person's sign-in. */
+@RateLimit('partnerApi')
 @Controller('partner/api')
 class PartnerApiController {
   constructor(@Inject(QuotesService) private readonly quotes: QuotesService) {}

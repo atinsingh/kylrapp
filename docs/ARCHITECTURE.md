@@ -119,6 +119,12 @@ One deployable, with each module owning its own tables (`apps/api/src/db/schema.
 
 TLS everywhere; RDS and S3 encrypted with KMS; secrets in AWS Secrets Manager. WAF on CloudFront. MFA for signing, payouts and every staff account. Session timeout and a device list (Security screen). Append-only audit log. PII is never logged; Sentry scrubbing is on. Penetration test before launch (action 13). Admin is reachable only through SSO and the VPN.
 
+Built in the API and web apps:
+* Request limits on every API route (`apps/api/src/common/rate-limit.ts`), counted in Redis so every API server shares them (`REDIS_URL` is required in production; the API refuses to start without it): 300 a minute per address by default; 20 a minute per address on sign-up, sign-in and every code or passkey check; 120 a minute per partner API key; 20 a minute on bulk quote imports. Over the limit: `429` with `Retry-After` and a plain message. If Redis is down, requests go through rather than take the site down. On top of these, email codes have their own cooldown and hourly cap, and passwords lock after 10 failures.
+* The API trusts one proxy hop (the load balancer) for the client address, so limits and the audit log see the real address.
+* API responses carry `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, a deny-all `Content-Security-Policy`, `Cache-Control: no-store` (personal data is never cached) and HSTS in production; no framework banner.
+* Web, Pro and Admin pages can't be framed, don't allow sniffing, turn off camera, microphone, location and payment APIs, and send HSTS in production; Pro and Admin are `noindex`.
+
 ## 9. What's in this scaffold vs next steps
 
 **Working now** (verified locally):

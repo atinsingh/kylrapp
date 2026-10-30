@@ -5,6 +5,7 @@ import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { AppModule } from '../app.module.js';
+import { secure } from '../common/http.js';
 import { config } from '../config.js';
 import { createDb } from '../db/client.js';
 import { MAILER, type Mail } from '../identity/mailer.js';
@@ -18,6 +19,8 @@ export async function startApp() {
   await migrate(db, { migrationsFolder: fileURLToPath(new URL('../../drizzle', import.meta.url)) });
   await pool.end();
   (config.emailCode as { cooldownSeconds: number }).cooldownSeconds = 0;
+  // Tests sign in hundreds of people from one address; the rate-limit test lowers this again.
+  config.rateLimit.scale = 1000;
 
   const outbox: Mail[] = [];
   /** Pushes sent; tokens in `gone` answer as uninstalled. */
@@ -30,6 +33,7 @@ export async function startApp() {
     })
     .compile();
   const app: INestApplication = mod.createNestApplication();
+  secure(app);
   await app.listen(0);
   const base = (await app.getUrl()).replace('[::1]', 'localhost');
 

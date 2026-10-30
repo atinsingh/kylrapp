@@ -4,8 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
+import { secure } from './common/http.js';
 
 const app = await NestFactory.create<NestExpressApplication>(AppModule);
+secure(app);
 // Local sample photos. In AWS, listing photos are served by CloudFront from S3 (MEDIA_BASE_URL).
 const media = fileURLToPath(new URL('../media', import.meta.url));
 if (existsSync(media)) app.useStaticAssets(media, { prefix: '/media', maxAge: '1d' });

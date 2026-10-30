@@ -9,6 +9,7 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../app.module.js';
+import { secure } from '../common/http.js';
 import { config } from '../config.js';
 import { createDb } from '../db/client.js';
 import { sessions } from '../db/schema.js';
@@ -47,10 +48,12 @@ beforeAll(async () => {
   await migrate(db, { migrationsFolder: fileURLToPath(new URL('../../drizzle', import.meta.url)) });
   await pool.end();
   (config.emailCode as { cooldownSeconds: number }).cooldownSeconds = 0;
+  config.rateLimit.scale = 1000;
   const mod = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(MAILER).useValue({ send: async (m: Mail) => { outbox.push(m); } })
     .compile();
   app = mod.createNestApplication();
+  secure(app);
   await app.listen(0);
   base = (await app.getUrl()).replace('[::1]', 'localhost');
 });

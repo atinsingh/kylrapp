@@ -4,6 +4,7 @@ import {
   EmailStartRequest, EmailVerifyRequest, PasskeyLoginVerifyRequest, PasskeyRegisterVerifyRequest, PasswordLoginRequest,
   PasswordSetRequest, SignupRequest, TotpCodeRequest,
 } from '@klyr/contracts';
+import { RateLimit } from '../common/rate-limit.js';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { AllowMfaPending, assertFreshMfa, Auth, AuthGuard, StepUp, type AuthContext } from './auth.guard.js';
 import { IdentityService } from './identity.service.js';
@@ -21,48 +22,48 @@ export class IdentityController {
   ) {}
 
   // ── Public ────────────────────────────────────────────────────────────────
-  @Post('signup') @HttpCode(202)
+  @Post('signup') @RateLimit('auth') @HttpCode(202)
   signup(@Body(new ZodPipe(SignupRequest)) body: SignupRequest, @Req() req: Request) {
     return this.identity.signup(body, client(req));
   }
 
-  @Post('email/start') @HttpCode(202)
+  @Post('email/start') @RateLimit('auth') @HttpCode(202)
   emailStart(@Body(new ZodPipe(EmailStartRequest)) body: EmailStartRequest) {
     return this.identity.startEmailSignIn(body.email);
   }
 
-  @Post('email/verify') @HttpCode(200)
+  @Post('email/verify') @RateLimit('auth') @HttpCode(200)
   emailVerify(@Body(new ZodPipe(EmailVerifyRequest)) body: EmailVerifyRequest, @Req() req: Request) {
     return this.identity.verifyEmailCode(body.email, body.code, client(req));
   }
 
-  @Post('password/login') @HttpCode(200)
+  @Post('password/login') @RateLimit('auth') @HttpCode(200)
   passwordLogin(@Body(new ZodPipe(PasswordLoginRequest)) body: PasswordLoginRequest, @Req() req: Request) {
     return this.identity.passwordLogin(body.email, body.password, client(req));
   }
 
-  @Post('passkey/login/options') @HttpCode(200)
+  @Post('passkey/login/options') @RateLimit('auth') @HttpCode(200)
   passkeyLoginOptions() {
     return this.passkeys.authenticationOptions();
   }
 
-  @Post('passkey/login/verify') @HttpCode(200)
+  @Post('passkey/login/verify') @RateLimit('auth') @HttpCode(200)
   passkeyLoginVerify(@Body(new ZodPipe(PasskeyLoginVerifyRequest)) body: PasskeyLoginVerifyRequest, @Req() req: Request) {
     return this.passkeys.authenticationVerify(body.challengeId, body.response, client(req));
   }
 
   // ── Second factor (reachable while the session is pending) ───────────────
-  @Post('mfa/totp/verify') @HttpCode(200) @UseGuards(AuthGuard) @AllowMfaPending()
+  @Post('mfa/totp/verify') @RateLimit('auth') @HttpCode(200) @UseGuards(AuthGuard) @AllowMfaPending()
   totpVerify(@Auth() a: AuthContext, @Body(new ZodPipe(TotpCodeRequest)) body: TotpCodeRequest) {
     return this.identity.totpVerify(a.userId, a.session.id, body.code);
   }
 
-  @Post('stepup/email/start') @HttpCode(202) @UseGuards(AuthGuard)
+  @Post('stepup/email/start') @RateLimit('auth') @HttpCode(202) @UseGuards(AuthGuard)
   stepUpEmailStart(@Auth() a: AuthContext) {
     return this.identity.startStepUpEmail(a.userId);
   }
 
-  @Post('stepup/email/verify') @HttpCode(200) @UseGuards(AuthGuard)
+  @Post('stepup/email/verify') @RateLimit('auth') @HttpCode(200) @UseGuards(AuthGuard)
   stepUpEmailVerify(@Auth() a: AuthContext, @Body(new ZodPipe(TotpCodeRequest)) body: TotpCodeRequest) {
     return this.identity.verifyStepUpEmail(a.userId, a.session.id, body.code);
   }
@@ -87,7 +88,7 @@ export class IdentityController {
     return this.identity.setPassword(a.userId, body.password);
   }
 
-  @Post('password/change') @HttpCode(200) @UseGuards(AuthGuard) @StepUp()
+  @Post('password/change') @RateLimit('auth') @HttpCode(200) @UseGuards(AuthGuard) @StepUp()
   changePassword(@Auth() a: AuthContext, @Body(new ZodPipe(PasswordSetRequest)) body: PasswordSetRequest) {
     return this.identity.setPassword(a.userId, body.password);
   }
@@ -130,12 +131,12 @@ export class IdentityController {
     return this.passkeys.authenticationOptions(a.userId);
   }
 
-  @Post('passkey/stepup/verify') @HttpCode(200) @UseGuards(AuthGuard)
+  @Post('passkey/stepup/verify') @RateLimit('auth') @HttpCode(200) @UseGuards(AuthGuard)
   passkeyStepUpVerify(@Auth() a: AuthContext, @Body(new ZodPipe(PasskeyLoginVerifyRequest)) body: PasskeyLoginVerifyRequest) {
     return this.passkeys.stepUpVerify(a.userId, a.session.id, body.challengeId, body.response);
   }
 
-  @Post('mfa/totp/enable') @HttpCode(200) @UseGuards(AuthGuard)
+  @Post('mfa/totp/enable') @RateLimit('auth') @HttpCode(200) @UseGuards(AuthGuard)
   totpEnable(@Auth() a: AuthContext, @Body(new ZodPipe(TotpCodeRequest)) body: TotpCodeRequest) {
     return this.identity.totpEnable(a.userId, a.session.id, body.code);
   }

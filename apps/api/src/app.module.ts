@@ -1,3 +1,5 @@
+import { APP_GUARD } from '@nestjs/core';
+import { RateLimitGuard } from './common/rate-limit.js';
 import { Module } from '@nestjs/common';
 import { AdminModule } from './admin/admin.module.js';
 import { ComplianceModule } from './compliance/compliance.module.js';
@@ -20,5 +22,8 @@ import { StorageModule } from './storage/file-store.js';
  * Modular monolith. Planned modules (docs/ARCHITECTURE.md §4):
  * money, marketplace, messaging, notifications, ai, audit.
  */
-@Module({ imports: [DbModule, StorageModule, IdentityModule, NotifyModule, HealthModule, ListingsModule, EstimatesModule, DealsModule, ComplianceModule, ProModule, AdminModule, OffersModule, SellingModule, RentingModule, QuotesModule, PlatformModule] })
+@Module({
+  providers: [{ provide: APP_GUARD, useClass: RateLimitGuard }],
+  imports: [DbModule, StorageModule, IdentityModule, NotifyModule, HealthModule, ListingsModule, EstimatesModule, DealsModule, ComplianceModule, ProModule, AdminModule, OffersModule, SellingModule, RentingModule, QuotesModule, PlatformModule],
+})
 export class AppModule {}

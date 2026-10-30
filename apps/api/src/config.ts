@@ -41,6 +41,15 @@ export const config = {
    */
   pushProvider: process.env.PUSH_PROVIDER as 'expo' | undefined,
   expoAccessToken: process.env.EXPO_ACCESS_TOKEN,
+  /**
+   * Request limits. Counters live in Redis (REDIS_URL) so every API server shares them; without it they are kept
+   * in memory, which is only good for one process, so production refuses to start without Redis.
+   * `scale` multiplies every limit (end-to-end tests raise it).
+   */
+  rateLimit: {
+    redisUrl: process.env.REDIS_URL,
+    scale: Number(process.env.RATE_LIMIT_SCALE ?? 1),
+  },
   mailFrom: process.env.MAIL_FROM ?? 'Klyr <no-reply@klyr.ca>',
   smtpUrl: process.env.SMTP_URL,
 };

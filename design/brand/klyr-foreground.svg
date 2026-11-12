@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112" width="112" height="112">
+  <!-- Android adaptive icon foreground: the white mark only, inside the safe zone. -->
+  <g transform="translate(56 56) scale(0.62) translate(-56 -56)" fill="#fff" stroke="#fff" stroke-width="8" stroke-linejoin="round">
+    <polygon points="29,29 55,29 55,47 29,73"/>
+    <polygon points="38,84 71,51 89,51 89,84"/>
+  </g>
+</svg>

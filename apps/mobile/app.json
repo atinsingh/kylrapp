@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Klyr",
+    "slug": "klyr",
+    "scheme": "klyr",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "ca.klyr.app",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "ca.klyr.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#007AFF"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "color": "#007AFF"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "icon": "./assets/icon.png"
+  }
+}
